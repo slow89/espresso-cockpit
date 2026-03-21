@@ -2,8 +2,6 @@ import type { ReactNode } from "react";
 
 import { Link } from "@tanstack/react-router";
 import {
-  ChevronLeft,
-  ChevronRight,
   Minus,
   Plus,
   Square,
@@ -12,7 +10,7 @@ import {
 
 import { TelemetryChart } from "@/components/telemetry-chart";
 import { Button } from "@/components/ui/button";
-import { cn, formatRelativeTimestamp } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   useMachineStateQuery,
   useShotsQuery,
@@ -119,40 +117,21 @@ export function DashboardPage() {
     });
   }
 
+  const dosePresets = [
+    { label: "16g", value: 16 },
+    { label: "18g", value: 18 },
+    { label: "20g", value: 20 },
+    { label: "22g", value: 22 },
+  ] as const;
+
+  const drinkPresets = [
+    { label: "1:1.5", value: 1.5 },
+    { label: "1:2.0", value: 2.0 },
+    { label: "1:2.5", value: 2.5 },
+    { label: "1:3.0", value: 3.0 },
+  ] as const;
+
   const controlRows = [
-    {
-      label: "Dose",
-      value: formatPrimaryNumber(targetDose, "g", "18g", 0),
-      detail: undefined,
-      activePresetValue: targetDose ?? 18,
-      presets: [
-        { label: "16g", value: 16 },
-        { label: "18g", value: 18 },
-        { label: "20g", value: 20 },
-        { label: "22g", value: 22 },
-      ],
-      tint: "text-[#5876d8]",
-      onDecrease: () => updateDose(Math.max(8, Math.round((targetDose ?? 18) - 1))),
-      onIncrease: () => updateDose(Math.round((targetDose ?? 18) + 1)),
-      onPresetClick: (value: number) => updateDose(value),
-    },
-    {
-      label: "Drink",
-      value: formatPrimaryNumber(targetYield, "g", "36g", 0),
-      detail: `(${ratio})`,
-      activePresetValue: targetDose && targetYield ? targetYield / targetDose : 2.0,
-      presets: [
-        { label: "1:1.5", value: 1.5 },
-        { label: "1:2.0", value: 2.0 },
-        { label: "1:2.5", value: 2.5 },
-        { label: "1:3.0", value: 3.0 },
-      ],
-      tint: "text-[#5876d8]",
-      onDecrease: () => updateYield(Math.max(1, Math.round((targetYield ?? 36) - 1))),
-      onIncrease: () => updateYield(Math.round((targetYield ?? 36) + 1)),
-      onPresetClick: (value: number) =>
-        updateYield((targetDose ?? 18) * value),
-    },
     {
       label: "Brew",
       value: formatPrimaryNumber(snapshot?.mixTemperature, "°C", "87°C", 0),
@@ -327,6 +306,22 @@ export function DashboardPage() {
 
         <section className="grid xl:grid-cols-[264px_minmax(0,1fr)]">
           <aside className="border-b border-border xl:border-b-0 xl:border-r">
+            <DoseDrinkControlRow
+              doseActivePresetValue={targetDose ?? 18}
+              doseValue={formatPrimaryNumber(targetDose, "g", "18g", 0)}
+              drinkActivePresetValue={targetDose && targetYield ? targetYield / targetDose : 2.0}
+              drinkDetail={`(${ratio})`}
+              drinkValue={formatPrimaryNumber(targetYield, "g", "36g", 0)}
+              dosePresets={dosePresets}
+              drinkPresets={drinkPresets}
+              disabled={isUpdatingWorkflow}
+              onDecreaseDose={() => updateDose(Math.max(8, Math.round((targetDose ?? 18) - 1)))}
+              onIncreaseDose={() => updateDose(Math.round((targetDose ?? 18) + 1))}
+              onDecreaseDrink={() => updateYield(Math.max(1, Math.round((targetYield ?? 36) - 1)))}
+              onIncreaseDrink={() => updateYield(Math.round((targetYield ?? 36) + 1))}
+              onSelectDosePreset={(value) => updateDose(value)}
+              onSelectDrinkPreset={(value) => updateYield((targetDose ?? 18) * value)}
+            />
             {controlRows.map((row) => (
               <ControlRailRow
                 activePresetValue={row.activePresetValue}
@@ -354,78 +349,162 @@ export function DashboardPage() {
             </div>
           </div>
         </section>
-
-        {/* <section className="grid border-t border-border xl:grid-cols-[0.95fr_1.35fr]">
-          <div className="border-b border-border px-6 py-4 xl:border-b-0 xl:border-r">
-            <p className="text-center text-[0.95rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              Shot history
-            </p>
-
-            <div className="mt-4 flex items-center justify-between gap-4">
-              <button
-                aria-label="Previous shot"
-                className="rounded-full p-2 text-muted-foreground transition hover:text-foreground"
-                type="button"
-              >
-                <ChevronLeft className="size-6" />
-              </button>
-
-              <div className="text-center">
-                <p className="text-[2rem] font-display leading-none text-foreground">
-                  {formatRelativeTimestamp(latestShot?.timestamp)}
-                </p>
-                <p className="mt-4 text-[1rem] text-foreground">
-                  {latestShot?.workflow?.name ?? activeRecipe}
-                </p>
-                <p className="mt-2 text-[1rem] text-muted-foreground">
-                  {metricCell(latestShotDose, "g", 0)} | {metricCell(latestShotYield, "g", 0)}
-                </p>
-              </div>
-
-              <button
-                aria-label="Next shot"
-                className="rounded-full p-2 text-muted-foreground transition hover:text-foreground"
-                type="button"
-              >
-                <ChevronRight className="size-6" />
-              </button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto px-4 py-4 md:px-6">
-            <table className="w-full min-w-[620px] border-separate border-spacing-y-3 text-left">
-              <thead>
-                <tr className="text-[0.95rem] font-semibold tracking-[0.02em] text-muted-foreground">
-                  <th className="w-[180px] px-3"> </th>
-                  <th className="px-3">Time</th>
-                  <th className="px-3">Grams</th>
-                  <th className="px-3">mL</th>
-                  <th className="px-3">°C</th>
-                  <th className="px-3">mL/s</th>
-                  <th className="px-3">Pressure</th>
-                </tr>
-              </thead>
-              <tbody>
-                {extractionRows.map((row) => (
-                  <tr key={row.label}>
-                    <td className="px-3 py-2 text-[1rem] font-semibold text-muted-foreground">
-                      {row.label}
-                    </td>
-                    {row.values.map((value, index) => (
-                      <td
-                        key={`${row.label}-${index}`}
-                        className="px-3 py-2 text-[1rem] font-medium text-foreground"
-                      >
-                        {value}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section> */}
       </div>
+    </div>
+  );
+}
+
+function DoseDrinkControlRow({
+  doseActivePresetValue,
+  dosePresets,
+  doseValue,
+  disabled,
+  drinkActivePresetValue,
+  drinkDetail,
+  drinkPresets,
+  drinkValue,
+  onDecreaseDose,
+  onDecreaseDrink,
+  onIncreaseDose,
+  onIncreaseDrink,
+  onSelectDosePreset,
+  onSelectDrinkPreset,
+}: {
+  doseActivePresetValue: number;
+  dosePresets: ReadonlyArray<{ label: string; value: number }>;
+  doseValue: string;
+  disabled: boolean;
+  drinkActivePresetValue: number;
+  drinkDetail: string;
+  drinkPresets: ReadonlyArray<{ label: string; value: number }>;
+  drinkValue: string;
+  onDecreaseDose: () => void;
+  onDecreaseDrink: () => void;
+  onIncreaseDose: () => void;
+  onIncreaseDrink: () => void;
+  onSelectDosePreset: (value: number) => void;
+  onSelectDrinkPreset: (value: number) => void;
+}) {
+  return (
+    <div className="border-b border-border px-3 py-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[0.9rem] font-semibold tracking-[-0.02em] text-[#5876d8]">
+          Recipe
+        </p>
+        <p className="min-w-[56px] text-right text-[0.82rem] font-medium text-muted-foreground">
+          {drinkDetail}
+        </p>
+      </div>
+
+      <div className="mt-2 space-y-2">
+        <div className="space-y-1.5">
+          <DenseRecipeControl
+            disabled={disabled}
+            label="Dose"
+            onDecrease={onDecreaseDose}
+            onIncrease={onIncreaseDose}
+            value={doseValue}
+          />
+          <PresetRow
+            activePresetValue={doseActivePresetValue}
+            disabled={disabled}
+            onPresetClick={onSelectDosePreset}
+            presets={dosePresets}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <DenseRecipeControl
+            disabled={disabled}
+            label="Yield"
+            onDecrease={onDecreaseDrink}
+            onIncrease={onIncreaseDrink}
+            value={drinkValue}
+          />
+          <PresetRow
+            activePresetValue={drinkActivePresetValue}
+            disabled={disabled}
+            onPresetClick={onSelectDrinkPreset}
+            presets={drinkPresets}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DenseRecipeControl({
+  disabled,
+  label,
+  onDecrease,
+  onIncrease,
+  value,
+}: {
+  disabled: boolean;
+  label: string;
+  onDecrease: () => void;
+  onIncrease: () => void;
+  value: string;
+}) {
+  return (
+    <div className="grid grid-cols-[52px_minmax(0,1fr)] items-center gap-2">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        {label}
+      </p>
+      <div className="grid grid-cols-[28px_minmax(0,1fr)_28px] items-center gap-1 rounded-[10px] border border-border/80 bg-[#101822] px-1 py-1">
+        <ControlButton
+          ariaLabel={`Decrease ${label}`}
+          disabled={disabled}
+          onClick={onDecrease}
+        >
+          <Minus className="size-3.5" />
+        </ControlButton>
+
+        <div className="min-w-0 text-center">
+          <p className="text-[0.9rem] font-semibold text-foreground">{value}</p>
+        </div>
+
+        <ControlButton
+          ariaLabel={`Increase ${label}`}
+          disabled={disabled}
+          onClick={onIncrease}
+        >
+          <Plus className="size-3.5" />
+        </ControlButton>
+      </div>
+    </div>
+  );
+}
+
+function PresetRow({
+  activePresetValue,
+  disabled,
+  onPresetClick,
+  presets,
+}: {
+  activePresetValue: number;
+  disabled: boolean;
+  onPresetClick: (value: number) => void;
+  presets: ReadonlyArray<{ label: string; value: number }>;
+}) {
+  return (
+    <div className="grid grid-cols-4 gap-1 text-[0.74rem] font-medium text-muted-foreground">
+      {presets.map((preset) => (
+        <button
+          key={preset.label}
+          className={cn(
+            "rounded-[9px] px-1 py-1 text-center transition",
+            isPresetActive(activePresetValue, preset.value)
+              ? "bg-muted/70 text-foreground"
+              : "hover:bg-muted/45 hover:text-foreground",
+          )}
+          disabled={disabled}
+          onClick={() => onPresetClick(preset.value)}
+          type="button"
+        >
+          {preset.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -522,7 +601,7 @@ function ControlButton({
   return (
     <button
       aria-label={ariaLabel}
-      className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-[#10161f] bg-[#11171f] text-foreground transition hover:bg-[#171e29] disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-[#10161f] bg-[#11171f] text-foreground transition hover:bg-[#171e29] disabled:cursor-not-allowed disabled:opacity-50"
       disabled={disabled}
       onClick={onClick}
       type="button"

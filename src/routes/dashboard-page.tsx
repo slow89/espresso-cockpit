@@ -29,14 +29,16 @@ export function DashboardPage() {
   const { data: shots } = useShotsQuery();
   const updateWorkflowMutation = useUpdateWorkflowMutation();
 
-  const isOffline = Boolean(machineError || machineQueryError || workflowQueryError);
+  const hasQueryError = Boolean(machineError || machineQueryError || workflowQueryError);
+  const isOffline = liveConnection !== "live" || hasQueryError;
   const activeRecipe = workflow?.profile?.title ?? workflow?.name ?? "PSPH";
   const isShotRunning = snapshot?.state.state === "espresso";
-  const statusLabel = isOffline
-    ? "Offline"
-    : snapshot?.state.substate === "ready"
-      ? "Ready"
-      : startCase(snapshot?.state.substate ?? snapshot?.state.state ?? "Idle");
+  const statusLabel = getStatusLabel({
+    isOffline,
+    liveConnection,
+    machineSubstate: snapshot?.state.substate,
+    machineState: snapshot?.state.state,
+  });
 
   const targetDose = workflow?.context?.targetDoseWeight;
   const targetYield = workflow?.context?.targetYield;
@@ -143,7 +145,7 @@ export function DashboardPage() {
         { label: "85°C", value: 85 },
         { label: "92°C", value: 92 },
       ],
-      tint: "text-[#5876d8]",
+      tint: "text-[#d99826]",
       onDecrease: () =>
         updateBrewTemperature(Math.max(70, Math.round((snapshot?.mixTemperature ?? 87) - 1))),
       onIncrease: () =>
@@ -161,7 +163,7 @@ export function DashboardPage() {
         { label: "45s", value: 45 },
         { label: "60s", value: 60 },
       ],
-      tint: "text-[#5876d8]",
+      tint: "text-[#d99826]",
       onDecrease: () =>
         updateSteamDuration(Math.max(5, (workflow?.steamSettings?.duration ?? 50) - 5)),
       onIncrease: () => updateSteamDuration((workflow?.steamSettings?.duration ?? 50) + 5),
@@ -178,7 +180,7 @@ export function DashboardPage() {
         { label: "15s", value: 15 },
         { label: "20s", value: 20 },
       ],
-      tint: "text-[#5876d8]",
+      tint: "text-[#d99826]",
       onDecrease: () =>
         updateFlushDuration(Math.max(1, (workflow?.rinseData?.duration ?? 10) - 1)),
       onIncrease: () => updateFlushDuration((workflow?.rinseData?.duration ?? 10) + 1),
@@ -200,7 +202,7 @@ export function DashboardPage() {
         { label: "150ml", value: 150 },
         { label: "200ml", value: 200 },
       ],
-      tint: "text-[#5876d8]",
+      tint: "text-[#d99826]",
       onDecrease: () =>
         updateHotWaterVolume(Math.max(10, (workflow?.hotWaterData?.volume ?? 50) - 10)),
       onIncrease: () => updateHotWaterVolume((workflow?.hotWaterData?.volume ?? 50) + 10),
@@ -236,27 +238,28 @@ export function DashboardPage() {
 
   return (
     <div>
-      <div className="panel min-h-[calc(100svh-6.5rem)] overflow-hidden rounded-none border-x-0 border-t-0 bg-[#0d141d]/96">
-        <section className="border-b border-border px-4 py-4 md:px-6">
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
-            <div className="min-w-0 flex gap-5">
-              <div className="flex min-w-0 flex-wrap items-center gap-3">
+      <div className="panel min-h-[calc(100svh-6.5rem)] overflow-hidden rounded-none border-x-0 border-t-0 bg-[#08090b]/98">
+        <section className="border-b border-border px-3 py-2.5 md:px-4">
+          <div className="grid gap-2 xl:grid-cols-[auto_minmax(0,1fr)_auto] xl:items-center">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <Button
                   asChild
-                  className="min-h-[56px] min-w-[212px] justify-between rounded-[18px] border-[#3a4a67] bg-[#121a25] px-5 text-base text-foreground hover:bg-[#17212e]"
+                  className="min-h-[38px] min-w-[196px] justify-between rounded-[10px] border-[#35260d] bg-[#0b0c0f] px-3 font-mono text-[0.82rem] font-medium text-foreground hover:bg-[#101216]"
                   variant="outline"
                 >
                   <Link to="/workflows">
                     <span className="truncate">{activeRecipe}</span>
-                    <span className="text-sm text-muted-foreground">Profiles</span>
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+                      Profiles
+                    </span>
                   </Link>
                 </Button>
                 <Button
                   className={cn(
-                    "min-h-[56px] min-w-[168px] rounded-[18px] px-5 text-base",
+                    "min-h-[38px] min-w-[138px] rounded-[10px] border px-3 font-mono text-[0.74rem] font-semibold uppercase tracking-[0.18em]",
                     isShotRunning
-                      ? "border-[#734341] bg-[#5b2927] text-white hover:bg-[#67302d]"
-                      : "border-[#4d6ad0] bg-[#4f67ae] text-white hover:bg-[#5a73bf]",
+                      ? "border-[#5f3438] bg-[#261316] text-[#ff9b9b] hover:bg-[#31181c]"
+                      : "border-[#1d5a3d] bg-[#0f2018] text-[#6be79f] hover:bg-[#13281d]",
                   )}
                   disabled={isOffline}
                   onClick={() => void requestState(isShotRunning ? "idle" : "espresso")}
@@ -266,7 +269,7 @@ export function DashboardPage() {
                 </Button>
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.95rem] text-muted-foreground">
+              <div className="grid grid-cols-2 gap-1.5 md:grid-cols-4 xl:min-w-[420px]">
                 <StatusMetric
                   accent={false}
                   label="Mix"
@@ -287,19 +290,26 @@ export function DashboardPage() {
                   label="Flow"
                   value={metricCell(snapshot?.flow, " ml/s")}
                 />
-              </div>
             </div>
 
-            <div className="text-left xl:text-right">
-              <p
-                className={cn(
-                  "text-[1.1rem] font-semibold tracking-[-0.02em]",
-                  isOffline ? "text-[#e1a36f]" : "text-[#20b89b]",
-                )}
-              >
-                {statusLabel}
+            <div className="w-full rounded-[8px] border border-border bg-[#0b0c0f] px-2.5 py-1.5 sm:w-[196px] sm:shrink-0">
+              <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                State
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">{liveConnection}</p>
+              <div className="mt-0.5 flex min-w-0 items-baseline gap-2">
+                <p
+                  className={cn(
+                    "min-w-0 truncate font-mono text-[0.82rem] font-semibold uppercase tracking-[0.16em]",
+                    isOffline ? "text-[#f0b37a]" : "text-[#51d193]",
+                  )}
+                  title={statusLabel}
+                >
+                  {statusLabel}
+                </p>
+                <p className="shrink-0 font-mono text-[0.64rem] text-muted-foreground">
+                  {liveConnection}
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -388,16 +398,16 @@ function DoseDrinkControlRow({
   return (
     <div className="border-b border-border px-3 py-3">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[0.9rem] font-semibold tracking-[-0.02em] text-[#5876d8]">
+        <p className="text-[0.76rem] font-semibold uppercase tracking-[0.14em] text-[#d99826]">
           Recipe
         </p>
-        <p className="min-w-[56px] text-right text-[0.82rem] font-medium text-muted-foreground">
+        <p className="min-w-[56px] text-right font-mono text-[0.8rem] font-medium text-muted-foreground">
           {drinkDetail}
         </p>
       </div>
 
       <div className="mt-2 space-y-2">
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <DenseRecipeControl
             disabled={disabled}
             label="Dose"
@@ -413,7 +423,7 @@ function DoseDrinkControlRow({
           />
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <DenseRecipeControl
             disabled={disabled}
             label="Yield"
@@ -447,11 +457,11 @@ function DenseRecipeControl({
   value: string;
 }) {
   return (
-    <div className="grid grid-cols-[52px_minmax(0,1fr)] items-center gap-2">
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+    <div className="grid grid-cols-[48px_minmax(0,1fr)] items-center gap-2">
+      <p className="text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         {label}
       </p>
-      <div className="grid grid-cols-[28px_minmax(0,1fr)_28px] items-center gap-1 rounded-[10px] border border-border/80 bg-[#101822] px-1 py-1">
+      <div className="grid grid-cols-[26px_minmax(0,1fr)_26px] items-center gap-1 rounded-[8px] border border-border/80 bg-[#0b0c0f] px-1 py-1">
         <ControlButton
           ariaLabel={`Decrease ${label}`}
           disabled={disabled}
@@ -461,7 +471,7 @@ function DenseRecipeControl({
         </ControlButton>
 
         <div className="min-w-0 text-center">
-          <p className="text-[0.9rem] font-semibold text-foreground">{value}</p>
+          <p className="font-mono text-[0.88rem] font-semibold text-foreground">{value}</p>
         </div>
 
         <ControlButton
@@ -488,15 +498,15 @@ function PresetRow({
   presets: ReadonlyArray<{ label: string; value: number }>;
 }) {
   return (
-    <div className="grid grid-cols-4 gap-1 text-[0.74rem] font-medium text-muted-foreground">
+    <div className="grid grid-cols-4 gap-1 text-[0.72rem] font-medium text-muted-foreground">
       {presets.map((preset) => (
         <button
           key={preset.label}
           className={cn(
-            "rounded-[9px] px-1 py-1 text-center transition",
+            "rounded-[7px] border border-transparent px-1 py-1 font-mono text-center transition",
             isPresetActive(activePresetValue, preset.value)
-              ? "bg-muted/70 text-foreground"
-              : "hover:bg-muted/45 hover:text-foreground",
+              ? "border-[#27415f] bg-[#132030] text-foreground"
+              : "hover:border-[#1a2a3b] hover:bg-[#101824] hover:text-foreground",
           )}
           disabled={disabled}
           onClick={() => onPresetClick(preset.value)}
@@ -535,11 +545,16 @@ function ControlRailRow({
   return (
     <div className="border-b border-border px-3 py-3 last:border-b-0">
       <div className="grid grid-cols-[52px_minmax(0,1fr)] items-start gap-3">
-        <p className={cn("pt-2.5 text-[0.9rem] font-semibold tracking-[-0.02em]", tint)}>
+        <p
+          className={cn(
+            "pt-2 text-[0.74rem] font-semibold uppercase tracking-[0.16em]",
+            tint,
+          )}
+        >
           {label}
         </p>
 
-        <div className="grid grid-cols-[48px_minmax(0,1fr)_48px] items-center gap-2">
+        <div className="grid grid-cols-[40px_minmax(0,1fr)_40px] items-center gap-2">
           <ControlButton
             ariaLabel={`Decrease ${label}`}
             disabled={disabled}
@@ -549,9 +564,9 @@ function ControlRailRow({
           </ControlButton>
 
           <div className="min-w-0 text-center">
-            <p className="text-[0.96rem] font-semibold text-foreground">{value}</p>
+            <p className="font-mono text-[0.92rem] font-semibold text-foreground">{value}</p>
             {detail ? (
-              <p className="mt-0.5 text-[0.78rem] text-muted-foreground">{detail}</p>
+              <p className="mt-0.5 font-mono text-[0.72rem] text-muted-foreground">{detail}</p>
             ) : null}
           </div>
 
@@ -565,15 +580,15 @@ function ControlRailRow({
         </div>
       </div>
 
-      <div className="mt-2 grid grid-cols-4 gap-2 text-[0.78rem] font-medium text-muted-foreground">
+      <div className="mt-2 grid grid-cols-4 gap-1.5 text-[0.72rem] font-medium text-muted-foreground">
         {presets.map((preset) => (
           <button
             key={preset.label}
             className={cn(
-              "rounded-[10px] px-1 py-1 text-left transition",
+              "rounded-[7px] border border-transparent px-1.5 py-1 font-mono text-left transition",
               isPresetActive(activePresetValue, preset.value)
-                ? "bg-muted/70 text-foreground"
-                : "hover:bg-muted/45 hover:text-foreground",
+                ? "border-[#27415f] bg-[#132030] text-foreground"
+                : "hover:border-[#1a2a3b] hover:bg-[#101824] hover:text-foreground",
             )}
             disabled={disabled}
             onClick={() => onPresetClick(preset.value)}
@@ -601,7 +616,7 @@ function ControlButton({
   return (
     <button
       aria-label={ariaLabel}
-      className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-[#10161f] bg-[#11171f] text-foreground transition hover:bg-[#171e29] disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex h-6 w-6 items-center justify-center rounded-[6px] border border-[#1e170b] bg-[#08090b] text-foreground transition hover:bg-[#111317] disabled:cursor-not-allowed disabled:opacity-50"
       disabled={disabled}
       onClick={onClick}
       type="button"
@@ -631,10 +646,24 @@ function StatusMetric({
   value: string;
 }) {
   return (
-    <p className={cn(accent ? "text-[#5a76d3]" : "")}>
-      <span className="font-semibold text-foreground">{label}</span>{" "}
-      <span>{value}</span>
-    </p>
+    <div
+      className={cn(
+        "rounded-[8px] border border-border bg-[#0b0c0f] px-2.5 py-1.5",
+        accent ? "border-[#1f4738] bg-[#0a1712]" : "",
+      )}
+    >
+      <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </p>
+      <p
+        className={cn(
+          "mt-0.5 font-mono text-[0.82rem] font-semibold text-foreground",
+          accent ? "text-[#6de0a1]" : "",
+        )}
+      >
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -674,6 +703,32 @@ function metricCell(
   }
 
   return `${value.toFixed(digits)}${suffix}`;
+}
+
+function getStatusLabel({
+  isOffline,
+  liveConnection,
+  machineSubstate,
+  machineState,
+}: {
+  isOffline: boolean;
+  liveConnection: "idle" | "connecting" | "live" | "error";
+  machineSubstate?: string;
+  machineState?: string;
+}) {
+  if (liveConnection === "connecting") {
+    return "Connecting";
+  }
+
+  if (isOffline) {
+    return "Offline";
+  }
+
+  if (machineSubstate === "ready") {
+    return "Ready";
+  }
+
+  return startCase(machineSubstate ?? machineState ?? "Idle");
 }
 
 function startCase(value: string) {

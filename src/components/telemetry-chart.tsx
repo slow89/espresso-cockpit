@@ -10,10 +10,19 @@ type TelemetryPoint = {
 };
 
 const chartSeries = [
-  { key: "pressure", label: "Pressure", color: "#d8a16a", unit: "bar" },
-  { key: "flow", label: "Flow", color: "#87cad2", unit: "ml/s" },
-  { key: "temperature", label: "Temp", color: "#f09b6f", unit: "C" },
+  { key: "pressure", label: "Pressure", color: "#f7b437", unit: "bar" },
+  { key: "flow", label: "Flow", color: "#39c97b", unit: "ml/s" },
+  { key: "temperature", label: "Temp", color: "#ff7b57", unit: "C" },
 ] as const;
+
+const chartTheme = {
+  surface: "var(--surface-chart)",
+  border: "var(--border)",
+  grid: "var(--surface-chart-grid)",
+  axis: "var(--surface-chart-axis)",
+  text: "var(--muted-foreground)",
+  mono: '"SF Mono", "JetBrains Mono", "Menlo", monospace',
+} as const;
 
 export function TelemetryChart({
   data,
@@ -26,16 +35,18 @@ export function TelemetryChart({
 }) {
   const isMinimal = mode === "minimal";
   const width = 760;
-  const height = isMinimal ? 400 : 350;
+  const height = isMinimal ? 336 : 350;
   const margin = isMinimal
-    ? { top: 16, right: 18, bottom: 20, left: 18 }
+    ? { top: 16, right: 18, bottom: 20, left: 28 }
     : { top: 28, right: 20, bottom: 36, left: 20 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
   const hasLiveData = data.length > 1;
-  const hasSignal = data.some(
-    (point) => point.pressure > 0.15 || point.flow > 0.15,
-  );
+  const hasSignal = data.some((point) => (
+    point.pressure > 0.05 ||
+    point.flow > 0.05 ||
+    point.temperature > 1
+  ));
   const points = hasLiveData ? data : seedTelemetry(data.at(0));
   const values = points.flatMap((point) => [
     point.pressure,
@@ -55,7 +66,7 @@ export function TelemetryChart({
   });
 
   return (
-    <div className={cn("panel rounded-[32px] p-5", isMinimal ? "p-3" : "", className)}>
+    <div className={cn("panel rounded-[20px] p-5", isMinimal ? "p-2" : "", className)}>
       {!isMinimal ? (
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -98,18 +109,26 @@ export function TelemetryChart({
           y={0}
           width={width}
           height={height}
-          fill="var(--surface-chart)"
-          rx={28}
-          stroke="var(--border)"
+          fill={chartTheme.surface}
+          rx={16}
+          stroke={chartTheme.border}
         />
 
         <Group.Group left={margin.left} top={margin.top}>
+          <Grid.GridColumns
+            height={innerHeight}
+            numTicks={7}
+            scale={xScale}
+            width={innerWidth}
+            stroke={chartTheme.grid}
+          />
+
           <Grid.GridRows
             height={innerHeight}
             scale={yScale}
             width={innerWidth}
-            stroke="var(--surface-chart-grid)"
-            numTicks={5}
+            stroke={chartTheme.grid}
+            numTicks={6}
           />
 
           <line
@@ -117,7 +136,7 @@ export function TelemetryChart({
             y1={innerHeight}
             x2={innerWidth}
             y2={innerHeight}
-            stroke="var(--surface-chart-axis)"
+            stroke={chartTheme.axis}
           />
 
           {isMinimal
@@ -126,8 +145,9 @@ export function TelemetryChart({
                   key={tick}
                   x={0}
                   y={yScale(tick) + 4}
-                  fill="var(--muted-foreground)"
-                  fontSize="14"
+                  fill={chartTheme.text}
+                  fontFamily={chartTheme.mono}
+                  fontSize="11"
                 >
                   {tick}
                 </text>
@@ -150,13 +170,14 @@ export function TelemetryChart({
                   stroke={series.color}
                   strokeWidth={3}
                   strokeLinecap="round"
+                  opacity={0.96}
                 />
               ))
             : null}
 
           {!hasSignal && !isMinimal ? (
             <text
-              fill="var(--muted-foreground)"
+              fill={chartTheme.text}
               fontSize="14"
               textAnchor="middle"
               x={innerWidth / 2}

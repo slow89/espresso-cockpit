@@ -27,29 +27,29 @@
 }
 
 :root {
-  --canvas: #081019;
-  --chart: #0c1724;
-  --background: #0f1b29;
-  --foreground: #edf2f7;
-  --card: rgba(12, 23, 36, 0.82);
+  --canvas: #020304;
+  --chart: #050608;
+  --background: #090a0c;
+  --foreground: #f1f2f4;
+  --card: rgba(7, 8, 10, 0.94);
   --card-foreground: #edf2f7;
-  --primary: #c58a57;
-  --primary-foreground: #081019;
-  --secondary: #172635;
+  --primary: #f3a31f;
+  --primary-foreground: #170d00;
+  --secondary: #0c0d10;
   --secondary-foreground: #d9e3ec;
-  --muted: #13202d;
-  --muted-foreground: #8ea1b4;
-  --accent: #71b5c0;
-  --accent-foreground: #04111b;
-  --destructive: #f48a72;
-  --border: rgba(146, 170, 192, 0.16);
-  --input: rgba(146, 170, 192, 0.22);
-  --ring: rgba(113, 181, 192, 0.34);
-  --surface-top-strip: rgba(9, 18, 28, 0.76);
-  --surface-nav: rgba(8, 16, 25, 0.88);
-  --surface-chart: #0b1725;
-  --surface-chart-grid: rgba(142, 161, 180, 0.18);
-  --surface-chart-axis: rgba(142, 161, 180, 0.26);
+  --muted: #0b0c0f;
+  --muted-foreground: #8f97a3;
+  --accent: #39c97b;
+  --accent-foreground: #06110b;
+  --destructive: #ff6b6b;
+  --border: rgba(255, 196, 72, 0.12);
+  --input: rgba(255, 196, 72, 0.18);
+  --ring: rgba(243, 163, 31, 0.3);
+  --surface-top-strip: rgba(6, 7, 8, 0.96);
+  --surface-nav: rgba(4, 5, 6, 0.98);
+  --surface-chart: #07090b;
+  --surface-chart-grid: rgba(255, 188, 58, 0.1);
+  --surface-chart-axis: rgba(255, 188, 58, 0.18);
 }
 
 @layer base {
@@ -58,6 +58,7 @@
   }
 
   html {
+    color-scheme: dark;
     font-family: var(--font-sans);
     color: var(--foreground);
     background: var(--canvas);
@@ -66,8 +67,8 @@
   body {
     min-height: 100vh;
     background:
-      radial-gradient(circle at top right, rgba(79, 103, 174, 0.12), transparent 22%),
-      linear-gradient(180deg, rgba(12, 18, 27, 0.86), rgba(8, 16, 25, 0.98)),
+      radial-gradient(circle at top center, rgba(243, 163, 31, 0.08), transparent 18%),
+      linear-gradient(180deg, rgba(7, 7, 8, 0.98), rgba(2, 3, 4, 1)),
       var(--canvas);
   }
 
@@ -82,8 +83,8 @@
 @utility panel {
   background: var(--card);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-panel);
-  backdrop-filter: blur(14px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(6px);
 }
 
 @utility tablet-safe {
@@ -92,16 +93,18 @@
 
 @utility top-strip {
   background: var(--surface-top-strip);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-panel);
-  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 196, 72, 0.14);
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
 }
 
 @utility nav-surface {
-  background: rgba(8, 16, 25, 0.96);
-  border: 1px solid rgba(146, 170, 192, 0.22);
+  background: rgba(4, 9, 15, 0.98);
+  border: 1px solid rgba(255, 196, 72, 0.14);
   box-shadow:
-    0 22px 48px rgba(2, 6, 23, 0.52),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
+    0 22px 48px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
 }

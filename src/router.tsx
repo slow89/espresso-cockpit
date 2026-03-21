@@ -147,7 +147,7 @@ function RootLayout() {
                 <p className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground">
                   Decent Skin
                 </p>
-                <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.8rem)] leading-none">
+                <h1 className="mt-1 font-display text-[clamp(1.8rem,4vw,2.8rem)] leading-none text-white">
                   Shot-first tablet cockpit
                 </h1>
               </div>
@@ -195,11 +195,11 @@ function RootLayout() {
                   to={item.to}
                   className={cn(
                     "flex min-h-[74px] flex-col items-center justify-center gap-2 rounded-[20px] border-4 border-transparent px-2 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-muted-foreground transition",
-                    "border border-transparent px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground hover:bg-muted/72 hover:text-foreground",
+                    "border border-transparent bg-transparent px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground hover:bg-background hover:text-white",
                   )}
                   activeProps={{
                     className:
-                      "border-border bg-background text-foreground shadow-soft",
+                      "border-primary/25 bg-primary/18 text-white shadow-soft",
                   }}
                 >
                   <Icon className="size-5" />

@@ -3,6 +3,24 @@ export type RecipePreset = {
   value: number;
 };
 
+export function formatBrewRatio(
+  targetDose: number | null | undefined,
+  targetYield: number | null | undefined,
+  fallback = "1:2.0",
+) {
+  if (
+    targetDose == null ||
+    targetYield == null ||
+    Number.isNaN(targetDose) ||
+    Number.isNaN(targetYield) ||
+    targetDose <= 0
+  ) {
+    return fallback;
+  }
+
+  return `1:${(targetYield / targetDose).toFixed(1)}`;
+}
+
 export function isPresetActive(currentValue: number, presetValue: number) {
   return Math.abs(currentValue - presetValue) < 0.11;
 }

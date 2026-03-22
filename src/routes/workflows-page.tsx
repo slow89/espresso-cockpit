@@ -4,7 +4,7 @@ import { useState } from "react";
 import { FramePreviewOverlay } from "@/components/workflows/frame-preview-overlay";
 import { WorkflowProfileChooserPanel } from "@/components/workflows/workflow-profile-chooser-panel";
 import { WorkflowShotSetupPanel } from "@/components/workflows/workflow-shot-setup-panel";
-import { roundValue } from "@/lib/recipe-utils";
+import { formatBrewRatio, roundValue } from "@/lib/recipe-utils";
 import { getProfileFingerprint, getProfileTitle, readString } from "@/lib/workflow-utils";
 import {
   useProfilesQuery,
@@ -42,8 +42,7 @@ export function WorkflowsPage() {
   );
   const targetDose = workflow?.context?.targetDoseWeight;
   const targetYield = workflow?.context?.targetYield;
-  const ratio =
-    targetDose && targetYield ? `${(targetYield / targetDose).toFixed(1)}:1` : "1:2.0";
+  const ratio = formatBrewRatio(targetDose, targetYield);
   const isUpdating = updateWorkflowMutation.isPending;
 
   const dosePresets = [

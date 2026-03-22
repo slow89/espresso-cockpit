@@ -2,7 +2,7 @@ import { DashboardControlRail } from "@/components/dashboard/dashboard-control-r
 import { DashboardTopBar } from "@/components/dashboard/dashboard-top-bar";
 import { TelemetryChart } from "@/components/telemetry-chart";
 import { formatSecondaryNumber, getStatusLabel } from "@/lib/dashboard-utils";
-import { formatPrimaryNumber, roundValue } from "@/lib/recipe-utils";
+import { formatBrewRatio, formatPrimaryNumber, roundValue } from "@/lib/recipe-utils";
 import {
   useMachineStateQuery,
   useUpdateWorkflowMutation,
@@ -32,8 +32,7 @@ export function DashboardPage() {
 
   const targetDose = workflow?.context?.targetDoseWeight;
   const targetYield = workflow?.context?.targetYield;
-  const ratio =
-    targetDose && targetYield ? `${(targetYield / targetDose).toFixed(1)}:1` : "1:2.0";
+  const ratio = formatBrewRatio(targetDose, targetYield);
   const isUpdatingWorkflow = updateWorkflowMutation.isPending;
 
   function updateWorkflow(patch: Record<string, unknown>) {

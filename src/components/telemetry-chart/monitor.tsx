@@ -1,9 +1,11 @@
 import type { PointerEvent } from "react";
 
-import { SlidersHorizontal } from "lucide-react";
-
 import { Grid, Group, Scale, Shape } from "@visx/visx";
 
+import {
+  CompactMonitorBar as SharedCompactMonitorBar,
+  DesktopMonitorBar as SharedDesktopMonitorBar,
+} from "@/components/chart-monitor/chrome";
 import { cn } from "@/lib/utils";
 import {
   formatTelemetryClock,
@@ -12,8 +14,7 @@ import {
   type TelemetrySeriesFamily,
   type TelemetrySeriesId,
 } from "@/lib/telemetry";
-
-import { PresetButton, TelemetryConfigPanel } from "./config";
+import { TelemetryConfigPanel } from "./config";
 import {
   buildMonitorStatusItems,
   buildVisibleLanes,
@@ -142,44 +143,16 @@ function DesktopMonitorBar({
   onSetPreset: (preset: SelectableTelemetryChartPreset) => void;
 }) {
   return (
-    <div className="rounded-[16px] border border-border/70 bg-[#0b0e13] p-1.5">
-      <div className="flex items-stretch gap-1 overflow-hidden">
-        {items.map((item) => (
-          <div
-            className="min-w-0 flex-1 rounded-[9px] border border-border/60 bg-[#090c10] px-2 py-1.5"
-            key={item.label}
-            title={item.detail}
-          >
-            <p className="truncate font-mono text-[0.5rem] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              {item.label}
-            </p>
-            <p className="mt-0.5 truncate font-mono text-[0.72rem] font-semibold uppercase tracking-[0.02em] text-foreground">
-              {item.value}
-            </p>
-          </div>
-        ))}
-
-        <div className="flex min-h-[46px] shrink-0 items-stretch gap-1">
-          <PresetButton
-            active={activePreset === "live-shot"}
-            label="Live shot"
-            onClick={() => onSetPreset("live-shot")}
-          />
-          <PresetButton
-            active={activePreset === "all-signals"}
-            label="All signals"
-            onClick={() => onSetPreset("all-signals")}
-          />
-          <button
-            className="rounded-[9px] border border-border bg-[#0b0d10] px-2.5 font-mono text-[0.58rem] uppercase tracking-[0.14em] text-muted-foreground transition hover:border-[#5a4419] hover:text-foreground"
-            onClick={onReset}
-            type="button"
-          >
-            Reset
-          </button>
-        </div>
-      </div>
-    </div>
+    <SharedDesktopMonitorBar
+      activePreset={activePreset}
+      items={items}
+      onReset={onReset}
+      onSetPreset={onSetPreset}
+      presetOptions={[
+        { id: "live-shot", label: "Live shot" },
+        { id: "all-signals", label: "All signals" },
+      ]}
+    />
   );
 }
 
@@ -653,33 +626,10 @@ function CompactMonitorBar({
   onOpenConfig: () => void;
 }) {
   return (
-    <div className="rounded-[14px] border border-border/70 bg-[#0b0e13] p-1.5">
-      <div className="flex items-stretch gap-1 overflow-hidden">
-        {items.map((item) => (
-          <div
-            className="min-w-0 flex-1 rounded-[9px] border border-border/60 bg-[#090c10] px-1.5 py-1.5"
-            key={item.label}
-            title={item.detail}
-          >
-            <p className="truncate font-mono text-[0.48rem] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              {item.label}
-            </p>
-            <p className="mt-0.5 truncate font-mono text-[0.68rem] font-semibold uppercase tracking-[0.02em] text-foreground">
-              {item.value}
-            </p>
-          </div>
-        ))}
-
-        <button
-          aria-label="Open chart controls"
-          className="inline-flex min-h-[46px] min-w-[44px] shrink-0 items-center justify-center rounded-[9px] border border-border bg-[#0b0d10] px-2 text-muted-foreground transition hover:border-[#5a4419] hover:text-foreground"
-          onClick={onOpenConfig}
-          title={`Preset: ${formatPresetLabel(activePreset)}`}
-          type="button"
-        >
-          <SlidersHorizontal className="size-3.5" />
-        </button>
-      </div>
-    </div>
+    <SharedCompactMonitorBar
+      activePresetLabel={formatPresetLabel(activePreset)}
+      items={items}
+      onOpenConfig={onOpenConfig}
+    />
   );
 }

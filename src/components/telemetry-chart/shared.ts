@@ -41,10 +41,10 @@ export type TelemetryStatusItem = {
   value: string;
 };
 
-export type LaneConfig = {
-  family: TelemetrySeriesFamily;
+export type LaneConfig<TSeries = TelemetrySeriesDefinition, TFamily extends string = TelemetrySeriesFamily> = {
+  family: TFamily;
   label: string;
-  series: TelemetrySeriesDefinition[];
+  series: TSeries[];
   height: number;
   yOffset: number;
 };
@@ -136,9 +136,9 @@ export function buildVisibleLanes(
   });
 }
 
-export function getChartMetrics(
+export function getChartMetrics<TSeries = TelemetrySeriesDefinition, TFamily extends string = TelemetrySeriesFamily>(
   density: ChartDensity,
-  visibleLanes: LaneConfig[],
+  visibleLanes: Array<LaneConfig<TSeries, TFamily>>,
   containerSize: { height: number; width: number },
 ) {
   const margin =

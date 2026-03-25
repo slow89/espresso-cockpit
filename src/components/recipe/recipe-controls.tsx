@@ -8,18 +8,23 @@ import { cn } from "@/lib/utils";
 export function RecipeControlButton({
   ariaLabel,
   children,
+  className,
   disabled,
   onClick,
 }: {
   ariaLabel: string;
   children: ReactNode;
+  className?: string;
   disabled?: boolean;
   onClick?: () => void;
 }) {
   return (
     <button
       aria-label={ariaLabel}
-      className="flex h-6 w-6 items-center justify-center rounded-[6px] border border-border bg-panel-strong text-foreground transition hover:bg-panel disabled:cursor-not-allowed disabled:opacity-50"
+      className={cn(
+        "flex h-6 w-6 items-center justify-center rounded-[6px] border border-border bg-panel-strong text-foreground transition hover:bg-panel disabled:cursor-not-allowed disabled:opacity-50",
+        className,
+      )}
       disabled={disabled}
       onClick={onClick}
       type="button"
@@ -30,38 +35,55 @@ export function RecipeControlButton({
 }
 
 export function RecipeValueControl({
+  className,
   disabled,
+  iconClassName,
   label,
   onDecrease,
   onIncrease,
   value,
+  valueClassName,
+  buttonClassName,
 }: {
+  className?: string;
   disabled: boolean;
+  iconClassName?: string;
   label: string;
   onDecrease: () => void;
   onIncrease: () => void;
   value: string;
+  valueClassName?: string;
+  buttonClassName?: string;
 }) {
   return (
-    <div className="grid grid-cols-[26px_minmax(0,1fr)_26px] items-center gap-1 rounded-[8px] border border-border/80 bg-panel px-1 py-1">
+    <div
+      className={cn(
+        "grid grid-cols-[26px_minmax(0,1fr)_26px] items-center gap-1 rounded-[8px] border border-border/80 bg-panel px-1 py-1",
+        className,
+      )}
+    >
       <RecipeControlButton
         ariaLabel={`Decrease ${label}`}
+        className={buttonClassName}
         disabled={disabled}
         onClick={onDecrease}
       >
-        <Minus className="size-3.5" />
+        <Minus className={cn("size-3.5", iconClassName)} />
       </RecipeControlButton>
 
       <div className="min-w-0 text-center">
-        <p className="font-mono text-[0.88rem] font-semibold text-foreground">{value}</p>
+        <p className={cn("font-mono text-[0.88rem] font-semibold text-foreground", valueClassName)}>
+          {value}
+        </p>
       </div>
 
       <RecipeControlButton
         ariaLabel={`Increase ${label}`}
+        className={buttonClassName}
         disabled={disabled}
         onClick={onIncrease}
       >
-        <Plus className="size-3.5" />
+        <Plus className={cn("size-3.5", iconClassName)} />
       </RecipeControlButton>
     </div>
   );

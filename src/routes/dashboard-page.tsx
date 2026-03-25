@@ -273,7 +273,7 @@ export function DashboardPage() {
           statusLabel={statusLabel}
         />
 
-        <section className="grid md:h-full md:min-h-0 md:flex-1 md:grid-cols-[228px_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)] md:overflow-hidden xl:grid-cols-[264px_minmax(0,1fr)]">
+        <section className="grid md:h-full md:min-h-0 md:flex-1 md:grid-cols-[272px_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)] md:overflow-hidden xl:grid-cols-[296px_minmax(0,1fr)]">
           <DashboardControlRail
             controlRows={controlRows}
             recipeControls={recipeControls}
@@ -281,7 +281,7 @@ export function DashboardPage() {
           />
 
           <div className="min-w-0 md:flex md:h-full md:min-h-0 md:flex-col md:overflow-hidden">
-            <div className="px-2 py-2 md:flex-1 md:min-h-0 md:overflow-hidden md:px-3 md:py-3 xl:px-4">
+            <div className="px-2 py-2 md:flex-1 md:min-h-0 md:overflow-hidden md:px-3 md:py-3 md:max-xl:px-4 md:max-xl:py-4 xl:px-4">
               <TelemetryChart
                 className="h-full rounded-[18px] border-0 bg-transparent p-0 shadow-none"
                 data={telemetry}

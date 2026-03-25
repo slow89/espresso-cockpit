@@ -39,18 +39,18 @@ export function CompactMonitorBar({
   onOpenConfig: () => void;
 }) {
   return (
-    <div className="min-w-0 rounded-[14px] border border-border/70 bg-panel p-1.5">
-      <div className="flex min-w-0 items-stretch gap-1 overflow-hidden">
+    <div className="min-w-0 rounded-[14px] border border-border/70 bg-panel p-1.5 md:max-xl:rounded-[18px] md:max-xl:p-2">
+      <div className="flex min-w-0 items-stretch gap-1 overflow-hidden md:max-xl:gap-2">
         {items.map((item, index) => (
           <div
-            className="min-w-0 flex-1 rounded-[9px] border border-border/60 bg-panel-muted px-1.5 py-1.5"
+            className="min-w-0 flex-1 rounded-[9px] border border-border/60 bg-panel-muted px-1.5 py-1.5 md:max-xl:min-h-[60px] md:max-xl:rounded-[12px] md:max-xl:px-2.5 md:max-xl:py-2.5"
             key={`${item.label}-${index}`}
             title={item.detail}
           >
-            <p className="truncate font-mono text-[0.48rem] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="truncate font-mono text-[0.48rem] font-medium uppercase tracking-[0.14em] text-muted-foreground md:max-xl:text-[0.56rem]">
               {item.label}
             </p>
-            <p className="mt-0.5 truncate font-mono text-[0.68rem] font-semibold uppercase tracking-[0.02em] text-foreground">
+            <p className="mt-0.5 truncate font-mono text-[0.68rem] font-semibold uppercase tracking-[0.02em] text-foreground md:max-xl:mt-1 md:max-xl:text-[0.82rem]">
               {item.value}
             </p>
           </div>
@@ -58,12 +58,12 @@ export function CompactMonitorBar({
 
         <button
           aria-label="Open chart controls"
-          className="inline-flex min-h-[46px] min-w-[44px] shrink-0 items-center justify-center rounded-[9px] border border-border bg-panel px-2 text-muted-foreground transition hover:border-highlight/50 hover:text-foreground"
+          className="inline-flex min-h-[46px] min-w-[44px] shrink-0 items-center justify-center rounded-[9px] border border-border bg-panel px-2 text-muted-foreground transition hover:border-highlight/50 hover:text-foreground md:max-xl:min-h-[60px] md:max-xl:min-w-[56px] md:max-xl:rounded-[12px]"
           onClick={onOpenConfig}
           title={`Preset: ${activePresetLabel}`}
           type="button"
         >
-          <SlidersHorizontal className="size-3.5" />
+          <SlidersHorizontal className="size-3.5 md:max-xl:size-[18px]" />
         </button>
       </div>
     </div>

@@ -55,17 +55,15 @@ export function DashboardPage() {
 
   if (snapshot?.state.state === "sleeping") {
     return (
-      <div className="panel min-h-[calc(100svh-var(--app-footer-height))] overflow-hidden rounded-none border-x-0 border-t-0 bg-shell md:flex md:h-[calc(100svh-var(--app-footer-height))] md:flex-col">
-        <DashboardSleepScreen
-          disabled={
-            snapshot == null ||
-            Boolean(machineQueryError) ||
-            requestMachineStateMutation.isPending
-          }
-          isPending={requestMachineStateMutation.isPending}
-          onWake={handleToggleMachinePower}
-        />
-      </div>
+      <DashboardSleepScreen
+        disabled={
+          snapshot == null ||
+          Boolean(machineQueryError) ||
+          requestMachineStateMutation.isPending
+        }
+        isPending={requestMachineStateMutation.isPending}
+        onWake={handleToggleMachinePower}
+      />
     );
   }
 

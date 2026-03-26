@@ -14,7 +14,7 @@ export function DashboardSleepScreen({
       aria-disabled={disabled}
       aria-label={isPending ? "Turning on machine" : "Turn on machine"}
       className={cn(
-        "fixed inset-x-0 top-0 bottom-[calc(env(safe-area-inset-bottom,0px)+var(--app-footer-height))] z-10 flex flex-col overflow-hidden bg-[#120f0d] text-left text-foreground transition",
+        "fixed inset-x-0 top-0 z-10 flex w-full flex-col overflow-hidden bg-[#120f0d] bg-cover bg-center bg-no-repeat text-left text-foreground transition",
         disabled ? "cursor-wait" : "cursor-pointer hover:brightness-[1.03]",
       )}
       data-testid="dashboard-sleep-screen"
@@ -34,13 +34,12 @@ export function DashboardSleepScreen({
         }
       }}
       role="button"
+      style={{
+        backgroundImage: "url('/corgi-drinking-espresso.png')",
+        height: "calc(100vh - var(--app-footer-height) - env(safe-area-inset-bottom, 0px))",
+      }}
       tabIndex={disabled ? -1 : 0}
     >
-      <img
-        alt=""
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-        src="/corgi-drinking-espresso.png"
-      />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(15,12,10,0.2)_0%,rgba(15,12,10,0.08)_32%,rgba(15,12,10,0.35)_68%,rgba(15,12,10,0.82)_100%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,_rgba(245,226,192,0.18),_transparent_62%)]" />
 

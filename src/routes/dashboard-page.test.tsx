@@ -107,8 +107,7 @@ describe("DashboardPage", () => {
 
     render(<DashboardPage />);
 
-    expect(screen.getByText("Ready")).toBeInTheDocument();
-    expect(screen.getByText("Connected")).toBeInTheDocument();
+    expect(screen.getByText("Machine")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Sleep machine" }));
 

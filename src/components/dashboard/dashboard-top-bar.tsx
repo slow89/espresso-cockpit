@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Droplets, Pause, Play, Power, Scale } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { getDashboardDevEnabled, getStatusLabel } from "@/lib/dashboard-utils";
+import { getDashboardDevEnabled } from "@/lib/dashboard-utils";
 import { roundValue } from "@/lib/recipe-utils";
 import { cn } from "@/lib/utils";
 import {
@@ -196,8 +196,8 @@ function ScaleStatusCard() {
 
   if (!isPaired) {
     return (
-      <div className="min-w-[228px] flex-[1.1] rounded-[10px] border border-status-warning-border bg-status-warning-surface px-2.5 py-1.5 md:flex-none md:max-w-[324px] md:max-xl:min-w-[284px] md:max-xl:rounded-[11px] md:max-xl:px-3 md:max-xl:py-2">
-        <div className="flex items-start justify-between gap-3">
+      <div className="min-w-[228px] flex-[1.1] rounded-[10px] border border-status-warning-border bg-status-warning-surface px-2.5 py-1 md:flex-none md:max-w-[324px] md:max-xl:min-w-[284px] md:max-xl:rounded-[11px] md:max-xl:px-3 md:max-xl:py-1.5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-1 md:grid-cols-[minmax(0,1fr)_8ch_auto] md:items-center md:max-xl:gap-x-2.5">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <p className="flex items-center gap-1.5 font-mono text-[0.5rem] font-medium uppercase tracking-[0.16em] text-status-warning-foreground md:max-xl:text-[0.56rem]">
@@ -208,27 +208,24 @@ function ScaleStatusCard() {
                 {getScaleStatusLabel(isPaired, scaleConnection)}
               </p>
             </div>
-            <p className="mt-1 font-mono text-[0.84rem] font-semibold text-foreground md:max-xl:text-[0.92rem]">
+            <p className="mt-0.5 truncate font-mono text-[0.54rem] uppercase tracking-[0.12em] text-foreground md:max-xl:text-[0.58rem]">
               No scale paired
-            </p>
-            <p className="mt-0.5 text-[0.68rem] text-muted-foreground md:max-xl:text-[0.72rem]">
-              Pair one in Setup before dosing from the scale.
             </p>
           </div>
 
-          <p className="shrink-0 whitespace-nowrap font-mono text-[0.82rem] font-semibold tabular-nums text-muted-foreground md:max-xl:text-[0.9rem]">
+          <p className="col-start-1 row-start-2 whitespace-nowrap font-mono text-[0.88rem] font-semibold tabular-nums text-muted-foreground md:col-start-2 md:row-start-1 md:justify-self-end md:text-[0.94rem] md:max-xl:text-[0.98rem]">
             {formatScaleWeight(weight)}
           </p>
-        </div>
 
-        <Button
-          asChild
-          className="mt-2.5 h-8 w-full rounded-[9px] border-status-warning-border bg-panel text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-foreground hover:bg-panel-muted md:max-xl:h-9 md:max-xl:text-[0.64rem]"
-          size="sm"
-          variant="outline"
-        >
-          <Link to="/settings">Pair in Setup</Link>
-        </Button>
+          <Button
+            asChild
+            className="col-start-2 row-span-2 row-start-1 h-[26px] rounded-[8px] border-status-warning-border bg-panel px-2 text-[0.54rem] text-foreground hover:bg-panel-muted md:col-start-3 md:row-span-1 md:max-xl:h-8 md:max-xl:rounded-[9px] md:max-xl:px-2.5 md:max-xl:text-[0.56rem]"
+            size="sm"
+            variant="outline"
+          >
+            <Link to="/settings">Pair in Setup</Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -294,15 +291,9 @@ function MachineStatusCard() {
   const { error: workflowQueryError } = useWorkflowQuery();
   const requestMachineStateMutation = useRequestMachineStateMutation();
   const hasQueryError = Boolean(machineError || machineQueryError || workflowQueryError);
-  const isOffline = liveConnection !== "live" || hasQueryError;
   const isMachinePoweredOn = snapshot?.state.state !== "sleeping";
   const isMachinePowerDisabled = snapshot == null || hasQueryError;
-  const statusLabel = getStatusLabel({
-    isOffline,
-    liveConnection,
-    machineSubstate: snapshot?.state.substate,
-    machineState: snapshot?.state.state,
-  });
+  const connectionLabel = getMachineConnectionLabel(liveConnection, hasQueryError);
 
   function handleToggleMachinePower() {
     if (snapshot == null) {
@@ -315,22 +306,18 @@ function MachineStatusCard() {
   }
 
   return (
-    <div className="flex min-h-8 min-w-[184px] shrink-0 items-center justify-between gap-2 rounded-[10px] border border-border bg-panel px-2.5 md:max-xl:min-h-10 md:max-xl:min-w-[216px] md:max-xl:rounded-[11px] md:max-xl:px-3">
-      <div className="flex min-w-0 items-center gap-2">
+    <div className="flex min-h-8 min-w-[112px] shrink-0 items-center justify-between gap-2 rounded-[10px] border border-border bg-panel px-2.5 md:max-xl:min-h-10 md:max-xl:min-w-[128px] md:max-xl:rounded-[11px] md:max-xl:px-3">
+      <div className="flex min-w-0 items-center gap-1.5">
         <p className="shrink-0 font-mono text-[0.5rem] font-medium uppercase tracking-[0.16em] text-muted-foreground md:max-xl:text-[0.56rem]">
           Machine
         </p>
-        <p
-          className={cn(
-            "min-w-0 truncate font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] md:max-xl:text-[0.74rem]",
-            isOffline ? "text-status-warning-foreground" : "text-status-success-foreground",
-          )}
-          title={statusLabel}
-        >
-          {statusLabel}
-        </p>
+        {connectionLabel ? (
+          <p className="truncate font-mono text-[0.5rem] font-medium uppercase tracking-[0.16em] text-status-warning-foreground md:max-xl:text-[0.56rem]">
+            ({connectionLabel})
+          </p>
+        ) : null}
       </div>
-      <div className="flex shrink-0 items-center gap-1.5">
+      <div className="flex shrink-0 items-center">
         <button
           aria-label={
             requestMachineStateMutation.isPending
@@ -353,14 +340,6 @@ function MachineStatusCard() {
         >
           <Power className="size-3.5 md:max-xl:size-4" />
         </button>
-        <p
-          className={cn(
-            "shrink-0 font-mono text-[0.54rem] uppercase tracking-[0.1em] md:max-xl:text-[0.58rem]",
-            isOffline ? "text-status-warning-foreground" : "text-foreground",
-          )}
-        >
-          {formatConnectionLabel(liveConnection)}
-        </p>
       </div>
     </div>
   );
@@ -413,18 +392,21 @@ function getScaleStatusLabel(
   return "Paired";
 }
 
-function formatConnectionLabel(liveConnection: LiveConnectionState) {
-  if (liveConnection === "live") {
-    return "Connected";
+function getMachineConnectionLabel(
+  liveConnection: LiveConnectionState,
+  hasQueryError: boolean,
+) {
+  if (hasQueryError || liveConnection === "error") {
+    return "Error";
   }
 
   if (liveConnection === "connecting") {
     return "Connecting";
   }
 
-  if (liveConnection === "error") {
-    return "Connection error";
+  if (liveConnection === "idle") {
+    return "Offline";
   }
 
-  return "Disconnected";
+  return null;
 }

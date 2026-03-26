@@ -173,6 +173,15 @@ describe("HistoryPage", () => {
     expect(onSelectShotId).toHaveBeenCalledWith("shot-2");
   });
 
+  it("shows an explicit invalid-selection state for a stale selected shot id", () => {
+    render(<HistoryPage onSelectShotId={onSelectShotId} selectedShotId="missing-shot" />);
+
+    expect(onSelectShotId).not.toHaveBeenCalled();
+    expect(screen.getByText("Shot not found")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show latest shot" })).toBeInTheDocument();
+    expect(screen.queryByTestId("telemetry-chart")).not.toBeInTheDocument();
+  });
+
   it("keeps the shell usable when the list is empty", () => {
     queryMocks.useShotsQuery.mockReturnValueOnce({
       data: {

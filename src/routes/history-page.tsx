@@ -61,10 +61,16 @@ export function HistoryPage({
 }) {
   const shotsQuery = useShotsQuery();
   const shotList = shotsQuery.data ?? emptyShotList;
-  const effectiveSelectedShot =
-    shotList.items.find((shot) => shot.id != null && shot.id === selectedShotId) ??
-    shotList.items[0] ??
-    null;
+  const requestedSelectedShot =
+    selectedShotId == null
+      ? null
+      : shotList.items.find((shot) => shot.id != null && shot.id === selectedShotId) ?? null;
+  const hasInvalidSelectedShot =
+    selectedShotId != null && requestedSelectedShot == null;
+  const fallbackSelectedShot = shotList.items[0] ?? null;
+  const effectiveSelectedShot = hasInvalidSelectedShot
+    ? null
+    : requestedSelectedShot ?? fallbackSelectedShot;
   const effectiveSelectedShotId = effectiveSelectedShot?.id ?? null;
   const shotQuery = useShotQuery(effectiveSelectedShotId);
   const selectedShot = shotQuery.data;
@@ -265,6 +271,18 @@ export function HistoryPage({
                 }
                 body={shotQuery.error.message}
                 title="Unable to load shot detail"
+              />
+            ) : hasInvalidSelectedShot ? (
+              <HistoryStatePanel
+                action={
+                  onSelectShotId ? (
+                    <Button onClick={() => onSelectShotId(null)} size="sm" variant="secondary">
+                      Show latest shot
+                    </Button>
+                  ) : undefined
+                }
+                body="This shot is no longer in the current history list. Pick another shot from the rail or clear the selection."
+                title="Shot not found"
               />
             ) : (
               <HistoryStatePanel

@@ -13,10 +13,12 @@ export function SettingsPage() {
   const router = useRouter();
   const gatewayUrl = useBridgeConfigStore((state) => state.gatewayUrl);
   const setGatewayUrl = useBridgeConfigStore((state) => state.setGatewayUrl);
-  const [draftGatewayUrl, setDraftGatewayUrl] = useState(gatewayUrl);
+  const [draftGatewayUrl, setDraftGatewayUrl] = useState<string | null>(null);
+  const resolvedDraftGatewayUrl = draftGatewayUrl ?? gatewayUrl;
 
   async function handleSave() {
-    setGatewayUrl(draftGatewayUrl);
+    setGatewayUrl(resolvedDraftGatewayUrl);
+    setDraftGatewayUrl(null);
     await router.invalidate();
   }
 
@@ -29,7 +31,7 @@ export function SettingsPage() {
         </div>
 
         <SettingsAdvancedBridgePanel
-          draftGatewayUrl={draftGatewayUrl}
+          draftGatewayUrl={resolvedDraftGatewayUrl}
           gatewayUrl={gatewayUrl}
           onSave={handleSave}
           onUseCurrentOrigin={() => setDraftGatewayUrl(window.location.origin)}

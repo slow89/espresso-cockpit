@@ -233,6 +233,7 @@ describe("SettingsPage", () => {
       );
     });
 
+    expect(screen.getByDisplayValue("http://new-bridge.local:8080")).toBeInTheDocument();
     expect(routerInvalidate).toHaveBeenCalled();
   });
 

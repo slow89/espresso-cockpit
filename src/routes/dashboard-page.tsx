@@ -1,6 +1,4 @@
 import {
-  useEffect,
-  useEffectEvent,
   useState,
 } from "react";
 
@@ -8,40 +6,14 @@ import { DashboardSleepScreen } from "@/components/dashboard/dashboard-sleep-scr
 import { DashboardTopBar } from "@/components/dashboard/dashboard-top-bar";
 import { DashboardWorkspaceContainer } from "@/components/dashboard/dashboard-workspace-container";
 import {
-  useDevicesQuery,
   useMachineStateQuery,
   useRequestMachineStateMutation,
 } from "@/rest/queries";
-import { useMachineStore } from "@/stores/machine-store";
 
 export function DashboardPage() {
-  const connectScale = useMachineStore((state) => state.connectScale);
-  const disconnectScale = useMachineStore((state) => state.disconnectScale);
   const { data: snapshot, error: machineQueryError } = useMachineStateQuery();
-  const { data: devices } = useDevicesQuery({ refetchInterval: 2_000 });
   const requestMachineStateMutation = useRequestMachineStateMutation();
   const [isSimulatedShotActive, setIsSimulatedShotActive] = useState(false);
-  const connectedScale = devices?.find(
-    (device) => device.type === "scale" && device.state === "connected",
-  );
-  const reconnectScaleFeed = useEffectEvent(() => {
-    const currentScaleConnection = useMachineStore.getState().scaleConnection;
-
-    if (currentScaleConnection === "connecting" || currentScaleConnection === "live") {
-      return;
-    }
-
-    void connectScale();
-  });
-
-  useEffect(() => {
-    if (!connectedScale?.id) {
-      disconnectScale();
-      return;
-    }
-
-    reconnectScaleFeed();
-  }, [connectedScale?.id, disconnectScale, reconnectScaleFeed]);
 
   function handleToggleMachinePower() {
     if (snapshot == null) {

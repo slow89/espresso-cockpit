@@ -5,83 +5,106 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { createBridgeClient } from "@/rest/client";
+import {
+  createBridgeClient,
+  normalizeGatewayUrl,
+} from "@/rest/client";
 import { queryClient } from "@/rest/query-client";
 import { type MachineStateChange } from "@/rest/types";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 
-function getClient() {
-  return createBridgeClient(useBridgeConfigStore.getState().gatewayUrl);
+export function getGatewayOrigin() {
+  return normalizeGatewayUrl(useBridgeConfigStore.getState().gatewayUrl);
+}
+
+function useGatewayOrigin() {
+  return useBridgeConfigStore((state) => normalizeGatewayUrl(state.gatewayUrl));
+}
+
+function getClient(gatewayOrigin = getGatewayOrigin()) {
+  return createBridgeClient(gatewayOrigin);
 }
 
 export const bridgeQueryKeys = {
-  all: ["bridge"] as const,
-  machineState: () => [...bridgeQueryKeys.all, "machine-state"] as const,
-  workflow: () => [...bridgeQueryKeys.all, "workflow"] as const,
-  profiles: () => [...bridgeQueryKeys.all, "profiles"] as const,
-  profile: (id: string) => [...bridgeQueryKeys.all, "profiles", id] as const,
-  devices: () => [...bridgeQueryKeys.all, "devices"] as const,
-  presenceSettings: () => [...bridgeQueryKeys.all, "presence-settings"] as const,
-  shots: () => [...bridgeQueryKeys.all, "shots"] as const,
-  shot: (id: string) => [...bridgeQueryKeys.all, "shots", id] as const,
-  visualizerSettings: () => [...bridgeQueryKeys.all, "visualizer-settings"] as const,
+  root: ["bridge"] as const,
+  all: (gatewayOrigin: string) => [...bridgeQueryKeys.root, gatewayOrigin] as const,
+  machineState: (gatewayOrigin: string) =>
+    [...bridgeQueryKeys.all(gatewayOrigin), "machine-state"] as const,
+  workflow: (gatewayOrigin: string) =>
+    [...bridgeQueryKeys.all(gatewayOrigin), "workflow"] as const,
+  profiles: (gatewayOrigin: string) =>
+    [...bridgeQueryKeys.all(gatewayOrigin), "profiles"] as const,
+  profile: (gatewayOrigin: string, id: string) =>
+    [...bridgeQueryKeys.all(gatewayOrigin), "profiles", id] as const,
+  devices: (gatewayOrigin: string) =>
+    [...bridgeQueryKeys.all(gatewayOrigin), "devices"] as const,
+  presenceSettings: (gatewayOrigin: string) =>
+    [...bridgeQueryKeys.all(gatewayOrigin), "presence-settings"] as const,
+  shots: (gatewayOrigin: string) =>
+    [...bridgeQueryKeys.all(gatewayOrigin), "shots"] as const,
+  shot: (gatewayOrigin: string, id: string) =>
+    [...bridgeQueryKeys.all(gatewayOrigin), "shots", id] as const,
+  visualizerSettings: (gatewayOrigin: string) =>
+    [...bridgeQueryKeys.all(gatewayOrigin), "visualizer-settings"] as const,
 };
 
-export const machineStateQueryOptions = () =>
+export const machineStateQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
   queryOptions({
-    queryKey: bridgeQueryKeys.machineState(),
-    queryFn: () => getClient().getMachineState(),
+    queryKey: bridgeQueryKeys.machineState(gatewayOrigin),
+    queryFn: () => getClient(gatewayOrigin).getMachineState(),
   });
 
-export const workflowQueryOptions = () =>
+export const workflowQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
   queryOptions({
-    queryKey: bridgeQueryKeys.workflow(),
-    queryFn: () => getClient().getWorkflow(),
+    queryKey: bridgeQueryKeys.workflow(gatewayOrigin),
+    queryFn: () => getClient(gatewayOrigin).getWorkflow(),
   });
 
-export const devicesQueryOptions = () =>
+export const devicesQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
   queryOptions({
-    queryKey: bridgeQueryKeys.devices(),
-    queryFn: () => getClient().listDevices(),
+    queryKey: bridgeQueryKeys.devices(gatewayOrigin),
+    queryFn: () => getClient(gatewayOrigin).listDevices(),
   });
 
-export const profilesQueryOptions = () =>
+export const profilesQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
   queryOptions({
-    queryKey: bridgeQueryKeys.profiles(),
-    queryFn: () => getClient().listProfiles(),
+    queryKey: bridgeQueryKeys.profiles(gatewayOrigin),
+    queryFn: () => getClient(gatewayOrigin).listProfiles(),
   });
 
-export const presenceSettingsQueryOptions = () =>
+export const presenceSettingsQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
   queryOptions({
-    queryKey: bridgeQueryKeys.presenceSettings(),
-    queryFn: () => getClient().getPresenceSettings(),
+    queryKey: bridgeQueryKeys.presenceSettings(gatewayOrigin),
+    queryFn: () => getClient(gatewayOrigin).getPresenceSettings(),
   });
 
-export const shotsQueryOptions = () =>
+export const shotsQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
   queryOptions({
-    queryKey: bridgeQueryKeys.shots(),
-    queryFn: () => getClient().listShots(),
+    queryKey: bridgeQueryKeys.shots(gatewayOrigin),
+    queryFn: () => getClient(gatewayOrigin).listShots(),
   });
 
-export const visualizerSettingsQueryOptions = () =>
+export const visualizerSettingsQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
   queryOptions({
-    queryKey: bridgeQueryKeys.visualizerSettings(),
-    queryFn: () => getClient().getVisualizerSettings(),
+    queryKey: bridgeQueryKeys.visualizerSettings(gatewayOrigin),
+    queryFn: () => getClient(gatewayOrigin).getVisualizerSettings(),
   });
 
-export const shotQueryOptions = (id: string) =>
+export const shotQueryOptions = (gatewayOrigin = getGatewayOrigin(), id: string) =>
   queryOptions({
-    queryKey: bridgeQueryKeys.shot(id),
-    queryFn: () => getClient().getShot(id),
+    queryKey: bridgeQueryKeys.shot(gatewayOrigin, id),
+    queryFn: () => getClient(gatewayOrigin).getShot(id),
     enabled: Boolean(id),
   });
 
 export function useMachineStateQuery() {
-  return useQuery(machineStateQueryOptions());
+  const gatewayOrigin = useGatewayOrigin();
+  return useQuery(machineStateQueryOptions(gatewayOrigin));
 }
 
 export function useWorkflowQuery() {
-  return useQuery(workflowQueryOptions());
+  const gatewayOrigin = useGatewayOrigin();
+  return useQuery(workflowQueryOptions(gatewayOrigin));
 }
 
 export function useDevicesQuery(
@@ -89,54 +112,65 @@ export function useDevicesQuery(
     refetchInterval?: number | false;
   },
 ) {
+  const gatewayOrigin = useGatewayOrigin();
+
   return useQuery({
-    ...devicesQueryOptions(),
+    ...devicesQueryOptions(gatewayOrigin),
     ...options,
   });
 }
 
 export function useProfilesQuery() {
-  return useQuery(profilesQueryOptions());
+  const gatewayOrigin = useGatewayOrigin();
+  return useQuery(profilesQueryOptions(gatewayOrigin));
 }
 
 export function usePresenceSettingsQuery() {
-  return useQuery(presenceSettingsQueryOptions());
+  const gatewayOrigin = useGatewayOrigin();
+  return useQuery(presenceSettingsQueryOptions(gatewayOrigin));
 }
 
 export function useShotsQuery() {
-  return useQuery(shotsQueryOptions());
+  const gatewayOrigin = useGatewayOrigin();
+  return useQuery(shotsQueryOptions(gatewayOrigin));
 }
 
 export function useShotQuery(id: string | null | undefined) {
+  const gatewayOrigin = useGatewayOrigin();
+
   return useQuery({
-    ...shotQueryOptions(id ?? ""),
+    ...shotQueryOptions(gatewayOrigin, id ?? ""),
     enabled: Boolean(id),
   });
 }
 
 export function useVisualizerSettingsQuery() {
-  return useQuery(visualizerSettingsQueryOptions());
+  const gatewayOrigin = useGatewayOrigin();
+  return useQuery(visualizerSettingsQueryOptions(gatewayOrigin));
 }
 
 export function useScanDevicesMutation() {
   const client = useQueryClient();
+  const gatewayOrigin = useGatewayOrigin();
 
   return useMutation({
-    mutationFn: (options?: { connect?: boolean }) => getClient().scanDevices(options),
+    mutationFn: (options?: { connect?: boolean }) =>
+      getClient(gatewayOrigin).scanDevices(options),
     onSuccess: (devices) => {
-      client.setQueryData(bridgeQueryKeys.devices(), devices);
+      client.setQueryData(bridgeQueryKeys.devices(gatewayOrigin), devices);
     },
   });
 }
 
 export function useConnectDeviceMutation() {
   const client = useQueryClient();
+  const gatewayOrigin = useGatewayOrigin();
 
   return useMutation({
-    mutationFn: (deviceId: string) => getClient().connectDevice(deviceId),
+    mutationFn: (deviceId: string) => getClient(gatewayOrigin).connectDevice(deviceId),
     onSuccess: async () => {
       await client.invalidateQueries({
-        queryKey: bridgeQueryKeys.devices(),
+        queryKey: bridgeQueryKeys.devices(gatewayOrigin),
       });
     },
   });
@@ -144,12 +178,13 @@ export function useConnectDeviceMutation() {
 
 export function useDisconnectDeviceMutation() {
   const client = useQueryClient();
+  const gatewayOrigin = useGatewayOrigin();
 
   return useMutation({
-    mutationFn: (deviceId: string) => getClient().disconnectDevice(deviceId),
+    mutationFn: (deviceId: string) => getClient(gatewayOrigin).disconnectDevice(deviceId),
     onSuccess: async () => {
       await client.invalidateQueries({
-        queryKey: bridgeQueryKeys.devices(),
+        queryKey: bridgeQueryKeys.devices(gatewayOrigin),
       });
     },
   });
@@ -157,32 +192,35 @@ export function useDisconnectDeviceMutation() {
 
 export function useUpdateWorkflowMutation() {
   const client = useQueryClient();
+  const gatewayOrigin = useGatewayOrigin();
 
   return useMutation({
     mutationFn: (patch: Record<string, unknown>) =>
-      getClient().updateWorkflow(patch),
+      getClient(gatewayOrigin).updateWorkflow(patch),
     onSuccess: (workflow) => {
-      client.setQueryData(bridgeQueryKeys.workflow(), workflow);
+      client.setQueryData(bridgeQueryKeys.workflow(gatewayOrigin), workflow);
     },
   });
 }
 
 export function useUpdatePresenceSettingsMutation() {
   const client = useQueryClient();
+  const gatewayOrigin = useGatewayOrigin();
 
   return useMutation({
     mutationFn: (patch: {
       sleepTimeoutMinutes?: number;
       userPresenceEnabled?: boolean;
-    }) => getClient().updatePresenceSettings(patch),
+    }) => getClient(gatewayOrigin).updatePresenceSettings(patch),
     onSuccess: (settings) => {
-      client.setQueryData(bridgeQueryKeys.presenceSettings(), settings);
+      client.setQueryData(bridgeQueryKeys.presenceSettings(gatewayOrigin), settings);
     },
   });
 }
 
 export function useUpdateVisualizerSettingsMutation() {
   const client = useQueryClient();
+  const gatewayOrigin = useGatewayOrigin();
 
   return useMutation({
     mutationFn: (settings: {
@@ -190,28 +228,32 @@ export function useUpdateVisualizerSettingsMutation() {
       Password?: string | null;
       AutoUpload?: boolean;
       LengthThreshold?: number | null;
-    }) => getClient().updateVisualizerSettings(settings),
+    }) => getClient(gatewayOrigin).updateVisualizerSettings(settings),
     onSuccess: (settings) => {
-      client.setQueryData(bridgeQueryKeys.visualizerSettings(), settings);
+      client.setQueryData(bridgeQueryKeys.visualizerSettings(gatewayOrigin), settings);
     },
   });
 }
 
 export function useVerifyVisualizerCredentialsMutation() {
+  const gatewayOrigin = useGatewayOrigin();
+
   return useMutation({
     mutationFn: (credentials: { username: string; password: string }) =>
-      getClient().verifyVisualizerCredentials(credentials),
+      getClient(gatewayOrigin).verifyVisualizerCredentials(credentials),
   });
 }
 
 export function useImportVisualizerProfileMutation() {
   const client = useQueryClient();
+  const gatewayOrigin = useGatewayOrigin();
 
   return useMutation({
-    mutationFn: (shareCode: string) => getClient().importVisualizerProfile(shareCode),
+    mutationFn: (shareCode: string) =>
+      getClient(gatewayOrigin).importVisualizerProfile(shareCode),
     onSuccess: async () => {
       await client.invalidateQueries({
-        queryKey: bridgeQueryKeys.profiles(),
+        queryKey: bridgeQueryKeys.profiles(gatewayOrigin),
       });
     },
   });
@@ -219,44 +261,51 @@ export function useImportVisualizerProfileMutation() {
 
 export function useRequestMachineStateMutation() {
   const client = useQueryClient();
+  const gatewayOrigin = useGatewayOrigin();
 
   return useMutation({
     mutationFn: (nextState: MachineStateChange) =>
-      getClient().requestMachineState(nextState),
+      getClient(gatewayOrigin).requestMachineState(nextState),
     onSuccess: async () => {
       await client.invalidateQueries({
-        queryKey: bridgeQueryKeys.machineState(),
+        queryKey: bridgeQueryKeys.machineState(gatewayOrigin),
       });
     },
   });
 }
 
 export function useTareScaleMutation() {
+  const gatewayOrigin = useGatewayOrigin();
+
   return useMutation({
-    mutationFn: () => getClient().tareScale(),
+    mutationFn: () => getClient(gatewayOrigin).tareScale(),
   });
 }
 
 export async function prefetchOverviewQueries() {
+  const gatewayOrigin = getGatewayOrigin();
+
   await Promise.all([
-    queryClient.prefetchQuery(machineStateQueryOptions()),
-    queryClient.prefetchQuery(workflowQueryOptions()),
-    queryClient.prefetchQuery(devicesQueryOptions()),
-    queryClient.prefetchQuery(shotsQueryOptions()),
+    queryClient.prefetchQuery(machineStateQueryOptions(gatewayOrigin)),
+    queryClient.prefetchQuery(workflowQueryOptions(gatewayOrigin)),
+    queryClient.prefetchQuery(devicesQueryOptions(gatewayOrigin)),
+    queryClient.prefetchQuery(shotsQueryOptions(gatewayOrigin)),
   ]);
 }
 
 export async function prefetchWorkflowQuery() {
+  const gatewayOrigin = getGatewayOrigin();
+
   await Promise.all([
-    queryClient.prefetchQuery(workflowQueryOptions()),
-    queryClient.prefetchQuery(profilesQueryOptions()),
+    queryClient.prefetchQuery(workflowQueryOptions(gatewayOrigin)),
+    queryClient.prefetchQuery(profilesQueryOptions(gatewayOrigin)),
   ]);
 }
 
 export async function prefetchShotsQuery() {
-  await queryClient.prefetchQuery(shotsQueryOptions());
+  await queryClient.prefetchQuery(shotsQueryOptions(getGatewayOrigin()));
 }
 
 export async function prefetchDevicesQuery() {
-  await queryClient.prefetchQuery(devicesQueryOptions());
+  await queryClient.prefetchQuery(devicesQueryOptions(getGatewayOrigin()));
 }

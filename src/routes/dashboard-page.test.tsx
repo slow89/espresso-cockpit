@@ -136,58 +136,7 @@ describe("DashboardPage", () => {
     });
   });
 
-  it("reconnects the scale feed when a connected scale appears after the stream is idle", async () => {
-    const connectScaleSpy = vi
-      .spyOn(useMachineStore.getState(), "connectScale")
-      .mockResolvedValue(undefined);
-
-    queryMocks.useMachineStateQuery.mockReturnValue({
-      data: buildSnapshot("idle"),
-      error: null,
-    });
-    queryMocks.useDevicesQuery.mockReturnValue({
-      data: [
-        {
-          id: "scale-1",
-          name: "Acaia Lunar",
-          state: "connected",
-          type: "scale",
-        },
-      ],
-      error: null,
-    });
-
-    render(<DashboardPage />);
-
-    await waitFor(() => {
-      expect(connectScaleSpy).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  it("polls device state while the dashboard is open", () => {
-    queryMocks.useMachineStateQuery.mockReturnValue({
-      data: buildSnapshot("idle"),
-      error: null,
-    });
-
-    render(<DashboardPage />);
-
-    expect(queryMocks.useDevicesQuery).toHaveBeenCalledWith(
-      expect.objectContaining({ refetchInterval: 2_000 }),
-    );
-  });
-
-  it("clears stale scale UI when the bridge no longer reports a connected scale", async () => {
-    const disconnectScaleSpy = vi.spyOn(useMachineStore.getState(), "disconnectScale");
-    let devices = [
-      {
-        id: "scale-1",
-        name: "Acaia Lunar",
-        state: "connected",
-        type: "scale",
-      },
-    ];
-
+  it("clears stale scale UI when the bridge no longer reports a connected scale", () => {
     useMachineStore.setState({
       scaleConnection: "live",
       scaleSnapshot: {
@@ -202,27 +151,17 @@ describe("DashboardPage", () => {
       data: buildSnapshot("idle"),
       error: null,
     });
-    queryMocks.useDevicesQuery.mockImplementation(() => ({
-      data: devices,
+    queryMocks.useDevicesQuery.mockReturnValue({
+      data: [],
       error: null,
-    }));
-
-    const { rerender } = render(<DashboardPage />);
-
-    expect(screen.getByText("Paired")).toBeInTheDocument();
-    expect(screen.getByText("18.2 g")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Tare" })).toBeEnabled();
-
-    devices = [];
-    rerender(<DashboardPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("No scale paired")).toBeInTheDocument();
     });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByText("No scale paired")).toBeInTheDocument();
     expect(screen.getByText("--.- g")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Pair in Setup" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Tare" })).not.toBeInTheDocument();
-    expect(disconnectScaleSpy).toHaveBeenCalled();
   });
 
   it("keeps the control workspace active on tablet when the machine is idle", () => {

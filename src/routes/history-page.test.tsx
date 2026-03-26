@@ -1,8 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useHistoryPageStore } from "@/stores/history-page-store";
-
 import { HistoryPage } from "./history-page";
 
 const queryMocks = vi.hoisted(() => ({
@@ -129,11 +127,10 @@ const shotDetails = {
 } as const;
 
 describe("HistoryPage", () => {
+  const onSelectShotId = vi.fn();
+
   beforeEach(() => {
-    useHistoryPageStore.setState({
-      selectedShotId: null,
-      setSelectedShotId: useHistoryPageStore.getState().setSelectedShotId,
-    });
+    onSelectShotId.mockReset();
 
     queryMocks.useShotsQuery.mockReturnValue({
       data: {
@@ -169,13 +166,11 @@ describe("HistoryPage", () => {
   });
 
   it("updates the detail workspace when another shot is selected", () => {
-    render(<HistoryPage />);
+    render(<HistoryPage onSelectShotId={onSelectShotId} selectedShotId="shot-1" />);
 
     fireEvent.click(screen.getByRole("button", { name: /Soup 58/i }));
 
-    expect(screen.getAllByText("Soup 58").length).toBeGreaterThan(0);
-    expect(screen.getByTestId("telemetry-chart")).toHaveTextContent("samples:1");
-    expect(screen.getByText("Different notes")).toBeInTheDocument();
+    expect(onSelectShotId).toHaveBeenCalledWith("shot-2");
   });
 
   it("keeps the shell usable when the list is empty", () => {

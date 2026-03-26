@@ -1,3 +1,4 @@
+import { getRouteApi } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +23,6 @@ import type {
   ShotRecord,
   WorkflowSettings,
 } from "@/rest/types";
-import { useHistoryPageStore } from "@/stores/history-page-store";
 
 const emptyShotList: ShotListResponse = {
   items: [],
@@ -31,9 +31,34 @@ const emptyShotList: ShotListResponse = {
   offset: 0,
 };
 
-export function HistoryPage() {
-  const selectedShotId = useHistoryPageStore((state) => state.selectedShotId);
-  const setSelectedShotId = useHistoryPageStore((state) => state.setSelectedShotId);
+const historyRouteApi = getRouteApi("/history");
+
+export function HistoryRoutePage() {
+  const { shotId } = historyRouteApi.useSearch();
+  const navigate = historyRouteApi.useNavigate();
+
+  return (
+    <HistoryPage
+      onSelectShotId={(nextShotId) =>
+        void navigate({
+          search: (previous) => ({
+            ...previous,
+            shotId: nextShotId ?? undefined,
+          }),
+        })
+      }
+      selectedShotId={shotId ?? null}
+    />
+  );
+}
+
+export function HistoryPage({
+  onSelectShotId,
+  selectedShotId = null,
+}: {
+  onSelectShotId?: (shotId: string | null) => void;
+  selectedShotId?: string | null;
+}) {
   const shotsQuery = useShotsQuery();
   const shotList = shotsQuery.data ?? emptyShotList;
   const effectiveSelectedShot =
@@ -105,7 +130,7 @@ export function HistoryPage() {
                     key={shot.id ?? `${shot.timestamp ?? "shot"}-${index}`}
                     onSelect={() => {
                       if (shot.id) {
-                        setSelectedShotId(shot.id);
+                        onSelectShotId?.(shot.id);
                       }
                     }}
                     shot={shot}

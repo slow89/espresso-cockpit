@@ -3,7 +3,10 @@ import { create } from "zustand";
 import { showVisualizerToast } from "@/lib/toast";
 import { isVisualizerEnabled } from "@/lib/visualizer";
 import { queryClient } from "@/rest/query-client";
-import { bridgeQueryKeys } from "@/rest/queries";
+import {
+  bridgeQueryKeys,
+  getGatewayOrigin,
+} from "@/rest/queries";
 import type {
   MachineSnapshot,
   VisualizerPluginSettings,
@@ -20,7 +23,7 @@ export const useVisualizerRuntimeStore = create<VisualizerRuntimeState>((set, ge
     const previousState = get().lastMachineState;
     const currentState = snapshot.state.state;
     const visualizerSettings = queryClient.getQueryData<VisualizerPluginSettings>(
-      bridgeQueryKeys.visualizerSettings(),
+      bridgeQueryKeys.visualizerSettings(getGatewayOrigin()),
     );
 
     if (

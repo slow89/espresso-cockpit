@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { showVisualizerToast } from "@/lib/toast";
 import { queryClient } from "@/rest/query-client";
-import { bridgeQueryKeys } from "@/rest/queries";
+import {
+  bridgeQueryKeys,
+  getGatewayOrigin,
+} from "@/rest/queries";
 import type { MachineSnapshot } from "@/rest/types";
 import { visualizerRuntimeStore } from "@/stores/visualizer-runtime-store";
 
@@ -35,12 +38,12 @@ describe("visualizerRuntimeStore", () => {
     vi.mocked(showVisualizerToast).mockReset();
     visualizerRuntimeStore.getState().reset();
     queryClient.removeQueries({
-      queryKey: bridgeQueryKeys.visualizerSettings(),
+      queryKey: bridgeQueryKeys.visualizerSettings(getGatewayOrigin()),
     });
   });
 
   it("shows one toast when a shot ends and visualizer is enabled", () => {
-    queryClient.setQueryData(bridgeQueryKeys.visualizerSettings(), {
+    queryClient.setQueryData(bridgeQueryKeys.visualizerSettings(getGatewayOrigin()), {
       AutoUpload: true,
       Password: "secret",
       Username: "brew-user",
@@ -55,7 +58,7 @@ describe("visualizerRuntimeStore", () => {
   });
 
   it("does not show a toast when visualizer is disabled", () => {
-    queryClient.setQueryData(bridgeQueryKeys.visualizerSettings(), {
+    queryClient.setQueryData(bridgeQueryKeys.visualizerSettings(getGatewayOrigin()), {
       AutoUpload: false,
       Password: "secret",
       Username: "brew-user",
@@ -68,7 +71,7 @@ describe("visualizerRuntimeStore", () => {
   });
 
   it("does not duplicate toasts across repeated non-espresso snapshots", () => {
-    queryClient.setQueryData(bridgeQueryKeys.visualizerSettings(), {
+    queryClient.setQueryData(bridgeQueryKeys.visualizerSettings(getGatewayOrigin()), {
       AutoUpload: true,
       Password: "secret",
       Username: "brew-user",

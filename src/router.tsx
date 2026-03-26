@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 import {
   Link,
   Outlet,
@@ -7,6 +5,7 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   useRouterState,
 } from "@tanstack/react-router";
 import {
@@ -15,21 +14,36 @@ import {
   SlidersHorizontal,
   TimerReset,
 } from "lucide-react";
+import { z } from "zod";
 
 import { BridgeShellEffects } from "@/app/bridge-shell-effects";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { DashboardPage } from "@/routes/dashboard-page";
-import { HistoryPage } from "@/routes/history-page";
-import { SettingsPage } from "@/routes/settings-page";
-import { WorkflowsPage } from "@/routes/workflows-page";
 import {
   prefetchOverviewQueries,
   prefetchShotsQuery,
   prefetchWorkflowQuery,
 } from "@/rest/queries";
-import { useBridgeConfigStore } from "@/stores/bridge-config-store";
-import { machineStore } from "@/stores/machine-store";
+
+const DashboardPage = lazyRouteComponent(
+  () => import("@/routes/dashboard-page"),
+  "DashboardPage",
+);
+const HistoryRoutePage = lazyRouteComponent(
+  () => import("@/routes/history-page"),
+  "HistoryRoutePage",
+);
+const SettingsPage = lazyRouteComponent(
+  () => import("@/routes/settings-page"),
+  "SettingsPage",
+);
+const WorkflowsPage = lazyRouteComponent(
+  () => import("@/routes/workflows-page"),
+  "WorkflowsPage",
+);
+const historySearchSchema = z.object({
+  shotId: z.string().optional(),
+});
 
 const rootRoute = createRootRoute({
   component: RootLayout,
@@ -66,7 +80,8 @@ const historyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/history",
   loader: prefetchShotsQuery,
-  component: HistoryPage,
+  validateSearch: historySearchSchema,
+  component: HistoryRoutePage,
 });
 
 const settingsRoute = createRoute({
@@ -101,7 +116,6 @@ const navigation = [
 ] as const;
 
 function RootLayout() {
-  const gatewayUrl = useBridgeConfigStore((state) => state.gatewayUrl);
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
@@ -110,14 +124,6 @@ function RootLayout() {
     pathname === "/workflows" ||
     pathname === "/history" ||
     pathname === "/settings";
-
-  useEffect(() => {
-    void machineStore.getState().connectLive();
-
-    return () => {
-      machineStore.getState().disconnectLive();
-    };
-  }, [gatewayUrl]);
 
   return (
     <div className="min-h-screen bg-canvas text-foreground">
@@ -163,8 +169,7 @@ function RootLayout() {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-[18px] border-4 border-transparent px-2 py-1.5 text-[0.62rem] font-black uppercase tracking-[0.16em] text-muted-foreground transition",
-                    "border border-transparent bg-transparent px-2 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground hover:bg-background hover:text-foreground",
+                    "flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-[18px] border border-transparent bg-transparent px-2 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition hover:bg-background hover:text-foreground",
                   )}
                   activeProps={{
                     className:

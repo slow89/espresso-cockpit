@@ -1,7 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { queryClient } from "@/rest/query-client";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { useDisplayStore } from "@/stores/display-store";
 import { usePresenceStore } from "@/stores/presence-store";
@@ -220,11 +219,7 @@ describe("SettingsPage", () => {
     expect(screen.getByRole("button", { name: "Connect machine" })).toBeInTheDocument();
   });
 
-  it("saves the updated bridge URL and invalidates bridge data", async () => {
-    const invalidateQueriesSpy = vi
-      .spyOn(queryClient, "invalidateQueries")
-      .mockResolvedValue(undefined);
-
+  it("saves the updated bridge URL and refreshes route loaders", async () => {
     render(<SettingsPage />);
 
     fireEvent.change(screen.getByLabelText("REST origin"), {
@@ -238,9 +233,6 @@ describe("SettingsPage", () => {
       );
     });
 
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: ["bridge"],
-    });
     expect(routerInvalidate).toHaveBeenCalled();
   });
 

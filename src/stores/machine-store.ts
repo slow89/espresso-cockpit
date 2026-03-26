@@ -20,6 +20,7 @@ import {
 } from "@/lib/telemetry";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { visualizerRuntimeStore } from "@/stores/visualizer-runtime-store";
+import { getGatewayOrigin } from "@/rest/queries";
 
 export type LiveConnectionState = "idle" | "connecting" | "live" | "error";
 
@@ -148,7 +149,7 @@ export const useMachineStore = create<MachineState>((set, get) => ({
         }
 
         const snapshot = parsed.data;
-        queryClient.setQueryData(bridgeQueryKeys.machineState(), snapshot);
+        queryClient.setQueryData(bridgeQueryKeys.machineState(getGatewayOrigin()), snapshot);
         visualizerRuntimeStore.getState().handleSnapshot(snapshot);
         set((state) => ({
           error: null,
@@ -271,7 +272,7 @@ export const useMachineStore = create<MachineState>((set, get) => ({
     try {
       await getClient().requestMachineState(nextState);
       await queryClient.invalidateQueries({
-        queryKey: bridgeQueryKeys.machineState(),
+        queryKey: bridgeQueryKeys.machineState(getGatewayOrigin()),
       });
     } catch (error) {
       set({

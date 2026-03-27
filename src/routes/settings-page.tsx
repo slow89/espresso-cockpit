@@ -23,13 +23,23 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="panel min-h-[calc(100vh-var(--app-footer-height))] overflow-y-auto rounded-none border-x-0 border-t-0 bg-shell">
-      <section className="mx-auto grid max-w-[1520px] gap-3 px-2 py-2 md:px-3 md:py-3">
-        <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] xl:items-start">
-          <SettingsDevicePairingPanel />
-          <SettingsDisplaySleepPanel />
+    <div className="min-h-[calc(100svh-var(--app-footer-height))] overflow-y-auto border-b border-border/30 bg-shell">
+      {/* Top bar — mirrors dashboard top bar styling */}
+      <header className="shrink-0 border-b border-border/40 bg-panel-strong/30 px-2.5 py-1.5 pt-[calc(env(safe-area-inset-top,0px)+0.375rem)]">
+        <div className="flex items-center justify-between gap-3">
+          <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
+            System Configuration
+          </p>
+          <p className="font-mono text-[0.42rem] uppercase tracking-[0.06em] text-muted-foreground/70">
+            Setup
+          </p>
         </div>
+      </header>
 
+      {/* Content — single column scroll, dense sections separated by border lines */}
+      <div className="divide-y divide-border/40">
+        <SettingsDevicePairingPanel />
+        <SettingsDisplaySleepPanel />
         <SettingsAdvancedBridgePanel
           draftGatewayUrl={resolvedDraftGatewayUrl}
           gatewayUrl={gatewayUrl}
@@ -37,7 +47,7 @@ export function SettingsPage() {
           onUseCurrentOrigin={() => setDraftGatewayUrl(window.location.origin)}
           setDraftGatewayUrl={setDraftGatewayUrl}
         />
-      </section>
+      </div>
     </div>
   );
 }

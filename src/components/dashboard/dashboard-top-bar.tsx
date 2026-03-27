@@ -17,8 +17,8 @@ export function DashboardTopBar({
   const showDevShotToggle = getDashboardDevEnabled();
 
   return (
-    <section className="shrink-0 border-b border-border px-2.5 pb-2 pt-[calc(env(safe-area-inset-top,0px)+0.5rem)] md:px-3 md:pb-2 md:pt-[calc(env(safe-area-inset-top,0px)+0.5rem)] xl:px-3 xl:pb-1.5 xl:pt-[calc(env(safe-area-inset-top,0px)+0.375rem)]">
-      <div className="flex flex-wrap items-stretch gap-1 md:max-xl:gap-1.5">
+    <section className="shrink-0 border-b border-border/40 bg-panel-strong/30 px-2 pb-1.5 pt-[calc(env(safe-area-inset-top,0px)+0.375rem)] md:px-2.5 md:pb-1.5 md:pt-[calc(env(safe-area-inset-top,0px)+0.375rem)] xl:px-3 xl:pb-1.5 xl:pt-[calc(env(safe-area-inset-top,0px)+0.375rem)]">
+      <div className="flex flex-wrap items-stretch gap-1 md:max-xl:gap-1">
         <DashboardRecipeButton />
         <ReservoirStatusCard />
         <ScaleStatusCard />
@@ -30,7 +30,7 @@ export function DashboardTopBar({
           />
         ) : null}
 
-        <div className="flex min-w-[184px] flex-1 items-stretch justify-end gap-1 md:ml-auto md:flex-none md:max-xl:min-w-[216px] md:max-xl:gap-1.5">
+        <div className="flex min-w-[160px] flex-1 items-stretch justify-end gap-1 md:ml-auto md:flex-none md:max-xl:min-w-[180px]">
           <MachineStatusCard />
         </div>
       </div>

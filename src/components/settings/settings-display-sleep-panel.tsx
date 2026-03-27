@@ -100,28 +100,29 @@ export function SettingsDisplaySleepPanel() {
 
   return (
     <SettingsSection
-      className="xl:sticky xl:top-3"
-      description="Keep the tablet readable, awake, and easy to recover during service."
+      description="Brightness, sleep, theme, screen tools"
       title="Display & Sleep"
     >
-      <div className="grid gap-3">
-        <div className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-2">
+      <div className="grid gap-2">
+        {/* Quick-glance metric row */}
+        <div className="grid grid-cols-3 gap-1.5">
           <MetricTile label="Wake-lock" value={wakeLockLabel} />
           <MetricTile label="Sleep timer" value={sleepTimerLabel} />
           <MetricTile label="Theme" value={theme} />
         </div>
 
+        {/* Brightness */}
         <ControlBlock
           description={formatBrightnessSupport(displayState)}
           label="Brightness"
           value={formatBrightnessValue(brightnessDraft)}
         >
-          <div className="mt-2.5 flex items-center gap-2">
-            <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted-foreground">
+          <div className="mt-2 flex items-center gap-2">
+            <span className="font-mono text-[0.46rem] uppercase tracking-[0.08em] text-muted-foreground/70">
               Dim
             </span>
             <input
-              className="h-2 w-full cursor-pointer accent-[#d0a954] disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-1.5 w-full cursor-pointer accent-[#d0a954] disabled:cursor-not-allowed disabled:opacity-50"
               disabled={displayState?.platformSupported.brightness === false}
               max={100}
               min={0}
@@ -133,22 +134,22 @@ export function SettingsDisplaySleepPanel() {
               type="range"
               value={brightnessDraft}
             />
-            <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted-foreground">
+            <span className="font-mono text-[0.46rem] uppercase tracking-[0.08em] text-muted-foreground/70">
               Auto
             </span>
           </div>
-
-          <p className="mt-2 font-mono text-[0.62rem] tracking-[0.03em] text-muted-foreground">
+          <p className="mt-1 font-mono text-[0.46rem] tracking-[0.03em] text-muted-foreground/50">
             Applied: {formatBrightness(displayState)}
           </p>
         </ControlBlock>
 
+        {/* Sleep timer */}
         <ControlBlock
-          description="Choose when the machine should auto-sleep after no activity."
+          description="Auto-sleep after inactivity"
           label="Sleep timer"
           value={sleepTimerLabel}
         >
-          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <div className="mt-2 grid grid-cols-5 gap-1.5">
             {sleepTimeoutOptions.map((minutes) => (
               <SleepTimeoutOptionButton
                 disabled={isPresenceSettingsPending || updatePresenceSettingsMutation.isPending}
@@ -161,12 +162,13 @@ export function SettingsDisplaySleepPanel() {
           </div>
         </ControlBlock>
 
+        {/* Theme */}
         <ControlBlock
-          description="Pick the surface that is easiest to read in the room you are in."
+          description="Surface appearance"
           label="Theme"
           value={theme}
         >
-          <div className="mt-2 grid grid-cols-2 gap-2">
+          <div className="mt-2 grid grid-cols-2 gap-1.5">
             <ThemeOptionButton
               isActive={theme === "dark"}
               label="Dark"
@@ -180,15 +182,18 @@ export function SettingsDisplaySleepPanel() {
           </div>
         </ControlBlock>
 
+        {/* Visualizer */}
         <VisualizerSettingsPanel />
 
+        {/* Screen tools */}
         <ControlBlock
-          description="Use these if the tablet should stay visible all shift or fill the whole screen."
+          description="Wake lock + fullscreen"
           label="Screen tools"
-          value={isFullscreen ? "Full screen on" : "Normal view"}
+          value={isFullscreen ? "Fullscreen" : "Normal"}
         >
-          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <div className="mt-2 grid grid-cols-2 gap-1.5">
             <Button
+              className="min-h-[34px] rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
               disabled={displayState?.platformSupported.wakeLock === false}
               onClick={() =>
                 void (displayState?.wakeLockOverride ? releaseWakeLock() : requestWakeLock())
@@ -198,16 +203,18 @@ export function SettingsDisplaySleepPanel() {
               {displayState?.wakeLockOverride ? "Let screen sleep" : "Keep screen on"}
             </Button>
             <Button
+              className="min-h-[34px] rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
               disabled={!canToggleFullscreen}
               onClick={() => void handleFullscreenToggle()}
               size="sm"
               variant="secondary"
             >
-              {isFullscreen ? "Exit full screen" : "Enter full screen"}
+              {isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
             </Button>
           </div>
         </ControlBlock>
 
+        {/* Error callouts */}
         {displayError ? <StateCallout tone="error">{displayError}</StateCallout> : null}
         {presenceSettingsError ? (
           <StateCallout tone="error">{presenceSettingsError.message}</StateCallout>
@@ -265,18 +272,18 @@ function formatBrightnessValue(brightness: number) {
 
 function formatBrightnessSupport(displayState: DisplayState | null) {
   if (!displayState) {
-    return "Waiting for the bridge to report display state.";
+    return "Waiting for bridge";
   }
 
   if (!displayState.platformSupported.brightness) {
-    return "Brightness control is not available on this platform.";
+    return "Not available on this platform";
   }
 
   if (displayState.lowBatteryBrightnessActive) {
-    return "Low battery mode may cap the applied brightness.";
+    return "Low battery may cap brightness";
   }
 
-  return "Drag the slider to set screen brightness. Auto uses the OS setting.";
+  return "Drag to set, Auto uses OS";
 }
 
 function getSleepTimeoutMinutes(presenceSettings: PresenceSettings | undefined) {

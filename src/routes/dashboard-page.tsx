@@ -41,7 +41,7 @@ export function DashboardPage() {
 
   return (
     <div>
-      <div className="panel min-h-[calc(100svh-var(--app-footer-height))] overflow-hidden rounded-none border-x-0 border-t-0 bg-shell md:flex md:h-[calc(100svh-var(--app-footer-height))] md:flex-col">
+      <div className="min-h-[calc(100svh-var(--app-footer-height))] overflow-hidden border-b border-border/30 bg-shell md:flex md:h-[calc(100svh-var(--app-footer-height))] md:flex-col">
         <DashboardTopBar
           isSimulatedShotActive={isSimulatedShotActive}
           onToggleSimulatedShot={() => setIsSimulatedShotActive((current) => !current)}

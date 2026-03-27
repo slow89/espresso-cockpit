@@ -1,16 +1,13 @@
 import type { FormEventHandler, ReactNode } from "react";
 
 import {
-  RecipeControlButton,
   RecipePresetRow,
+  RecipeValueControl,
 } from "@/components/recipe/recipe-controls";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { RecipePreset } from "@/lib/recipe-utils";
 import type { WorkflowRecord } from "@/rest/types";
-import { Minus, Plus } from "lucide-react";
-
-import { WorkflowPanel } from "./workflow-panel";
 
 export function WorkflowShotSetupPanel({
   dosePresets,
@@ -43,52 +40,71 @@ export function WorkflowShotSetupPanel({
   targetYield: number | null | undefined;
   workflow: WorkflowRecord | undefined;
 }) {
+  const doseValue = targetDose == null ? "18g" : `${targetDose.toFixed(0)}g`;
+  const drinkValue = targetYield == null ? "36g" : `${targetYield.toFixed(0)}g`;
+  const doseActivePresetValue = targetDose ?? 18;
+  const drinkActivePresetValue = targetDose && targetYield ? targetYield / targetDose : 2.0;
+  const drinkDetail = `(${ratio})`;
+
   return (
-    <WorkflowPanel
-      className="md:flex md:h-full md:min-h-0 md:flex-col"
-      contentClassName="md:flex md:min-h-0 md:flex-1"
-      description="Set recipe, grinder, and coffee details."
-      title="Shot Setup"
-    >
+    <div className="md:flex md:h-full md:min-h-0 md:flex-col md:border-l md:border-border/40">
       <form
-        className="grid gap-3 md:min-h-0 md:flex-1 md:content-start md:overflow-y-auto md:pr-1"
+        className="grid gap-0 md:min-h-0 md:flex-1 md:content-start md:overflow-y-auto"
         key={JSON.stringify(workflow ?? null)}
         onSubmit={onSubmit}
       >
-        <section className="rounded-[10px] border border-border bg-panel-muted px-2.5 py-2.5">
-          <DoseYieldControlRow
-            disabled={isUpdating}
-            doseActivePresetValue={targetDose ?? 18}
-            dosePresets={dosePresets}
-            doseValue={targetDose == null ? "18g" : `${targetDose.toFixed(0)}g`}
-            drinkActivePresetValue={targetDose && targetYield ? targetYield / targetDose : 2.0}
-            drinkDetail={`(${ratio})`}
-            drinkPresets={drinkPresets}
-            drinkValue={targetYield == null ? "36g" : `${targetYield.toFixed(0)}g`}
-            onDecreaseDose={onDecreaseDose}
-            onDecreaseDrink={onDecreaseDrink}
-            onIncreaseDose={onIncreaseDose}
-            onIncreaseDrink={onIncreaseDrink}
-            onSelectDosePreset={onSelectDosePreset}
-            onSelectDrinkPreset={onSelectDrinkPreset}
-          />
+        {/* Recipe section — dashboard-style controls */}
+        <section className="border-b border-border/40 px-3 py-2.5 md:px-4 md:py-3">
+          <div className="flex items-center gap-2">
+            <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted md:text-[0.64rem]">
+              Recipe
+            </p>
+            <span className="font-mono text-[0.5rem] text-muted-foreground/60">|</span>
+            <p className="font-mono text-[0.64rem] font-medium tabular-nums text-muted-foreground md:text-[0.68rem]">
+              {drinkDetail}
+            </p>
+          </div>
+
+          <div className="mt-2 grid gap-3 md:grid-cols-2 md:gap-5">
+            <WorkflowAdjustSection
+              activePresetValue={doseActivePresetValue}
+              disabled={isUpdating}
+              label="Dose"
+              onDecrease={onDecreaseDose}
+              onIncrease={onIncreaseDose}
+              onPresetClick={onSelectDosePreset}
+              presets={dosePresets}
+              value={doseValue}
+            />
+            <WorkflowAdjustSection
+              activePresetValue={drinkActivePresetValue}
+              disabled={isUpdating}
+              label="Yield"
+              onDecrease={onDecreaseDrink}
+              onIncrease={onIncreaseDrink}
+              onPresetClick={onSelectDrinkPreset}
+              presets={drinkPresets}
+              value={drinkValue}
+            />
+          </div>
         </section>
 
-        <section className="rounded-[10px] border border-border bg-panel-muted px-2.5 py-2.5">
-          <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+        {/* Shot details */}
+        <section className="border-b border-border/40 px-3 py-2.5 md:px-4 md:py-3">
+          <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
             Shot details
           </p>
-          <div className="mt-2 grid gap-2.5 xl:grid-cols-[minmax(180px,0.8fr)_minmax(0,1.2fr)]">
-            <Field label="Workflow name">
+          <div className="mt-2 grid gap-2 md:grid-cols-2">
+            <Field label="Name">
               <Input
-                className="rounded-[10px] border-border bg-panel-strong font-mono"
+                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
                 defaultValue={workflow?.name ?? ""}
                 name="name"
               />
             </Field>
             <Field label="Description">
               <Input
-                className="rounded-[10px] border-border bg-panel-strong font-mono"
+                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
                 defaultValue={workflow?.description ?? ""}
                 name="description"
               />
@@ -96,122 +112,68 @@ export function WorkflowShotSetupPanel({
           </div>
         </section>
 
-        <div className="grid gap-2.5 xl:grid-cols-2">
-          <Field label="Grinder model">
-            <Input
-              className="rounded-[10px] border-border bg-panel-strong font-mono"
-              defaultValue={workflow?.context?.grinderModel ?? ""}
-              name="grinderModel"
-            />
-          </Field>
-          <Field label="Grinder setting">
-            <Input
-              className="rounded-[10px] border-border bg-panel-strong font-mono"
-              defaultValue={workflow?.context?.grinderSetting ?? ""}
-              name="grinderSetting"
-            />
-          </Field>
-        </div>
+        {/* Grinder */}
+        <section className="border-b border-border/40 px-3 py-2.5 md:px-4 md:py-3">
+          <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
+            Grinder
+          </p>
+          <div className="mt-2 grid gap-2 md:grid-cols-2">
+            <Field label="Model">
+              <Input
+                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
+                defaultValue={workflow?.context?.grinderModel ?? ""}
+                name="grinderModel"
+              />
+            </Field>
+            <Field label="Setting">
+              <Input
+                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
+                defaultValue={workflow?.context?.grinderSetting ?? ""}
+                name="grinderSetting"
+              />
+            </Field>
+          </div>
+        </section>
 
-        <div className="grid gap-2.5 xl:grid-cols-2">
-          <Field label="Coffee name">
-            <Input
-              className="rounded-[10px] border-border bg-panel-strong font-mono"
-              defaultValue={workflow?.context?.coffeeName ?? ""}
-              name="coffeeName"
-            />
-          </Field>
-          <Field label="Roaster">
-            <Input
-              className="rounded-[10px] border-border bg-panel-strong font-mono"
-              defaultValue={workflow?.context?.coffeeRoaster ?? ""}
-              name="coffeeRoaster"
-            />
-          </Field>
-        </div>
+        {/* Coffee */}
+        <section className="border-b border-border/40 px-3 py-2.5 md:px-4 md:py-3">
+          <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
+            Coffee
+          </p>
+          <div className="mt-2 grid gap-2 md:grid-cols-2">
+            <Field label="Name">
+              <Input
+                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
+                defaultValue={workflow?.context?.coffeeName ?? ""}
+                name="coffeeName"
+              />
+            </Field>
+            <Field label="Roaster">
+              <Input
+                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
+                defaultValue={workflow?.context?.coffeeRoaster ?? ""}
+                name="coffeeRoaster"
+              />
+            </Field>
+          </div>
+        </section>
 
-        <Button
-          className="min-h-[42px] rounded-[10px] font-mono text-[0.74rem] uppercase tracking-[0.18em]"
-          disabled={isUpdating}
-          type="submit"
-        >
-          {isUpdating ? "Saving" : "Save shot setup"}
-        </Button>
+        {/* Submit */}
+        <div className="px-3 py-2.5 md:px-4 md:py-3">
+          <Button
+            className="h-9 w-full rounded-[3px] font-mono text-[0.6rem] uppercase tracking-[0.12em]"
+            disabled={isUpdating}
+            type="submit"
+          >
+            {isUpdating ? "Saving..." : "Save"}
+          </Button>
+        </div>
       </form>
-    </WorkflowPanel>
-  );
-}
-
-function DoseYieldControlRow({
-  disabled,
-  doseActivePresetValue,
-  dosePresets,
-  doseValue,
-  drinkActivePresetValue,
-  drinkDetail,
-  drinkPresets,
-  drinkValue,
-  onDecreaseDose,
-  onDecreaseDrink,
-  onIncreaseDose,
-  onIncreaseDrink,
-  onSelectDosePreset,
-  onSelectDrinkPreset,
-}: {
-  disabled: boolean;
-  doseActivePresetValue: number;
-  dosePresets: ReadonlyArray<RecipePreset>;
-  doseValue: string;
-  drinkActivePresetValue: number;
-  drinkDetail: string;
-  drinkPresets: ReadonlyArray<RecipePreset>;
-  drinkValue: string;
-  onDecreaseDose: () => void;
-  onDecreaseDrink: () => void;
-  onIncreaseDose: () => void;
-  onIncreaseDrink: () => void;
-  onSelectDosePreset: (value: number) => void;
-  onSelectDrinkPreset: (value: number) => void;
-}) {
-  return (
-    <div>
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[0.76rem] font-semibold uppercase tracking-[0.14em] text-highlight-muted">
-          Recipe
-        </p>
-        <p className="min-w-[56px] text-right font-mono text-[0.8rem] font-medium text-muted-foreground">
-          {drinkDetail}
-        </p>
-      </div>
-
-      <div className="mt-2 space-y-2">
-        <RecipeControlRow
-          activePresetValue={doseActivePresetValue}
-          disabled={disabled}
-          label="Dose"
-          onDecrease={onDecreaseDose}
-          onIncrease={onIncreaseDose}
-          onPresetClick={onSelectDosePreset}
-          presets={dosePresets}
-          value={doseValue}
-        />
-
-        <RecipeControlRow
-          activePresetValue={drinkActivePresetValue}
-          disabled={disabled}
-          label="Yield"
-          onDecrease={onDecreaseDrink}
-          onIncrease={onIncreaseDrink}
-          onPresetClick={onSelectDrinkPreset}
-          presets={drinkPresets}
-          value={drinkValue}
-        />
-      </div>
     </div>
   );
 }
 
-function RecipeControlRow({
+function WorkflowAdjustSection({
   activePresetValue,
   disabled,
   label,
@@ -231,68 +193,31 @@ function RecipeControlRow({
   value: string;
 }) {
   return (
-    <div
-      className="grid items-center gap-2 [grid-template-columns:42px_minmax(104px,auto)_minmax(0,1fr)]"
-      data-testid={`workflow-recipe-control-${label.toLowerCase()}`}
-    >
-      <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <div>
+      <p className="font-mono text-[0.56rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground md:text-[0.6rem]">
         {label}
       </p>
 
-      <CompactRecipeValueControl
+      <RecipeValueControl
+        buttonClassName="h-9 w-9 rounded-[3px] md:h-10 md:w-10"
+        className="mt-1.5 grid-cols-[36px_minmax(0,1fr)_36px] gap-1.5 rounded-[4px] px-1.5 py-1.5 md:grid-cols-[40px_minmax(0,1fr)_40px]"
         disabled={disabled}
+        iconClassName="size-3.5"
         label={label}
         onDecrease={onDecrease}
         onIncrease={onIncrease}
         value={value}
+        valueClassName="text-[1rem] md:text-[1.08rem]"
       />
 
       <RecipePresetRow
         activePresetValue={activePresetValue}
-        className="gap-1 text-[0.65rem]"
+        className="mt-1.5 gap-1 text-[0.68rem] md:text-[0.72rem]"
         disabled={disabled}
-        itemClassName="px-0.5 py-0.5"
+        itemClassName="rounded-[3px] px-1.5 py-1"
         onPresetClick={onPresetClick}
         presets={presets}
       />
-    </div>
-  );
-}
-
-function CompactRecipeValueControl({
-  disabled,
-  label,
-  onDecrease,
-  onIncrease,
-  value,
-}: {
-  disabled: boolean;
-  label: string;
-  onDecrease: () => void;
-  onIncrease: () => void;
-  value: string;
-}) {
-  return (
-    <div className="grid grid-cols-[24px_minmax(0,1fr)_24px] items-center gap-1 rounded-[8px] border border-border/80 bg-panel px-1 py-1">
-      <RecipeControlButton
-        ariaLabel={`Decrease ${label}`}
-        disabled={disabled}
-        onClick={onDecrease}
-      >
-        <Minus className="size-3" />
-      </RecipeControlButton>
-
-      <div className="min-w-0 text-center">
-        <p className="font-mono text-[0.8rem] font-semibold text-foreground">{value}</p>
-      </div>
-
-      <RecipeControlButton
-        ariaLabel={`Increase ${label}`}
-        disabled={disabled}
-        onClick={onIncrease}
-      >
-        <Plus className="size-3" />
-      </RecipeControlButton>
     </div>
   );
 }
@@ -305,8 +230,8 @@ function Field({
   label: string;
 }) {
   return (
-    <label className="grid gap-1">
-      <span className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+    <label className="grid gap-0.5">
+      <span className="font-mono text-[0.48rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
         {label}
       </span>
       {children}

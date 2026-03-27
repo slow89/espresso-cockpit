@@ -35,30 +35,32 @@ export function SettingsAdvancedBridgePanel({
   ];
 
   return (
-    <details className="rounded-[18px] border border-border bg-panel px-3 py-3 shadow-panel">
-      <summary className="flex cursor-pointer list-none items-start justify-between gap-3">
-        <div>
-          <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-highlight">
-            Advanced Bridge Settings
+    <details className="group px-2.5 py-2.5 md:px-3 md:py-3">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <p className="font-mono text-[0.54rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
+            Advanced Bridge
           </p>
-          <p className="mt-1 max-w-[40rem] text-[0.78rem] leading-5 text-muted-foreground">
-            Only touch these when the tablet is pointed at the wrong bridge or you are debugging a
-            connection.
+          <span className="font-mono text-[0.42rem] text-muted-foreground/40">|</span>
+          <p className="font-mono text-[0.46rem] uppercase tracking-[0.06em] text-muted-foreground/60">
+            Only for debugging or switching targets
           </p>
         </div>
-        <span className="shrink-0 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-muted-foreground">
-          Open
+        <span className="shrink-0 font-mono text-[0.46rem] uppercase tracking-[0.08em] text-muted-foreground/50 group-open:text-highlight-muted">
+          <span className="group-open:hidden">Open</span>
+          <span className="hidden group-open:inline">Close</span>
         </span>
       </summary>
 
-      <div className="mt-3 grid gap-3">
-        <div className="grid gap-3 rounded-[16px] border border-border bg-panel-muted px-3 py-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-          <label className="grid gap-1.5" htmlFor="gatewayUrl">
-            <span className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+      <div className="mt-2 grid gap-2">
+        {/* URL editor */}
+        <div className="grid gap-2 rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-2 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
+          <label className="grid gap-1" htmlFor="gatewayUrl">
+            <span className="font-mono text-[0.42rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
               REST origin
             </span>
             <Input
-              className="h-11 rounded-[12px] border-border bg-panel-strong font-mono text-[0.8rem]"
+              className="h-9 rounded-[3px] border-border/50 bg-panel-strong font-mono text-[0.68rem]"
               id="gatewayUrl"
               onChange={(event) => setDraftGatewayUrl(event.target.value)}
               placeholder="http://localhost:8080"
@@ -66,39 +68,38 @@ export function SettingsAdvancedBridgePanel({
             />
           </label>
 
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Button
-              className="min-h-[42px] rounded-[12px] px-4 text-[0.66rem] uppercase tracking-[0.16em]"
-              onClick={() => void onSave()}
-              size="sm"
-            >
-              Save and reconnect
-            </Button>
-            <Button
-              className="min-h-[42px] rounded-[12px] px-4 text-[0.66rem] uppercase tracking-[0.16em]"
-              onClick={onUseCurrentOrigin}
-              size="sm"
-              variant="secondary"
-            >
-              Use current origin
-            </Button>
-          </div>
+          <Button
+            className="min-h-[36px] rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
+            onClick={() => void onSave()}
+            size="sm"
+          >
+            Save & reconnect
+          </Button>
+          <Button
+            className="min-h-[36px] rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
+            onClick={onUseCurrentOrigin}
+            size="sm"
+            variant="secondary"
+          >
+            Use current origin
+          </Button>
         </div>
 
-        <div className="grid gap-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+        {/* Active target + endpoints */}
+        <div className="grid gap-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
                 Active target
               </p>
-              <p className="mt-1 font-mono text-[0.92rem] font-semibold tracking-[0.03em] text-foreground">
+              <p className="font-mono text-[0.72rem] font-semibold tracking-[0.02em] text-foreground">
                 {gatewayUrl.replace(/^https?:\/\//, "")}
               </p>
             </div>
-            <Badge variant="secondary">{devices.length} devices tracked</Badge>
+            <Badge variant="secondary">{devices.length} devices</Badge>
           </div>
 
-          <div className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
             {endpointRows.map((row) => (
               <EndpointRow key={row.label} label={row.label} value={row.value} />
             ))}

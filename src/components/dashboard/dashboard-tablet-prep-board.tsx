@@ -20,33 +20,36 @@ export function DashboardTabletPrepBoard({
 }) {
   return (
     <div
-      className="min-h-0 flex-1 overflow-y-auto px-2 py-2 md:px-3 md:py-3"
+      className="min-h-0 flex-1 overflow-y-auto"
       data-testid="dashboard-tablet-prep-board"
     >
-      <div className="space-y-3">
+      {/* Status ticker — compact, full-bleed */}
+      <div className="border-b border-border/40 bg-panel/60">
         <DashboardTabletPrepStatus status={prepStatus} />
+      </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          <DashboardTabletRecipeCard
+      {/* Controls — dense grid with thin separators */}
+      <div className="grid md:grid-cols-2">
+        <DashboardTabletRecipeCard
+          disabled={workflowDisabled}
+          {...recipeControls}
+        />
+        {controlRows.map((row, i) => (
+          <DashboardTabletControlCard
+            activePresetValue={row.activePresetValue}
+            detail={row.detail}
             disabled={workflowDisabled}
-            {...recipeControls}
+            index={i}
+            key={row.label}
+            label={row.label}
+            onDecrease={row.onDecrease}
+            onIncrease={row.onIncrease}
+            onPresetClick={row.onPresetClick}
+            presets={row.presets}
+            tint={row.tint}
+            value={row.value}
           />
-          {controlRows.map((row) => (
-            <DashboardTabletControlCard
-              activePresetValue={row.activePresetValue}
-              detail={row.detail}
-              disabled={workflowDisabled}
-              key={row.label}
-              label={row.label}
-              onDecrease={row.onDecrease}
-              onIncrease={row.onIncrease}
-              onPresetClick={row.onPresetClick}
-              presets={row.presets}
-              tint={row.tint}
-              value={row.value}
-            />
-          ))}
-        </div>
+        ))}
       </div>
     </div>
   );
@@ -69,17 +72,18 @@ function DashboardTabletRecipeCard({
   onSelectDrinkPreset,
 }: DashboardRecipeControls & { disabled: boolean }) {
   return (
-    <section className="rounded-[22px] border border-border bg-panel p-3 md:col-span-2 md:p-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-highlight-muted md:text-[0.8rem]">
+    <section className="border-b border-border/40 px-3 py-2.5 md:col-span-2 md:px-4 md:py-3">
+      <div className="flex items-center gap-2">
+        <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted md:text-[0.64rem]">
           Recipe
         </p>
-        <p className="font-mono text-[0.8rem] font-medium text-muted-foreground md:text-[0.86rem]">
+        <span className="font-mono text-[0.5rem] text-muted-foreground/60">|</span>
+        <p className="font-mono text-[0.64rem] font-medium tabular-nums text-muted-foreground md:text-[0.68rem]">
           {drinkDetail}
         </p>
       </div>
 
-      <div className="mt-3 grid gap-3 md:grid-cols-2">
+      <div className="mt-2 grid gap-3 md:grid-cols-2 md:gap-5">
         <DashboardTabletAdjustSection
           activePresetValue={doseActivePresetValue}
           disabled={disabled}
@@ -109,6 +113,7 @@ function DashboardTabletControlCard({
   activePresetValue,
   detail,
   disabled,
+  index,
   label,
   onDecrease,
   onIncrease,
@@ -116,9 +121,15 @@ function DashboardTabletControlCard({
   presets,
   tint,
   value,
-}: DashboardControlRow & { disabled: boolean }) {
+}: DashboardControlRow & { disabled: boolean; index: number }) {
   return (
-    <section className="rounded-[22px] border border-border bg-panel p-3 md:p-4">
+    <section
+      className={cn(
+        "border-b border-border/40 px-3 py-2.5 md:px-4 md:py-3",
+        /* vertical divider between left/right columns */
+        index % 2 === 1 && "md:border-l",
+      )}
+    >
       <DashboardTabletAdjustSection
         activePresetValue={activePresetValue}
         detail={detail}
@@ -160,39 +171,39 @@ function DashboardTabletAdjustSection({
 }) {
   return (
     <div>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-center justify-between gap-2">
         <p
           className={cn(
-            "text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-[0.76rem]",
+            "font-mono text-[0.56rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground md:text-[0.6rem]",
             labelClassName,
           )}
         >
           {label}
         </p>
         {detail ? (
-          <p className="font-mono text-[0.72rem] text-muted-foreground md:text-[0.76rem]">
+          <p className="font-mono text-[0.56rem] tabular-nums text-muted-foreground/70 md:text-[0.6rem]">
             {detail}
           </p>
         ) : null}
       </div>
 
       <RecipeValueControl
-        buttonClassName="h-10 w-10 rounded-[11px] md:h-11 md:w-11"
-        className="mt-3 grid-cols-[40px_minmax(0,1fr)_40px] gap-2 rounded-[14px] px-2 py-2 md:grid-cols-[44px_minmax(0,1fr)_44px]"
+        buttonClassName="h-9 w-9 rounded-[3px] md:h-10 md:w-10"
+        className="mt-1.5 grid-cols-[36px_minmax(0,1fr)_36px] gap-1.5 rounded-[4px] px-1.5 py-1.5 md:grid-cols-[40px_minmax(0,1fr)_40px]"
         disabled={disabled}
-        iconClassName="size-4"
+        iconClassName="size-3.5"
         label={label}
         onDecrease={onDecrease}
         onIncrease={onIncrease}
         value={value}
-        valueClassName="text-[1.05rem] md:text-[1.12rem]"
+        valueClassName="text-[1rem] md:text-[1.08rem]"
       />
 
       <RecipePresetRow
         activePresetValue={activePresetValue}
-        className="mt-2.5 gap-2 text-[0.76rem] md:text-[0.8rem]"
+        className="mt-1.5 gap-1 text-[0.68rem] md:text-[0.72rem]"
         disabled={disabled}
-        itemClassName="rounded-[11px] px-2 py-1.5"
+        itemClassName="rounded-[3px] px-1.5 py-1"
         onPresetClick={onPresetClick}
         presets={presets}
       />

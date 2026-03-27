@@ -76,8 +76,8 @@ export function TelemetryChart({
         <div
           className={cn(
             layout === "auto"
-              ? "flex min-h-0 min-w-0 flex-1 flex-col space-y-2.5 xl:hidden"
-              : "flex min-h-0 min-w-0 flex-1 flex-col space-y-2.5",
+              ? "flex min-h-0 min-w-0 flex-1 flex-col space-y-1.5 xl:hidden"
+              : "flex min-h-0 min-w-0 flex-1 flex-col space-y-1.5",
           )}
         >
           <TabletTelemetryMonitor

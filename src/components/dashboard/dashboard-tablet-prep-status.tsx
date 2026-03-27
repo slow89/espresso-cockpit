@@ -8,42 +8,50 @@ export function DashboardTabletPrepStatus({
 }) {
   return (
     <section
-      className="rounded-[18px] border border-border bg-panel px-3 py-2.5 md:px-3.5 md:py-2.5"
+      className="flex items-stretch"
       data-testid="dashboard-tablet-prep-status"
     >
-      <div className="flex flex-wrap items-center gap-2.5">
-        <div
+      {/* Status beacon */}
+      <div className="flex items-center gap-2 border-r border-border/40 px-3 py-1.5 md:px-4">
+        <span
           className={cn(
-            "inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 font-mono text-[0.72rem] font-semibold uppercase tracking-[0.12em] md:text-[0.76rem]",
-            status.tone === "ready" &&
-              "border-status-success-border bg-status-success-surface text-status-success-foreground",
-            status.tone === "warming" &&
-              "border-highlight/40 bg-highlight/10 text-highlight-muted",
-            status.tone === "offline" &&
-              "border-status-warning-border bg-status-warning-surface text-status-warning-foreground",
-            status.tone === "sleeping" &&
-              "border-border bg-panel-muted text-muted-foreground",
+            "block size-2 rounded-full",
+            status.tone === "ready" && "bg-status-success-foreground shadow-[0_0_6px_rgba(107,231,159,0.5)]",
+            status.tone === "warming" && "bg-highlight-muted animate-pulse shadow-[0_0_6px_rgba(217,152,38,0.4)]",
+            status.tone === "offline" && "bg-status-warning-foreground",
+            status.tone === "sleeping" && "bg-muted-foreground/40",
+          )}
+        />
+        <p
+          className={cn(
+            "font-mono text-[0.64rem] font-semibold uppercase tracking-[0.08em] md:text-[0.68rem]",
+            status.tone === "ready" && "text-status-success-foreground",
+            status.tone === "warming" && "text-highlight-muted",
+            status.tone === "offline" && "text-status-warning-foreground",
+            status.tone === "sleeping" && "text-muted-foreground",
           )}
         >
           {status.title}
-        </div>
-
-        <div className="flex min-w-0 flex-1 flex-wrap gap-2">
-          {status.items.map((item) => (
-            <div
-              className="min-w-[92px] flex-1 rounded-[12px] border border-border/70 bg-panel-muted px-2.5 py-1.5"
-              key={item.label}
-            >
-              <p className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground md:text-[0.62rem]">
-                {item.label}
-              </p>
-              <p className="mt-0.5 whitespace-nowrap font-mono text-[0.78rem] font-semibold text-foreground md:text-[0.84rem]">
-                {item.value}
-              </p>
-            </div>
-          ))}
-        </div>
+        </p>
       </div>
+
+      {/* Data cells — trading-style horizontal ticker */}
+      {status.items.map((item, i) => (
+        <div
+          className={cn(
+            "flex items-center gap-2 px-3 py-1.5 md:px-4",
+            i > 0 && "border-l border-border/30",
+          )}
+          key={item.label}
+        >
+          <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.06em] text-muted-foreground md:text-[0.52rem]">
+            {item.label}
+          </p>
+          <p className="whitespace-nowrap font-mono text-[0.76rem] font-semibold tabular-nums text-foreground md:text-[0.8rem]">
+            {item.value}
+          </p>
+        </div>
+      ))}
     </section>
   );
 }

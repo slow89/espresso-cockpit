@@ -30,43 +30,26 @@ export function SettingsDevicePairingPanel() {
 
   return (
     <SettingsSection
-      description="This area stays up to date automatically. Technical bridge details are pushed below."
+      description="Auto-refreshing every 3s"
       title="Device Pairing"
     >
-      <div className="grid gap-3">
-        <div className="grid gap-2 rounded-[18px] border border-border bg-panel-subtle px-3 py-3 shadow-panel">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="max-w-[30rem]">
-              <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-highlight">
-                Recommended path
-              </p>
-              <h2 className="mt-1 text-balance font-display text-[1.38rem] leading-none text-foreground md:text-[1.7rem]">
-                Find devices, then pair what shows up.
-              </h2>
-              <p className="mt-2 max-w-[28rem] text-[0.78rem] leading-5 text-muted-foreground">
-                Most people only need one action: look for nearby devices, then connect the scale
-                or machine that appears below.
-              </p>
-            </div>
-            <div className="grid w-full gap-2 sm:grid-cols-3 xl:w-auto xl:min-w-[320px]">
-              <MetricTile label="Tracked" value={`${devices.length}`} />
-              <MetricTile label="Connected" value={`${connectedDevices.length}`} />
-              <MetricTile label="Needs pairing" value={`${disconnectedDevices.length}`} />
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-2">
+        {/* Metric row + action buttons */}
+        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-[1fr_1fr_1fr_auto_auto]">
+          <MetricTile label="Tracked" value={`${devices.length}`} />
+          <MetricTile label="Connected" value={`${connectedDevices.length}`} />
+          <MetricTile label="Unpaired" value={`${disconnectedDevices.length}`} />
 
-        <div className="flex flex-wrap gap-2">
           <Button
-            className="min-h-[42px] rounded-[12px] px-4 text-[0.66rem] uppercase tracking-[0.16em]"
+            className="col-span-2 min-h-[38px] rounded-[3px] px-3 text-[0.54rem] uppercase tracking-[0.14em] sm:col-span-1"
             disabled={scanDevicesMutation.isPending}
             onClick={() => void scanDevicesMutation.mutateAsync(undefined)}
             size="sm"
           >
-            {scanDevicesMutation.isPending ? "Looking..." : "Find and pair"}
+            {scanDevicesMutation.isPending ? "Scanning" : "Find & pair"}
           </Button>
           <Button
-            className="min-h-[42px] rounded-[12px] px-4 text-[0.66rem] uppercase tracking-[0.16em]"
+            className="col-span-1 min-h-[38px] rounded-[3px] px-3 text-[0.54rem] uppercase tracking-[0.14em] sm:col-span-1"
             disabled={scanDevicesMutation.isPending}
             onClick={() => void scanDevicesMutation.mutateAsync({ connect: false })}
             size="sm"
@@ -131,7 +114,7 @@ function DeviceSummaryPanel({
 
   if (!devices.length) {
     return (
-      <div className="grid gap-2">
+      <div className="grid gap-1.5">
         <StateCallout tone="neutral">
           {isFetching
             ? "Checking the bridge for tracked devices."
@@ -146,7 +129,7 @@ function DeviceSummaryPanel({
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-2">
       <DeviceGroup
         connectPendingDeviceId={connectPendingDeviceId}
         description={
@@ -209,8 +192,8 @@ function DeviceGroup({
     }
 
     return (
-      <div className="grid gap-1.5">
-        <p className="font-mono text-[0.54rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+      <div className="grid gap-1">
+        <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
           {title}
         </p>
         <StateCallout tone="neutral">{emptyMessage}</StateCallout>
@@ -219,12 +202,14 @@ function DeviceGroup({
   }
 
   return (
-    <div className="grid gap-2">
-      <div className="grid gap-1">
-        <p className="font-mono text-[0.54rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="grid gap-1.5">
+      <div className="flex items-center gap-2">
+        <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
           {title}
         </p>
-        <p className="text-[0.74rem] leading-5 text-muted-foreground">{description}</p>
+        <p className="font-mono text-[0.42rem] uppercase tracking-[0.06em] text-muted-foreground/50">
+          {description}
+        </p>
       </div>
 
       {connectedDevices.length ? (
@@ -272,17 +257,17 @@ function DeviceList({
   title: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-[16px] border border-border bg-panel-muted">
-      <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
-        <p className="font-mono text-[0.52rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+    <div className="overflow-hidden rounded-[3px] border border-border/50 bg-panel-strong/60">
+      <div className="flex items-center justify-between gap-2 border-b border-border/40 px-2.5 py-1">
+        <p className="font-mono text-[0.42rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
           {title}
         </p>
-        <p className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="font-mono text-[0.52rem] font-semibold tabular-nums text-muted-foreground">
           {devices.length}
         </p>
       </div>
 
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-border/40">
         {devices.map((device) => (
           <DeviceRow
             actionLabel={
@@ -316,28 +301,28 @@ function DeviceRow({
   onAction: (deviceId: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-2 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate font-mono text-[0.84rem] font-semibold tracking-[0.02em] text-foreground">
+        <div className="flex items-center gap-1.5">
+          <p className="truncate font-mono text-[0.72rem] font-semibold tracking-[0.02em] text-foreground">
             {device.name}
           </p>
           <Badge variant={device.state === "connected" ? "default" : "secondary"}>
             {device.state}
           </Badge>
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <p className="font-mono text-[0.54rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="mt-0.5 flex items-center gap-2">
+          <p className="font-mono text-[0.42rem] uppercase tracking-[0.08em] text-muted-foreground/70">
             {device.type}
           </p>
-          <p className="break-all font-mono text-[0.64rem] font-semibold tracking-[0.03em] text-muted-foreground">
+          <p className="break-all font-mono text-[0.5rem] font-semibold tracking-[0.02em] text-muted-foreground/50">
             {device.id}
           </p>
         </div>
       </div>
 
       <Button
-        className="min-h-[38px] rounded-[12px] px-3 text-[0.62rem] uppercase tracking-[0.14em] sm:shrink-0"
+        className="min-h-[34px] shrink-0 rounded-[3px] px-2.5 text-[0.52rem] uppercase tracking-[0.12em]"
         disabled={disabled}
         onClick={() => onAction(device.id)}
         size="sm"

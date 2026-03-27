@@ -54,7 +54,7 @@ export function DashboardWorkspaceContainer({
         <div className="min-w-0 flex h-full min-h-0 flex-col overflow-hidden">
           <div className="flex-1 min-h-0 overflow-hidden px-4 py-4">
             <TelemetryChart
-              className="h-full rounded-[18px] border-0 bg-transparent p-0 shadow-none"
+              className="h-full rounded-[4px] border-0 bg-transparent p-0 shadow-none"
               data={telemetry}
               layout="desktop"
             />
@@ -82,7 +82,7 @@ export function DashboardWorkspaceContainer({
           <DashboardTabletShotSummary items={shotSummaryItems} />
           <div className="mt-2.5 min-h-0 flex-1 overflow-hidden">
             <TelemetryChart
-              className="h-full rounded-[18px] border-0 bg-transparent p-0 shadow-none"
+              className="h-full rounded-[4px] border-0 bg-transparent p-0 shadow-none"
               data={telemetry}
               layout="tablet"
             />

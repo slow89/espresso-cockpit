@@ -22,7 +22,7 @@ export function RecipeControlButton({
     <button
       aria-label={ariaLabel}
       className={cn(
-        "flex h-6 w-6 items-center justify-center rounded-[6px] border border-border bg-panel-strong text-foreground transition hover:bg-panel disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-6 w-6 items-center justify-center rounded-[3px] border border-border bg-panel-muted text-foreground transition hover:bg-highlight/15 hover:border-highlight/50 hover:text-highlight active:bg-highlight/20 disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       disabled={disabled}
@@ -58,7 +58,7 @@ export function RecipeValueControl({
   return (
     <div
       className={cn(
-        "grid grid-cols-[26px_minmax(0,1fr)_26px] items-center gap-1 rounded-[8px] border border-border/80 bg-panel px-1 py-1",
+        "grid grid-cols-[26px_minmax(0,1fr)_26px] items-center gap-1 rounded-[4px] bg-panel-strong/30 px-1 py-1",
         className,
       )}
     >
@@ -72,7 +72,7 @@ export function RecipeValueControl({
       </RecipeControlButton>
 
       <div className="min-w-0 text-center">
-        <p className={cn("font-mono text-[0.88rem] font-semibold text-foreground", valueClassName)}>
+        <p className={cn("font-mono text-[0.88rem] font-semibold tabular-nums text-foreground", valueClassName)}>
           {value}
         </p>
       </div>
@@ -112,11 +112,11 @@ export function RecipePresetRow({
         <button
           key={preset.label}
           className={cn(
-            "rounded-[7px] border border-transparent font-mono transition",
+            "rounded-[3px] border border-transparent font-mono tabular-nums transition",
             align === "left" ? "px-1.5 py-1 text-left" : "px-1 py-1 text-center",
             isPresetActive(activePresetValue, preset.value)
-              ? "border-highlight/40 bg-primary/14 text-foreground"
-              : "hover:border-highlight/30 hover:bg-secondary/80 hover:text-foreground",
+              ? "border-highlight/50 bg-highlight/12 text-foreground"
+              : "hover:border-border/60 hover:bg-panel-strong/60 hover:text-foreground",
             itemClassName,
           )}
           disabled={disabled}

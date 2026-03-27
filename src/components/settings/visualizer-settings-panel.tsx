@@ -167,39 +167,40 @@ export function VisualizerSettingsPanel() {
   }
 
   return (
-    <section className="rounded-[16px] border border-border bg-panel-muted px-3 py-3 transition-colors hover:border-highlight/30">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-mono text-[0.54rem] font-medium uppercase tracking-[0.16em] text-highlight">
+    <section className="rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <p className="font-mono text-[0.5rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
             Visualizer
           </p>
-          <p className="mt-1 text-[0.72rem] leading-4 text-muted-foreground">
-            Gateway upload + profile import.
+          <span className="font-mono text-[0.42rem] text-muted-foreground/40">|</span>
+          <p className="font-mono text-[0.46rem] uppercase tracking-[0.06em] text-muted-foreground/60">
+            Upload + profile import
           </p>
         </div>
         <span
           className={cn(
-            "rounded-full border px-2 py-0.5 font-mono text-[0.58rem] font-semibold uppercase tracking-[0.16em]",
+            "rounded-[2px] border px-1.5 py-0.5 font-mono text-[0.48rem] font-semibold uppercase tracking-[0.12em]",
             status.tone === "success"
               ? "border-accent/35 bg-accent/10 text-accent"
               : status.tone === "error"
                 ? "border-destructive/35 bg-destructive/10 text-destructive"
-                : "border-border bg-panel-strong text-muted-foreground",
+                : "border-border/50 bg-panel-strong text-muted-foreground",
           )}
         >
           {status.label}
         </span>
       </div>
 
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        <label className="grid gap-1" htmlFor="visualizer-username">
-          <span className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+      <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+        <label className="grid gap-0.5" htmlFor="visualizer-username">
+          <span className="font-mono text-[0.42rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
             Username
           </span>
           <Input
             autoCapitalize="none"
             autoCorrect="off"
-            className="h-9 rounded-[10px] border-border bg-panel-strong px-3 font-mono text-[0.72rem]"
+            className="h-8 rounded-[3px] border-border/50 bg-panel-strong px-2.5 font-mono text-[0.64rem]"
             disabled={isBusy}
             id="visualizer-username"
             onChange={(event) => {
@@ -214,12 +215,12 @@ export function VisualizerSettingsPanel() {
           />
         </label>
 
-        <label className="grid gap-1" htmlFor="visualizer-password">
-          <span className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        <label className="grid gap-0.5" htmlFor="visualizer-password">
+          <span className="font-mono text-[0.42rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
             Password
           </span>
           <Input
-            className="h-9 rounded-[10px] border-border bg-panel-strong px-3 font-mono text-[0.72rem]"
+            className="h-8 rounded-[3px] border-border/50 bg-panel-strong px-2.5 font-mono text-[0.64rem]"
             disabled={isBusy}
             id="visualizer-password"
             onChange={(event) => {
@@ -236,9 +237,9 @@ export function VisualizerSettingsPanel() {
         </label>
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="mt-2 flex items-center gap-1.5">
         <Button
-          className="min-h-[36px] rounded-[10px] px-3 text-[0.58rem] uppercase tracking-[0.16em]"
+          className="min-h-[32px] rounded-[3px] px-2.5 text-[0.5rem] uppercase tracking-[0.14em]"
           disabled={!hasCredentials || isBusy}
           onClick={() => void handleVerify()}
           size="sm"
@@ -250,7 +251,7 @@ export function VisualizerSettingsPanel() {
 
         {isEnabled && !hasDraftChanges ? (
           <Button
-            className="min-h-[36px] rounded-[10px] px-3 text-[0.58rem] uppercase tracking-[0.16em]"
+            className="min-h-[32px] rounded-[3px] px-2.5 text-[0.5rem] uppercase tracking-[0.14em]"
             disabled={isBusy}
             onClick={() => void handleDisable()}
             size="sm"
@@ -260,7 +261,7 @@ export function VisualizerSettingsPanel() {
           </Button>
         ) : (
           <Button
-            className="min-h-[36px] rounded-[10px] px-3 text-[0.58rem] uppercase tracking-[0.16em]"
+            className="min-h-[32px] rounded-[3px] px-2.5 text-[0.5rem] uppercase tracking-[0.14em]"
             disabled={!isDraftVerified || isBusy}
             onClick={() => void handleEnable()}
             size="sm"
@@ -273,26 +274,26 @@ export function VisualizerSettingsPanel() {
                 : "Enable uploads"}
           </Button>
         )}
-      </div>
 
-      {settingsQuery.error ? (
-        <p className="mt-2 text-[0.72rem] leading-4 text-destructive">
-          {settingsQuery.error.message}
-        </p>
-      ) : notice ? (
-        <p
-          className={cn(
-            "mt-2 text-[0.72rem] leading-4",
-            notice.tone === "error" ? "text-destructive" : "text-highlight",
-          )}
-        >
-          {notice.message}
-        </p>
-      ) : (
-        <p className="mt-2 text-[0.72rem] leading-4 text-muted-foreground">
-          {isConfigured ? "Verify before enabling." : "Enter your Visualizer account."}
-        </p>
-      )}
+        {settingsQuery.error ? (
+          <p className="ml-auto font-mono text-[0.5rem] text-destructive">
+            {settingsQuery.error.message}
+          </p>
+        ) : notice ? (
+          <p
+            className={cn(
+              "ml-auto font-mono text-[0.5rem]",
+              notice.tone === "error" ? "text-destructive" : "text-highlight",
+            )}
+          >
+            {notice.message}
+          </p>
+        ) : (
+          <p className="ml-auto font-mono text-[0.46rem] text-muted-foreground/50">
+            {isConfigured ? "Verify before enabling" : "Enter your Visualizer account"}
+          </p>
+        )}
+      </div>
     </section>
   );
 }

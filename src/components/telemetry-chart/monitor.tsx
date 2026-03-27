@@ -99,7 +99,7 @@ export function DesktopTelemetryMonitor({
           onReset={onReset}
           onSetPreset={onSetPreset}
         />
-        <div className="mt-3 min-h-0 flex-1">
+        <div className="mt-1.5 min-h-0 flex-1">
           <TelemetryMonitorCanvas
             density="regular"
             hoveredSample={model.activeSample}
@@ -216,7 +216,7 @@ function TelemetryMonitorCanvas({
     <div
       ref={containerRef}
       className={cn(
-        "min-h-0 min-w-0 overflow-hidden rounded-[18px] border border-chart-border bg-chart-surface",
+        "min-h-0 min-w-0 overflow-hidden rounded-[3px] border border-chart-border bg-chart-surface",
         density === "regular" ? "h-full flex-1" : "flex-1",
       )}
     >
@@ -229,7 +229,7 @@ function TelemetryMonitorCanvas({
         <rect
           fill={chartTheme.surface}
           height={chartHeight}
-          rx={density === "compact" ? 18 : 22}
+          rx={3}
           stroke={chartTheme.border}
           width={chartMetrics.width}
           x={0}
@@ -348,7 +348,7 @@ function TelemetryLane({
       <rect
         fill={backgroundFill}
         height={lane.height}
-        rx={density === "compact" ? 12 : 16}
+        rx={3}
         stroke={chartTheme.border}
         width={width}
         x={0}

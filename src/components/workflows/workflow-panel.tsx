@@ -18,17 +18,19 @@ export function WorkflowPanel({
   return (
     <section
       className={cn(
-        "rounded-[10px] border border-border bg-panel px-2.5 py-2.5",
+        "border border-border/40 bg-panel/60",
         className,
       )}
     >
-      <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-        {title}
-      </p>
-      {description ? (
-        <p className="mt-0.5 text-[0.78rem] leading-5 text-muted-foreground">{description}</p>
-      ) : null}
-      <div className={cn(description ? "mt-2.5" : "mt-2", contentClassName)}>{children}</div>
+      <div className="border-b border-border/30 px-3 py-1.5">
+        <p className="font-mono text-[0.54rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+          {title}
+        </p>
+        {description ? (
+          <p className="mt-0.5 font-mono text-[0.52rem] tracking-[0.04em] text-muted-foreground/70">{description}</p>
+        ) : null}
+      </div>
+      <div className={cn("px-3 py-2", contentClassName)}>{children}</div>
     </section>
   );
 }

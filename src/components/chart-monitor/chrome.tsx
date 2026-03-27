@@ -39,33 +39,31 @@ export function CompactMonitorBar({
   onOpenConfig: () => void;
 }) {
   return (
-    <div className="min-w-0 rounded-[14px] border border-border/70 bg-panel p-1.5 md:max-xl:rounded-[16px] md:max-xl:p-1.5">
-      <div className="flex min-w-0 items-stretch gap-1 overflow-hidden md:max-xl:gap-1.5">
-        {items.map((item, index) => (
-          <div
-            className="min-w-0 flex-1 rounded-[9px] border border-border/60 bg-panel-muted px-1.5 py-1.5 md:max-xl:min-h-[52px] md:max-xl:rounded-[11px] md:max-xl:px-2 md:max-xl:py-2"
-            key={`${item.label}-${index}`}
-            title={item.detail}
-          >
-            <p className="truncate font-mono text-[0.48rem] font-medium uppercase tracking-[0.14em] text-muted-foreground md:max-xl:text-[0.54rem]">
-              {item.label}
-            </p>
-            <p className="mt-0.5 truncate font-mono text-[0.68rem] font-semibold uppercase tracking-[0.02em] text-foreground md:max-xl:mt-0.5 md:max-xl:text-[0.78rem]">
-              {item.value}
-            </p>
-          </div>
-        ))}
-
-        <button
-          aria-label="Open chart controls"
-          className="inline-flex min-h-[46px] min-w-[44px] shrink-0 items-center justify-center rounded-[9px] border border-border bg-panel px-2 text-muted-foreground transition hover:border-highlight/50 hover:text-foreground md:max-xl:min-h-[52px] md:max-xl:min-w-[52px] md:max-xl:rounded-[11px]"
-          onClick={onOpenConfig}
-          title={`Preset: ${activePresetLabel}`}
-          type="button"
+    <div className="flex min-w-0 items-stretch gap-1">
+      {items.map((item, index) => (
+        <div
+          className="min-w-0 flex-1 rounded-[3px] border border-border/50 bg-panel-strong/60 px-2 py-1 md:max-xl:px-2.5 md:max-xl:py-1"
+          key={`${item.label}-${index}`}
+          title={item.detail}
         >
-          <SlidersHorizontal className="size-3.5 md:max-xl:size-4" />
-        </button>
-      </div>
+          <p className="truncate font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground md:max-xl:text-[0.5rem]">
+            {item.label}
+          </p>
+          <p className="mt-0.5 truncate font-mono text-[0.68rem] font-semibold uppercase tabular-nums tracking-[0.02em] text-foreground md:max-xl:text-[0.72rem]">
+            {item.value}
+          </p>
+        </div>
+      ))}
+
+      <button
+        aria-label="Open chart controls"
+        className="inline-flex min-w-[36px] shrink-0 items-center justify-center rounded-[3px] border border-border/50 bg-panel-strong/60 px-2 text-muted-foreground transition hover:border-highlight/50 hover:text-foreground md:max-xl:min-w-[40px]"
+        onClick={onOpenConfig}
+        title={`Preset: ${activePresetLabel}`}
+        type="button"
+      >
+        <SlidersHorizontal className="size-3 md:max-xl:size-3.5" />
+      </button>
     </div>
   );
 }
@@ -87,40 +85,38 @@ export function DesktopMonitorBar<
   presetOptions: Array<MonitorPresetOption<TPreset>>;
 }) {
   return (
-    <div className="min-w-0 rounded-[16px] border border-border/70 bg-panel p-1.5">
-      <div className="flex min-w-0 flex-wrap items-stretch gap-1 overflow-hidden">
-        {items.map((item, index) => (
-          <div
-            className="min-w-0 flex-1 basis-[90px] rounded-[9px] border border-border/60 bg-panel-muted px-2 py-1.5"
-            key={`${item.label}-${index}`}
-            title={item.detail}
-          >
-            <p className="truncate font-mono text-[0.5rem] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              {item.label}
-            </p>
-            <p className="mt-0.5 truncate font-mono text-[0.72rem] font-semibold uppercase tracking-[0.02em] text-foreground">
-              {item.value}
-            </p>
-          </div>
-        ))}
-
-        <div className="ml-auto flex min-h-[46px] shrink-0 flex-wrap items-stretch justify-end gap-1">
-          {presetOptions.map((preset) => (
-            <PresetButton
-              active={String(activePreset) === preset.id}
-              key={preset.id}
-              label={preset.label}
-              onClick={() => onSetPreset(preset.id)}
-            />
-          ))}
-          <button
-            className="rounded-[9px] border border-border bg-panel px-2.5 font-mono text-[0.58rem] uppercase tracking-[0.14em] text-muted-foreground transition hover:border-highlight/50 hover:text-foreground"
-            onClick={onReset}
-            type="button"
-          >
-            Reset
-          </button>
+    <div className="flex min-w-0 flex-wrap items-stretch gap-1">
+      {items.map((item, index) => (
+        <div
+          className="min-w-0 flex-1 basis-[90px] rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1"
+          key={`${item.label}-${index}`}
+          title={item.detail}
+        >
+          <p className="truncate font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+            {item.label}
+          </p>
+          <p className="mt-0.5 truncate font-mono text-[0.72rem] font-semibold uppercase tabular-nums tracking-[0.02em] text-foreground">
+            {item.value}
+          </p>
         </div>
+      ))}
+
+      <div className="ml-auto flex shrink-0 flex-wrap items-stretch justify-end gap-1">
+        {presetOptions.map((preset) => (
+          <PresetButton
+            active={String(activePreset) === preset.id}
+            key={preset.id}
+            label={preset.label}
+            onClick={() => onSetPreset(preset.id)}
+          />
+        ))}
+        <button
+          className="rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 font-mono text-[0.54rem] uppercase tracking-[0.08em] text-muted-foreground transition hover:border-highlight/50 hover:text-foreground"
+          onClick={onReset}
+          type="button"
+        >
+          Reset
+        </button>
       </div>
     </div>
   );
@@ -164,7 +160,7 @@ export function MonitorConfigOverlay<
       role="dialog"
     >
       <div
-        className="absolute inset-3 flex min-h-0 flex-col overflow-hidden rounded-[22px] border border-border bg-chart-surface p-3 shadow-2xl sm:inset-4 sm:p-4"
+        className="absolute inset-3 flex min-h-0 flex-col overflow-hidden rounded-[3px] border border-border/50 bg-chart-surface p-3 shadow-2xl sm:inset-4 sm:p-4"
         data-testid={dataTestId}
         onClick={(event) => event.stopPropagation()}
       >
@@ -179,7 +175,7 @@ export function MonitorConfigOverlay<
           </div>
           <button
             aria-label="Close chart controls"
-            className="inline-flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-border bg-panel text-muted-foreground transition hover:text-foreground"
+            className="inline-flex size-8 shrink-0 items-center justify-center rounded-[3px] border border-border/50 bg-panel-strong/60 text-muted-foreground transition hover:text-foreground"
             onClick={onClose}
             type="button"
           >
@@ -229,13 +225,13 @@ export function MonitorConfigPanel<
   seriesGroups: Array<MonitorSeriesGroup<TSeriesId>>;
 }) {
   return (
-    <div className="rounded-[18px] border border-border/70 bg-panel p-3">
+    <div className="rounded-[3px] border border-border/50 bg-panel-strong/60 p-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="font-mono text-[0.54rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
           Configuration
         </p>
         <button
-          className="rounded-full border border-border bg-panel-muted px-2.5 py-1 font-mono text-[0.56rem] uppercase tracking-[0.16em] text-muted-foreground transition hover:border-highlight/50 hover:text-foreground"
+          className="rounded-[3px] border border-border/50 bg-panel-strong px-2.5 py-1 font-mono text-[0.52rem] uppercase tracking-[0.08em] text-muted-foreground transition hover:border-highlight/50 hover:text-foreground"
           onClick={onReset}
           type="button"
         >
@@ -245,10 +241,10 @@ export function MonitorConfigPanel<
 
       <div className="mt-3 grid gap-3">
         <div>
-          <p className="font-mono text-[0.56rem] uppercase tracking-[0.16em] text-highlight">
+          <p className="font-mono text-[0.52rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
             Presets
           </p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
+          <div className="mt-2 flex flex-wrap gap-1">
             {presetOptions.map((preset) => (
               <PresetButton
                 active={String(activePreset) === preset.id}
@@ -261,26 +257,26 @@ export function MonitorConfigPanel<
         </div>
 
         <div>
-          <p className="font-mono text-[0.56rem] uppercase tracking-[0.16em] text-highlight">
+          <p className="font-mono text-[0.52rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
             Lanes
           </p>
-          <div className="mt-2 grid grid-cols-2 gap-1.5">
+          <div className="mt-2 grid grid-cols-2 gap-1">
             {laneOptions.map((lane) => (
               <button
                 className={cn(
-                  "flex min-h-[42px] items-center justify-between rounded-[11px] border px-2.5 py-2 text-left transition",
+                  "flex items-center justify-between rounded-[3px] border px-2.5 py-1.5 text-left transition",
                   lane.enabled
                     ? "border-highlight/35 bg-primary/12 text-foreground"
-                    : "border-border bg-panel-muted text-muted-foreground hover:bg-panel-subtle hover:text-foreground",
+                    : "border-border/50 bg-panel-strong text-muted-foreground hover:bg-panel-subtle hover:text-foreground",
                 )}
                 key={lane.id}
                 onClick={() => onToggleLane(lane.id)}
                 type="button"
               >
-                <span className="font-mono text-[0.62rem] uppercase tracking-[0.16em]">
+                <span className="font-mono text-[0.56rem] uppercase tracking-[0.08em]">
                   {lane.label}
                 </span>
-                <span className="font-mono text-[0.54rem] uppercase tracking-[0.14em]">
+                <span className="font-mono text-[0.48rem] uppercase tracking-[0.06em]">
                   {lane.enabled ? "On" : "Off"}
                 </span>
               </button>
@@ -291,17 +287,17 @@ export function MonitorConfigPanel<
         <div className="grid gap-2">
           {seriesGroups.map((group) => (
             <div key={group.label}>
-              <p className="font-mono text-[0.56rem] uppercase tracking-[0.16em] text-highlight">
+              <p className="font-mono text-[0.52rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
                 {group.label}
               </p>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
+              <div className="mt-1.5 flex flex-wrap gap-1">
                 {group.series.map((series) => (
                   <button
                     className={cn(
-                      "rounded-full border px-2.5 py-1 font-mono text-[0.56rem] uppercase tracking-[0.14em] transition",
+                      "rounded-[3px] border px-2 py-1 font-mono text-[0.52rem] uppercase tracking-[0.06em] transition",
                       series.active
                         ? "text-primary-foreground"
-                        : "border-border bg-panel-muted text-muted-foreground hover:bg-panel-subtle hover:text-foreground",
+                        : "border-border/50 bg-panel-strong text-muted-foreground hover:bg-panel-subtle hover:text-foreground",
                     )}
                     key={series.id}
                     onClick={() => onToggleSeries(series.id)}
@@ -332,10 +328,10 @@ function PresetButton({
   return (
     <button
       className={cn(
-        "rounded-full border px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.16em] whitespace-nowrap transition",
+        "rounded-[3px] border px-2.5 py-1 font-mono text-[0.56rem] uppercase tracking-[0.08em] whitespace-nowrap transition",
         active
           ? "border-primary/40 bg-primary text-primary-foreground"
-          : "border-border bg-panel text-muted-foreground hover:border-highlight/35 hover:bg-panel-subtle hover:text-foreground",
+          : "border-border/50 bg-panel-strong text-muted-foreground hover:border-highlight/35 hover:bg-panel-subtle hover:text-foreground",
       )}
       onClick={onClick}
       type="button"

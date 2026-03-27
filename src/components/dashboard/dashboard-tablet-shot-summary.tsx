@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 export type DashboardShotSummaryItem = {
   label: string;
   value: string;
@@ -10,24 +12,25 @@ export function DashboardTabletShotSummary({
 }) {
   return (
     <div
-      className="rounded-[18px] border border-border/70 bg-panel p-2 md:p-2.5"
+      className="flex items-stretch border-b border-border/40"
       data-testid="dashboard-shot-summary"
     >
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,0.8fr))]">
-        {items.map((item) => (
-          <div
-            className="min-w-0 rounded-[12px] border border-border/60 bg-panel-muted px-2.5 py-1.5 md:px-3"
-            key={item.label}
-          >
-            <p className="truncate font-mono text-[0.5rem] font-medium uppercase tracking-[0.16em] text-muted-foreground md:text-[0.54rem]">
-              {item.label}
-            </p>
-            <p className="mt-0.5 truncate font-mono text-[0.76rem] font-semibold text-foreground md:text-[0.82rem]">
-              {item.value}
-            </p>
-          </div>
-        ))}
-      </div>
+      {items.map((item, i) => (
+        <div
+          className={cn(
+            "flex min-w-0 flex-1 flex-col justify-center px-2.5 py-1.5 md:px-3",
+            i > 0 && "border-l border-border/30",
+          )}
+          key={item.label}
+        >
+          <p className="truncate font-mono text-[0.44rem] font-medium uppercase tracking-[0.08em] text-muted-foreground md:text-[0.48rem]">
+            {item.label}
+          </p>
+          <p className="mt-0.5 truncate font-mono text-[0.74rem] font-semibold tabular-nums text-foreground md:text-[0.78rem]">
+            {item.value}
+          </p>
+        </div>
+      ))}
     </div>
   );
 }

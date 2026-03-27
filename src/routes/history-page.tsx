@@ -1,7 +1,7 @@
 import { getRouteApi } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { RefreshCw } from "lucide-react";
+import { type ReactNode, useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TelemetryChart } from "@/components/telemetry-chart";
 import { formatBrewRatio } from "@/lib/recipe-utils";
@@ -78,59 +78,56 @@ export function HistoryPage({
     ? adaptShotMeasurementsToTelemetry(selectedShot.measurements)
     : [];
   const isDetailPending = effectiveSelectedShotId != null && shotQuery.isPending && !selectedShot;
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   async function handleRefresh() {
+    setIsRefreshing(true);
     await Promise.all([
       shotsQuery.refetch(),
       effectiveSelectedShotId ? shotQuery.refetch() : Promise.resolve(),
-    ]);
+    ]).catch(() => {});
+    setIsRefreshing(false);
   }
 
   return (
-    <div className="panel min-h-[calc(100vh-var(--app-footer-height))] overflow-hidden rounded-none border-x-0 border-t-0 bg-shell md:flex md:h-[calc(100vh-var(--app-footer-height))] md:flex-col">
-      <section className="grid min-h-0 flex-1 md:grid-cols-[312px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)]">
-        <aside className="flex min-h-0 min-w-0 flex-col border-b border-border bg-panel-muted md:border-b-0 md:border-r">
-          <div className="shrink-0 border-b border-border px-3 py-3 md:px-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-highlight">
-                  Session archive
-                </p>
-                <h1 className="mt-1 font-display text-[1.85rem] leading-none text-foreground">
-                  Shot history
-                </h1>
-                <p className="mt-2 max-w-[22rem] text-[0.8rem] leading-5 text-muted-foreground">
-                  Select a past shot to inspect its telemetry, workflow, and brew context.
-                </p>
-              </div>
+    <div className="min-h-[calc(100vh-var(--app-footer-height))] overflow-hidden border-b border-border/30 bg-shell md:flex md:h-[calc(100vh-var(--app-footer-height))] md:flex-col">
+      {/* Top bar — matches dashboard top bar style */}
+      <HistoryTopBar
+        isRefreshing={isRefreshing}
+        onRefresh={handleRefresh}
+        selectedShot={selectedShot}
+        summaryShot={effectiveSelectedShot}
+        total={shotList.total}
+      />
 
-              <Badge variant="secondary">{shotList.total} shots</Badge>
+      {/* Main workspace */}
+      <section className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[312px_minmax(0,1fr)]">
+        {/* Shot blotter — left rail */}
+        <aside className="flex min-h-0 min-w-0 flex-col border-b border-border/40 bg-panel-muted md:border-b-0 md:border-r md:border-border/40">
+          {shotsQuery.error ? (
+            <div className="border-b border-border/40 px-3 py-1.5">
+              <span className="font-mono text-[0.64rem] text-destructive">
+                {shotsQuery.error.message}
+              </span>
             </div>
+          ) : null}
 
-            <div className="mt-3 flex items-center gap-2">
-              {shotsQuery.error ? (
-                <span className="font-mono text-[0.72rem] text-destructive">
-                  {shotsQuery.error.message}
-                </span>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto p-2 md:p-3">
+          <div className="min-h-0 flex-1 overflow-y-auto">
             {shotList.items.length === 0 ? (
-              <section className="rounded-[14px] border border-dashed border-border/70 bg-panel p-4">
-                <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
-                  Queue
-                </p>
-                <p className="mt-2 text-[0.85rem] text-foreground">No shots have been synced yet.</p>
-                <p className="mt-1 text-[0.78rem] leading-5 text-muted-foreground">
-                  Once the bridge returns historical records, they will appear here.
-                </p>
-              </section>
+              <div className="flex h-full items-center justify-center p-4">
+                <div className="text-center">
+                  <p className="font-mono text-[0.56rem] uppercase tracking-[0.1em] text-muted-foreground">
+                    Queue empty
+                  </p>
+                  <p className="mt-1.5 text-[0.78rem] text-muted-foreground">
+                    No shots synced yet.
+                  </p>
+                </div>
+              </div>
             ) : (
-              <div className="grid gap-2">
+              <div className="divide-y divide-border/30">
                 {shotList.items.map((shot, index) => (
-                  <HistoryShotButton
+                  <HistoryShotRow
                     index={index}
                     isSelected={effectiveSelectedShotId != null && shot.id === effectiveSelectedShotId}
                     key={shot.id ?? `${shot.timestamp ?? "shot"}-${index}`}
@@ -147,157 +144,167 @@ export function HistoryPage({
           </div>
         </aside>
 
-        <div className="min-h-0 min-w-0 flex flex-col">
-          <HistoryDetailHeader
-            shot={selectedShot}
-            summaryShot={effectiveSelectedShot}
-          />
-
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            {selectedShot ? (
-              <div className="grid gap-3 p-2 md:p-3 xl:p-4">
-                <section className="min-h-[340px] md:min-h-[420px] xl:min-h-[480px]">
-                  <TelemetryChart
-                    className="h-full rounded-[18px] border-0 bg-transparent p-0 shadow-none"
-                    data={selectedShotTelemetry}
-                  />
-                </section>
-
-                <div className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">
-                  <HistoryInfoPanel
-                    description="Applied recipe, author, and profile metadata captured with the shot."
-                    title="Profile"
+        {/* Detail workspace — right pane */}
+        <div className="flex min-h-0 min-w-0 flex-col">
+          {selectedShot ? (
+            <HistoryDetailContent
+              selectedShot={selectedShot}
+              selectedShotTelemetry={selectedShotTelemetry}
+            />
+          ) : isDetailPending ? (
+            <HistoryStatePanel
+              body="Loading telemetry stream and workflow metadata."
+              title="Loading shot detail"
+            />
+          ) : shotQuery.error ? (
+            <HistoryStatePanel
+              action={
+                <Button
+                  className="h-7 rounded-[3px] px-3 font-mono text-[0.6rem]"
+                  onClick={() => void handleRefresh()}
+                  size="sm"
+                  variant="secondary"
+                >
+                  Retry
+                </Button>
+              }
+              body={shotQuery.error.message}
+              title="Unable to load shot"
+            />
+          ) : hasInvalidSelectedShot ? (
+            <HistoryStatePanel
+              action={
+                onSelectShotId ? (
+                  <Button
+                    className="h-7 rounded-[3px] px-3 font-mono text-[0.6rem]"
+                    onClick={() => onSelectShotId(null)}
+                    size="sm"
+                    variant="secondary"
                   >
-                    <HistoryStatRow
-                      label="Workflow"
-                      value={selectedShot.workflow?.name ?? "-"}
-                    />
-                    <HistoryStatRow
-                      label="Profile"
-                      value={selectedShot.workflow?.profile?.title ?? "-"}
-                    />
-                    <HistoryStatRow
-                      label="Author"
-                      value={selectedShot.workflow?.profile?.author ?? "-"}
-                    />
-                    <HistoryStatRow
-                      label="Beverage"
-                      value={selectedShot.workflow?.profile?.beverage_type ?? "-"}
-                    />
-                    <HistoryStatRow
-                      label="Frames"
-                      value={`${selectedShot.workflow?.profile?.steps?.length ?? 0}`}
-                    />
-                  </HistoryInfoPanel>
-
-                  <HistoryInfoPanel
-                    description="Coffee, grinder, and target recipe fields attached to the shot."
-                    title="Context"
-                  >
-                    <HistoryStatRow
-                      label="Coffee"
-                      value={selectedShot.workflow?.context?.coffeeName ?? "-"}
-                    />
-                    <HistoryStatRow
-                      label="Roaster"
-                      value={selectedShot.workflow?.context?.coffeeRoaster ?? "-"}
-                    />
-                    <HistoryStatRow
-                      label="Grinder"
-                      value={joinValues(
-                        selectedShot.workflow?.context?.grinderModel,
-                        selectedShot.workflow?.context?.grinderSetting,
-                      )}
-                    />
-                    <HistoryStatRow
-                      label="Dose"
-                      value={formatMetricValue(
-                        selectedShot.workflow?.context?.targetDoseWeight,
-                        "g",
-                        1,
-                      )}
-                    />
-                    <HistoryStatRow
-                      label="Target yield"
-                      value={formatMetricValue(
-                        selectedShot.workflow?.context?.targetYield,
-                        "g",
-                        1,
-                      )}
-                    />
-                    <HistoryStatRow
-                      label="Target ratio"
-                      value={formatBrewRatio(
-                        selectedShot.workflow?.context?.targetDoseWeight,
-                        selectedShot.workflow?.context?.targetYield,
-                        "-",
-                      )}
-                    />
-                  </HistoryInfoPanel>
-
-                  <HistoryInfoPanel
-                    description="Machine settings that were bundled into this saved shot."
-                    title="Settings"
-                  >
-                    <HistorySettingsRows
-                      hotWaterData={selectedShot.workflow?.hotWaterData}
-                      rinseData={selectedShot.workflow?.rinseData}
-                      steamSettings={selectedShot.workflow?.steamSettings}
-                    />
-                  </HistoryInfoPanel>
-
-                  <HistoryInfoPanel
-                    className="lg:col-span-2 2xl:col-span-3"
-                    description="Original profile notes captured from the bridge."
-                    title="Notes"
-                  >
-                    <p className="max-h-40 overflow-y-auto whitespace-pre-line pr-1 text-[0.8rem] leading-6 text-foreground/88">
-                      {selectedShot.workflow?.profile?.notes?.trim() || "No profile notes were saved with this shot."}
-                    </p>
-                  </HistoryInfoPanel>
-                </div>
-              </div>
-            ) : isDetailPending ? (
-              <HistoryStatePanel
-                body="Loading the saved telemetry stream and workflow metadata for this shot."
-                title="Loading shot detail"
-              />
-            ) : shotQuery.error ? (
-              <HistoryStatePanel
-                action={
-                  <Button onClick={() => void handleRefresh()} size="sm" variant="secondary">
-                    Retry shot
+                    Show latest
                   </Button>
-                }
-                body={shotQuery.error.message}
-                title="Unable to load shot detail"
-              />
-            ) : hasInvalidSelectedShot ? (
-              <HistoryStatePanel
-                action={
-                  onSelectShotId ? (
-                    <Button onClick={() => onSelectShotId(null)} size="sm" variant="secondary">
-                      Show latest shot
-                    </Button>
-                  ) : undefined
-                }
-                body="This shot is no longer in the current history list. Pick another shot from the rail or clear the selection."
-                title="Shot not found"
-              />
-            ) : (
-              <HistoryStatePanel
-                body="Pick a shot from the rail to load its telemetry and saved context."
-                title="Select a shot"
-              />
-            )}
-          </div>
+                ) : undefined
+              }
+              body="This shot is no longer in the history list."
+              title="Shot not found"
+            />
+          ) : (
+            <HistoryStatePanel
+              body="Pick a shot from the blotter to inspect."
+              title="Select a shot"
+            />
+          )}
         </div>
       </section>
     </div>
   );
 }
 
-function HistoryShotButton({
+/* ─── Top bar ─── */
+
+function HistoryTopBar({
+  isRefreshing,
+  onRefresh,
+  selectedShot,
+  summaryShot,
+  total,
+}: {
+  isRefreshing: boolean;
+  onRefresh: () => void;
+  selectedShot: ShotDetailRecord | undefined;
+  summaryShot: ShotRecord | null;
+  total: number;
+}) {
+  const finalWeight = selectedShot ? getShotFinalWeight(selectedShot.measurements) : null;
+  const durationSeconds = selectedShot ? getShotDurationSeconds(selectedShot.measurements) : null;
+  const actualRatio = selectedShot ? getShotActualRatio(selectedShot) : null;
+  const displayShot = selectedShot ?? summaryShot;
+
+  return (
+    <section className="shrink-0 border-b border-border/40 bg-panel-strong/30 px-2 py-1 md:px-2.5 md:py-1 xl:px-3">
+      <div className="flex flex-wrap items-stretch gap-1 md:max-xl:gap-1">
+        {/* Archive label + count */}
+        <div className="flex min-w-[140px] flex-1 items-center gap-2 rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1 md:flex-none md:max-w-[220px] md:max-xl:min-w-[160px]">
+          <div className="min-w-0 flex-1">
+            <p className="flex items-center gap-1.5 font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground md:max-xl:text-[0.5rem]">
+              Shot archive
+            </p>
+            <p className="mt-0.5 font-mono text-[0.72rem] font-semibold tabular-nums text-foreground md:max-xl:text-[0.76rem]">
+              {total} shots
+            </p>
+          </div>
+          <button
+            className={cn(
+              "flex size-6 items-center justify-center rounded-[3px] border border-border/50 bg-panel-strong text-muted-foreground transition hover:text-foreground md:max-xl:size-7",
+              isRefreshing && "animate-spin text-highlight",
+            )}
+            onClick={onRefresh}
+            type="button"
+          >
+            <RefreshCw className="size-3 md:max-xl:size-3.5" />
+          </button>
+        </div>
+
+        {/* Selected shot name */}
+        <div className="flex min-w-[160px] flex-[1.5] items-center rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1 md:flex-1 md:max-xl:min-w-[200px]">
+          <div className="min-w-0">
+            <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-highlight-muted md:max-xl:text-[0.5rem]">
+              Selected
+            </p>
+            <p className="mt-0.5 truncate font-mono text-[0.72rem] font-semibold text-foreground md:max-xl:text-[0.76rem]">
+              {displayShot ? getShotDisplayTitle(displayShot) : "None"}
+            </p>
+          </div>
+        </div>
+
+        {/* Metric cells — trading ticker style */}
+        <HistoryTopBarMetric
+          label="Time"
+          value={durationSeconds == null ? "--.-s" : formatShotDuration(durationSeconds)}
+        />
+        <HistoryTopBarMetric
+          label="Yield"
+          value={finalWeight == null ? "--.- g" : `${formatNumber(finalWeight)} g`}
+        />
+        <HistoryTopBarMetric
+          label="Ratio"
+          value={actualRatio == null ? "--" : `1:${actualRatio.toFixed(1)}`}
+        />
+        <HistoryTopBarMetric
+          label="Dose"
+          value={formatMetricValue(
+            displayShot?.workflow?.context?.targetDoseWeight,
+            "g",
+            1,
+          )}
+        />
+      </div>
+    </section>
+  );
+}
+
+function HistoryTopBarMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="min-w-[72px] flex-1 rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1 md:flex-none md:min-w-[84px] md:max-xl:px-2.5 md:max-xl:py-1">
+      <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground md:max-xl:text-[0.5rem]">
+        {label}
+      </p>
+      <p className="mt-0.5 font-mono text-[0.72rem] font-semibold tabular-nums text-foreground md:max-xl:text-[0.76rem]">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+/* ─── Shot blotter row ─── */
+
+function HistoryShotRow({
   index,
   isSelected,
   onSelect,
@@ -308,136 +315,200 @@ function HistoryShotButton({
   onSelect: () => void;
   shot: ShotRecord;
 }) {
+  const dose = shot.workflow?.context?.targetDoseWeight;
+  const yield_ = shot.workflow?.context?.targetYield;
+
   return (
     <button
       className={cn(
-        "w-full rounded-[14px] border px-3 py-3 text-left transition",
+        "w-full px-3 py-1.5 text-left transition md:px-3",
         isSelected
-          ? "border-highlight/50 bg-primary/12 shadow-[0_0_0_1px_var(--ring)]"
-          : "border-border/70 bg-panel hover:border-highlight/35 hover:bg-panel-muted",
+          ? "bg-primary/12 shadow-[inset_3px_0_0_var(--highlight)]"
+          : "hover:bg-panel-strong/60",
       )}
       onClick={onSelect}
       type="button"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-mono text-[0.56rem] uppercase tracking-[0.18em] text-highlight">
-            Shot {String(index + 1).padStart(2, "0")}
-          </p>
-          <p className="mt-1 truncate font-mono text-[0.86rem] font-semibold tracking-[0.03em] text-foreground">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="shrink-0 font-mono text-[0.48rem] tabular-nums uppercase tracking-[0.06em] text-muted-foreground/60 md:text-[0.5rem]">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <p className="truncate font-mono text-[0.72rem] font-semibold tracking-[0.02em] text-foreground md:text-[0.76rem]">
             {getShotDisplayTitle(shot)}
           </p>
         </div>
-        {isSelected ? <Badge>Selected</Badge> : null}
+        <span className="shrink-0 font-mono text-[0.52rem] tabular-nums text-muted-foreground md:text-[0.56rem]">
+          {formatRelativeTimestamp(shot.timestamp)}
+        </span>
       </div>
 
-      <div className="mt-2 grid gap-1 text-[0.75rem] text-muted-foreground">
-        <p>{formatRelativeTimestamp(shot.timestamp)}</p>
-        <p className="truncate">
-          {shot.workflow?.context?.coffeeName ?? "No coffee metadata"}
-        </p>
-        <p className="truncate">
-          {joinValues(
-            formatMetricValue(shot.workflow?.context?.targetDoseWeight, "g", 1),
-            formatMetricValue(shot.workflow?.context?.targetYield, "g", 1),
-          )}
-        </p>
+      <div className="mt-0.5 flex items-center gap-3 pl-6 md:pl-7">
+        <span className="truncate font-mono text-[0.56rem] text-muted-foreground/70 md:text-[0.6rem]">
+          {shot.workflow?.context?.coffeeName ?? "No coffee"}
+        </span>
+        {dose != null ? (
+          <span className="shrink-0 font-mono text-[0.56rem] tabular-nums text-muted-foreground/50 md:text-[0.6rem]">
+            {dose.toFixed(1)}g
+            {yield_ != null ? ` / ${yield_.toFixed(1)}g` : ""}
+          </span>
+        ) : null}
       </div>
     </button>
   );
 }
 
-function HistoryDetailHeader({
-  shot,
-  summaryShot,
+/* ─── Detail content ─── */
+
+function HistoryDetailContent({
+  selectedShot,
+  selectedShotTelemetry,
 }: {
-  shot: ShotDetailRecord | undefined;
-  summaryShot: ShotRecord | null;
+  selectedShot: ShotDetailRecord;
+  selectedShotTelemetry: ReturnType<typeof adaptShotMeasurementsToTelemetry>;
 }) {
-  const finalWeight = shot ? getShotFinalWeight(shot.measurements) : null;
-  const durationSeconds = shot ? getShotDurationSeconds(shot.measurements) : null;
-  const actualRatio = shot ? getShotActualRatio(shot) : null;
-  const displayShot = shot ?? summaryShot;
-
   return (
-    <section className="shrink-0 border-b border-border px-3 py-2.5 md:px-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Selected shot
-          </p>
-          <p className="mt-1 truncate font-display text-[1.55rem] leading-none text-foreground">
-            {displayShot ? getShotDisplayTitle(displayShot) : "No shot selected"}
-          </p>
-          <p className="mt-2 text-[0.8rem] text-muted-foreground">
-            {displayShot
-              ? formatRelativeTimestamp(displayShot.timestamp)
-              : "Choose a shot from the history rail."}
-          </p>
-        </div>
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      {/* Telemetry chart — takes full remaining height on tablet */}
+      <div className="h-[calc(100vh-var(--app-footer-height)-7.5rem)] min-h-[280px] shrink-0 overflow-hidden px-2 py-1.5 md:px-3 md:py-1.5">
+        <TelemetryChart
+          className="h-full rounded-[4px] border-0 bg-transparent p-0 shadow-none"
+          data={selectedShotTelemetry}
+          layout="tablet"
+        />
+      </div>
 
-        <div className="flex flex-wrap gap-2">
-          <HistoryMetricBadge
-            label="Time"
-            value={durationSeconds == null ? "No timer" : formatShotDuration(durationSeconds)}
-            variant="secondary"
-          />
-          <HistoryMetricBadge
-            label="Yield"
-            value={finalWeight == null ? "No weight" : `${formatNumber(finalWeight)} g`}
-          />
-          <HistoryMetricBadge
-            label="Ratio"
-            value={actualRatio == null ? "No ratio" : `1:${actualRatio.toFixed(1)}`}
-            variant="secondary"
-          />
+      {/* Info panels — scroll into view below chart */}
+      <div className="border-t border-border/40">
+        <div className="grid md:grid-cols-2">
+          <HistoryInfoCell title="Profile">
+            <HistoryDataRow
+              label="Workflow"
+              value={selectedShot.workflow?.name ?? "-"}
+            />
+            <HistoryDataRow
+              label="Profile"
+              value={selectedShot.workflow?.profile?.title ?? "-"}
+            />
+            <HistoryDataRow
+              label="Author"
+              value={selectedShot.workflow?.profile?.author ?? "-"}
+            />
+            <HistoryDataRow
+              label="Beverage"
+              value={selectedShot.workflow?.profile?.beverage_type ?? "-"}
+            />
+            <HistoryDataRow
+              label="Frames"
+              value={`${selectedShot.workflow?.profile?.steps?.length ?? 0}`}
+            />
+          </HistoryInfoCell>
+
+          <HistoryInfoCell border="left" title="Context">
+            <HistoryDataRow
+              label="Coffee"
+              value={selectedShot.workflow?.context?.coffeeName ?? "-"}
+            />
+            <HistoryDataRow
+              label="Roaster"
+              value={selectedShot.workflow?.context?.coffeeRoaster ?? "-"}
+            />
+            <HistoryDataRow
+              label="Grinder"
+              value={joinValues(
+                selectedShot.workflow?.context?.grinderModel,
+                selectedShot.workflow?.context?.grinderSetting,
+              )}
+            />
+            <HistoryDataRow
+              label="Dose"
+              value={formatMetricValue(
+                selectedShot.workflow?.context?.targetDoseWeight,
+                "g",
+                1,
+              )}
+            />
+            <HistoryDataRow
+              label="Target yield"
+              value={formatMetricValue(
+                selectedShot.workflow?.context?.targetYield,
+                "g",
+                1,
+              )}
+            />
+            <HistoryDataRow
+              label="Target ratio"
+              value={formatBrewRatio(
+                selectedShot.workflow?.context?.targetDoseWeight,
+                selectedShot.workflow?.context?.targetYield,
+                "-",
+              )}
+            />
+          </HistoryInfoCell>
+
+          <HistoryInfoCell title="Settings">
+            <HistorySettingsRows
+              hotWaterData={selectedShot.workflow?.hotWaterData}
+              rinseData={selectedShot.workflow?.rinseData}
+              steamSettings={selectedShot.workflow?.steamSettings}
+            />
+          </HistoryInfoCell>
+
+          <HistoryInfoCell border="left" title="Notes">
+            <p className="max-h-20 overflow-y-auto whitespace-pre-line pr-1 font-mono text-[0.64rem] leading-5 text-foreground/80 md:text-[0.68rem]">
+              {selectedShot.workflow?.profile?.notes?.trim() || "No profile notes saved."}
+            </p>
+          </HistoryInfoCell>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
-function HistoryMetricBadge({
-  label,
-  value,
-  variant,
-}: {
-  label: string;
-  value: string;
-  variant?: "default" | "secondary";
-}) {
-  return (
-    <Badge className="gap-2 px-3 py-1.5" variant={variant}>
-      <span className="text-[0.52rem] tracking-[0.18em] text-muted-foreground">{label}</span>
-      <span className="text-[0.9rem] tracking-[0.08em] text-current">{value}</span>
-    </Badge>
-  );
-}
+/* ─── Info cell — dashboard-style bordered section ─── */
 
-function HistoryInfoPanel({
+function HistoryInfoCell({
+  border,
   children,
-  className,
-  description,
   title,
 }: {
+  border?: "left";
   children: React.ReactNode;
-  className?: string;
-  description: string;
   title: string;
 }) {
   return (
     <section
       className={cn(
-        "rounded-[16px] border border-border/70 bg-panel px-3 py-3",
-        className,
+        "border-b border-border/40 px-3 py-2 md:px-4 md:py-2.5",
+        border === "left" && "md:border-l md:border-border/40",
       )}
     >
-      <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-highlight">
+      <p className="font-mono text-[0.56rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted md:text-[0.6rem]">
         {title}
       </p>
-      <p className="mt-1 text-[0.76rem] leading-5 text-muted-foreground">{description}</p>
-      <div className="mt-3 grid gap-2.5">{children}</div>
+      <div className="mt-1.5 grid gap-1">{children}</div>
     </section>
+  );
+}
+
+/* ─── Data row — compact key/value like dashboard ─── */
+
+function HistoryDataRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <p className="font-mono text-[0.5rem] uppercase tracking-[0.06em] text-muted-foreground md:text-[0.54rem]">
+        {label}
+      </p>
+      <p className="truncate text-right font-mono text-[0.68rem] font-semibold tabular-nums text-foreground md:text-[0.72rem]">
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -452,51 +523,32 @@ function HistorySettingsRows({
 }) {
   return (
     <>
-      <HistoryStatRow
+      <HistoryDataRow
         label="Steam"
         value={joinValues(
           formatMetricValue(steamSettings?.duration, "s", 0),
           formatMetricValue(steamSettings?.flow, " ml/s", 1),
         )}
       />
-      <HistoryStatRow
+      <HistoryDataRow
         label="Flush"
         value={joinValues(
           formatMetricValue(rinseData?.duration, "s", 0),
           formatMetricValue(rinseData?.flow, " ml/s", 1),
         )}
       />
-      <HistoryStatRow
+      <HistoryDataRow
         label="Hot water"
         value={joinValues(
           formatMetricValue(hotWaterData?.volume, "ml", 0),
           formatMetricValue(hotWaterData?.targetTemperature, "°C", 0),
         )}
       />
-      <HistoryStatRow
+      <HistoryDataRow
         label="Steam temp"
         value={formatMetricValue(steamSettings?.targetTemperature, "°C", 0)}
       />
     </>
-  );
-}
-
-function HistoryStatRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-3 rounded-[12px] border border-border/60 bg-panel-muted px-3 py-2.5">
-      <p className="font-mono text-[0.56rem] uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
-      </p>
-      <p className="text-right font-mono text-[0.78rem] font-semibold tracking-[0.03em] text-foreground">
-        {value}
-      </p>
-    </div>
   );
 }
 
@@ -511,13 +563,13 @@ function HistoryStatePanel({
 }) {
   return (
     <div className="flex h-full items-center justify-center p-4">
-      <section className="w-full max-w-[420px] rounded-[18px] border border-dashed border-border/70 bg-panel p-5 text-center">
-        <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-highlight">
-          History workspace
+      <section className="w-full max-w-[340px] rounded-[3px] border border-dashed border-border/50 bg-panel-strong/60 p-4 text-center">
+        <p className="font-mono text-[0.52rem] uppercase tracking-[0.1em] text-highlight-muted">
+          History
         </p>
-        <h2 className="mt-2 font-display text-2xl text-foreground">{title}</h2>
-        <p className="mt-2 text-[0.82rem] leading-6 text-muted-foreground">{body}</p>
-        {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
+        <h2 className="mt-1.5 font-mono text-[0.86rem] font-semibold text-foreground">{title}</h2>
+        <p className="mt-1 font-mono text-[0.64rem] leading-5 text-muted-foreground">{body}</p>
+        {action ? <div className="mt-3 flex justify-center">{action}</div> : null}
       </section>
     </div>
   );

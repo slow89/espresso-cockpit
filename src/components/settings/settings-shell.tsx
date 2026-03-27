@@ -15,19 +15,16 @@ export function SettingsSection({
   title: string;
 }) {
   return (
-    <section
-      className={cn(
-        "rounded-[18px] border border-border bg-panel px-3 py-3 shadow-panel",
-        className,
-      )}
-    >
-      <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-highlight">
-        {title}
-      </p>
-      <p className="mt-1 max-w-[40rem] text-[0.78rem] leading-5 text-muted-foreground">
-        {description}
-      </p>
-      <div className="mt-3">{children}</div>
+    <section className={cn("px-2.5 py-2.5 md:px-3 md:py-3", className)}>
+      <div className="flex items-center justify-between gap-3">
+        <p className="font-mono text-[0.54rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
+          {title}
+        </p>
+        <p className="max-w-[28rem] text-right font-mono text-[0.46rem] uppercase tracking-[0.06em] text-muted-foreground/60">
+          {description}
+        </p>
+      </div>
+      <div className="mt-2">{children}</div>
     </section>
   );
 }
@@ -44,17 +41,18 @@ export function ControlBlock({
   value: string;
 }) {
   return (
-    <section className="rounded-[16px] border border-border bg-panel-muted px-3 py-3 transition-colors hover:border-highlight/30">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-mono text-[0.54rem] font-medium uppercase tracking-[0.16em] text-highlight">
+    <section className="rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <p className="font-mono text-[0.5rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
             {label}
           </p>
-          <p className="mt-1 max-w-[24rem] text-[0.74rem] leading-5 text-muted-foreground">
+          <span className="font-mono text-[0.42rem] text-muted-foreground/40">|</span>
+          <p className="font-mono text-[0.46rem] uppercase tracking-[0.06em] text-muted-foreground/60">
             {description}
           </p>
         </div>
-        <p className="shrink-0 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-foreground">
+        <p className="shrink-0 font-mono text-[0.72rem] font-semibold tabular-nums text-foreground">
           {value}
         </p>
       </div>
@@ -71,13 +69,15 @@ export function MetricTile({
   value: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-border bg-panel-muted px-3 py-2.5 transition-colors hover:border-highlight/30">
-      <p className="font-mono text-[0.52rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-1 break-words font-mono text-[0.82rem] font-semibold tracking-[0.03em] text-foreground">
-        {value}
-      </p>
+    <div className="rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+          {label}
+        </p>
+        <p className="font-mono text-[0.72rem] font-semibold tabular-nums tracking-[0.03em] text-foreground">
+          {value}
+        </p>
+      </div>
     </div>
   );
 }
@@ -90,11 +90,11 @@ export function EndpointRow({
   value: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-border bg-panel-muted px-3 py-2">
-      <p className="font-mono text-[0.52rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+    <div className="rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1.5">
+      <p className="font-mono text-[0.42rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
         {label}
       </p>
-      <p className="mt-1 break-all font-mono text-[0.7rem] font-semibold tracking-[0.03em] text-foreground">
+      <p className="mt-0.5 break-all font-mono text-[0.58rem] font-semibold tracking-[0.02em] text-foreground">
         {value}
       </p>
     </div>
@@ -111,10 +111,10 @@ export function StateCallout({
   return (
     <div
       className={cn(
-        "rounded-[14px] border px-3 py-2 font-mono text-[0.68rem] leading-5 tracking-[0.03em]",
+        "rounded-[3px] border px-2.5 py-1.5 font-mono text-[0.58rem] leading-4 tracking-[0.03em]",
         tone === "error"
           ? "border-status-error-border bg-status-error-surface text-status-error-foreground"
-          : "border-border bg-panel-muted text-muted-foreground",
+          : "border-border/50 bg-panel-strong/60 text-muted-foreground",
       )}
     >
       {children}
@@ -134,7 +134,7 @@ export function ThemeOptionButton({
   return (
     <Button
       aria-pressed={isActive}
-      className="min-h-[40px] rounded-[12px] px-4 text-[0.66rem] uppercase tracking-[0.16em]"
+      className="min-h-[34px] rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
       onClick={onClick}
       size="sm"
       variant={isActive ? "default" : "secondary"}
@@ -158,7 +158,7 @@ export function SleepTimeoutOptionButton({
   return (
     <Button
       aria-pressed={isActive}
-      className="min-h-[40px] rounded-[12px] px-3 text-[0.62rem] uppercase tracking-[0.16em]"
+      className="min-h-[34px] rounded-[3px] px-2.5 text-[0.52rem] uppercase tracking-[0.14em]"
       disabled={disabled}
       onClick={onClick}
       size="sm"

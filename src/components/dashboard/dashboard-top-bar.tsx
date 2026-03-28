@@ -7,13 +7,7 @@ import {
   ScaleStatusCard,
 } from "./dashboard-top-bar-cards";
 
-export function DashboardTopBar({
-  isSimulatedShotActive,
-  onToggleSimulatedShot,
-}: {
-  isSimulatedShotActive: boolean;
-  onToggleSimulatedShot: () => void;
-}) {
+export function DashboardTopBar() {
   const showDevShotToggle = getDashboardDevEnabled();
 
   return (
@@ -23,12 +17,7 @@ export function DashboardTopBar({
         <ReservoirStatusCard />
         <ScaleStatusCard />
 
-        {showDevShotToggle ? (
-          <DevShotToggleButton
-            isSimulatedShotActive={isSimulatedShotActive}
-            onToggleSimulatedShot={onToggleSimulatedShot}
-          />
-        ) : null}
+        {showDevShotToggle ? <DevShotToggleButton /> : null}
 
         <div className="flex min-w-[160px] flex-1 items-stretch justify-end gap-1 md:ml-auto md:flex-none md:max-xl:min-w-[180px]">
           <MachineStatusCard />

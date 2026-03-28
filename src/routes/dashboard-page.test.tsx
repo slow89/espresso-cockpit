@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { dashboardUiDefaultState, useDashboardUiStore } from "@/stores/dashboard-ui-store";
 import { useMachineStore } from "@/stores/machine-store";
 
 import { DashboardPage } from "./dashboard-page";
@@ -45,6 +46,9 @@ describe("DashboardPage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useDashboardUiStore.setState({
+      ...dashboardUiDefaultState,
+    });
 
     useMachineStore.setState({
       error: null,

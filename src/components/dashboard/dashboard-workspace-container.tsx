@@ -3,50 +3,12 @@ import { DashboardTabletPrepBoard } from "@/components/dashboard/dashboard-table
 import { DashboardTabletShotSummary } from "@/components/dashboard/dashboard-tablet-shot-summary";
 import { DashboardWorkspace } from "@/components/dashboard/dashboard-workspace";
 import { TelemetryChart } from "@/components/telemetry-chart";
-import {
-  getDashboardPrepStatus,
-  getDashboardPresentationMode,
-} from "@/lib/dashboard-utils";
 import { useMachineStore } from "@/stores/machine-store";
-import {
-  useDashboardControlRows,
-  useDashboardRecipeControls,
-  useDashboardShotSummary,
-  useDashboardWorkflowControls,
-} from "./dashboard-view-model";
+import { useDashboardShotActive } from "./dashboard-view-model";
 
-export function DashboardWorkspaceContainer({
-  isSimulatedShotActive,
-}: {
-  isSimulatedShotActive: boolean;
-}) {
-  const liveConnection = useMachineStore((state) => state.liveConnection);
-  const machineError = useMachineStore((state) => state.error);
+export function DashboardWorkspaceContainer() {
   const telemetry = useMachineStore((state) => state.telemetry);
-  const workflowControls = useDashboardWorkflowControls();
-  const recipeControls = useDashboardRecipeControls(workflowControls);
-  const controlRows = useDashboardControlRows(workflowControls);
-  const shotSummaryItems = useDashboardShotSummary({
-    recipeControls,
-    snapshot: workflowControls.snapshot,
-    workflow: workflowControls.workflow,
-  });
-  const isOffline =
-    liveConnection !== "live" ||
-    Boolean(
-      machineError ||
-        workflowControls.machineQueryError ||
-        workflowControls.workflowQueryError,
-    );
-  const dashboardMode = getDashboardPresentationMode({
-    simulatedShotActive: isSimulatedShotActive,
-    snapshot: workflowControls.snapshot,
-    telemetry,
-  });
-  const prepStatus = getDashboardPrepStatus({
-    isOffline,
-    snapshot: workflowControls.snapshot,
-  });
+  const isShotActive = useDashboardShotActive();
 
   return (
     <DashboardWorkspace
@@ -62,24 +24,13 @@ export function DashboardWorkspaceContainer({
         </div>
       }
       desktopRail={
-        <DashboardControlRail
-          controlRows={controlRows}
-          recipeControls={recipeControls}
-          workflowDisabled={workflowControls.isUpdatingWorkflow}
-        />
+        <DashboardControlRail />
       }
-      isShotActive={dashboardMode === "shot"}
-      tabletPrepBoard={
-        <DashboardTabletPrepBoard
-          controlRows={controlRows}
-          prepStatus={prepStatus}
-          recipeControls={recipeControls}
-          workflowDisabled={workflowControls.isUpdatingWorkflow}
-        />
-      }
+      isShotActive={isShotActive}
+      tabletPrepBoard={<DashboardTabletPrepBoard />}
       tabletShotContent={
         <>
-          <DashboardTabletShotSummary items={shotSummaryItems} />
+          <DashboardTabletShotSummary />
           <div className="mt-2.5 min-h-0 flex-1 overflow-hidden">
             <TelemetryChart
               className="h-full rounded-[4px] border-0 bg-transparent p-0 shadow-none"

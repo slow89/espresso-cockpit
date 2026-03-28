@@ -1,7 +1,3 @@
-import {
-  useState,
-} from "react";
-
 import { DashboardSleepScreen } from "@/components/dashboard/dashboard-sleep-screen";
 import { DashboardTopBar } from "@/components/dashboard/dashboard-top-bar";
 import { DashboardWorkspaceContainer } from "@/components/dashboard/dashboard-workspace-container";
@@ -13,7 +9,6 @@ import {
 export function DashboardPage() {
   const { data: snapshot, error: machineQueryError } = useMachineStateQuery();
   const requestMachineStateMutation = useRequestMachineStateMutation();
-  const [isSimulatedShotActive, setIsSimulatedShotActive] = useState(false);
 
   function handleToggleMachinePower() {
     if (snapshot == null) {
@@ -42,11 +37,8 @@ export function DashboardPage() {
   return (
     <div>
       <div className="min-h-[calc(100svh-var(--app-footer-height))] overflow-hidden border-b border-border/30 bg-shell md:flex md:h-[calc(100svh-var(--app-footer-height))] md:flex-col">
-        <DashboardTopBar
-          isSimulatedShotActive={isSimulatedShotActive}
-          onToggleSimulatedShot={() => setIsSimulatedShotActive((current) => !current)}
-        />
-        <DashboardWorkspaceContainer isSimulatedShotActive={isSimulatedShotActive} />
+        <DashboardTopBar />
+        <DashboardWorkspaceContainer />
       </div>
     </div>
   );

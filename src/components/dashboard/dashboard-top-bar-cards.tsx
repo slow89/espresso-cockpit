@@ -12,6 +12,7 @@ import {
   useUpdateWorkflowMutation,
   useWorkflowQuery,
 } from "@/rest/queries";
+import { useDashboardUiStore } from "@/stores/dashboard-ui-store";
 import { type LiveConnectionState, useMachineStore } from "@/stores/machine-store";
 import { getDashboardActiveRecipe } from "./dashboard-view-model";
 
@@ -35,13 +36,10 @@ export function DashboardRecipeButton() {
   );
 }
 
-export function DevShotToggleButton({
-  isSimulatedShotActive,
-  onToggleSimulatedShot,
-}: {
-  isSimulatedShotActive: boolean;
-  onToggleSimulatedShot: () => void;
-}) {
+export function DevShotToggleButton() {
+  const isSimulatedShotActive = useDashboardUiStore((state) => state.isSimulatedShotActive);
+  const toggleSimulatedShot = useDashboardUiStore((state) => state.toggleSimulatedShot);
+
   return (
     <button
       aria-label={isSimulatedShotActive ? "Pause shot simulator" : "Play shot simulator"}
@@ -51,7 +49,7 @@ export function DevShotToggleButton({
           ? "border-status-success-border bg-status-success-surface text-status-success-foreground"
           : "border-border/50",
       )}
-      onClick={onToggleSimulatedShot}
+      onClick={toggleSimulatedShot}
       title={isSimulatedShotActive ? "Pause shot simulator" : "Play shot simulator"}
       type="button"
     >

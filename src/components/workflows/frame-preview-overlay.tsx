@@ -234,7 +234,7 @@ function FrameNavigator({
 
     const activeButton = container.children[selectedFrameIndex] as HTMLElement | undefined;
 
-    if (activeButton) {
+    if (activeButton && typeof activeButton.scrollIntoView === "function") {
       activeButton.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     }
   }, [selectedFrameIndex]);

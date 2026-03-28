@@ -2,54 +2,54 @@ import { useState, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { isVisualizerEnabled } from "@/lib/visualizer";
 import { cn } from "@/lib/utils";
-import { joinValues, getProfileTitle } from "@/lib/workflow-utils";
-import type { ProfileRecord, WorkflowProfile } from "@/rest/types";
+import {
+  getProfileFingerprint,
+  getProfileTitle,
+  joinValues,
+} from "@/lib/workflow-utils";
+import {
+  useImportVisualizerProfileMutation,
+  useProfilesQuery,
+  useUpdateWorkflowMutation,
+  useVisualizerSettingsQuery,
+  useWorkflowQuery,
+} from "@/rest/queries";
+import type { ProfileRecord } from "@/rest/types";
+import { useWorkflowPageStore } from "@/stores/workflow-page-store";
 
 import { WorkflowEmptyState } from "./workflow-empty-state";
 import { WorkflowPanel } from "./workflow-panel";
 
-export function WorkflowProfileChooserPanel({
-  activeProfile,
-  availableProfiles,
-  isApplying,
-  isImporting,
-  isVisualizerReady,
-  libraryStatus,
-  onApplyProfile,
-  onImportVisualizerProfile,
-  onOpenFrames,
-}: {
-  activeProfile: WorkflowProfile | undefined;
-  availableProfiles: ProfileRecord[];
-  isApplying: boolean;
-  isImporting: boolean;
-  isVisualizerReady: boolean;
-  libraryStatus: {
-    message: string | null;
-    tone: "error" | "success";
-  };
-  onApplyProfile: (record: ProfileRecord) => void;
-  onImportVisualizerProfile: (shareCode: string) => Promise<void>;
-  onOpenFrames: (profile: WorkflowProfile | undefined) => void;
-}) {
+export function WorkflowProfileChooserPanel() {
+  const { data: workflow } = useWorkflowQuery();
+  const { data: profiles } = useProfilesQuery();
+  const updateWorkflowMutation = useUpdateWorkflowMutation();
+  const activeProfile = workflow?.profile;
+  const activeProfileKey = getProfileFingerprint(activeProfile);
+  const availableProfiles = (profiles ?? [])
+    .filter((profile) => profile.visibility == null || profile.visibility === "visible")
+    .sort((left, right) => {
+      const defaultRank = Number(Boolean(right.isDefault)) - Number(Boolean(left.isDefault));
+
+      if (defaultRank !== 0) {
+        return defaultRank;
+      }
+
+      return getProfileTitle(left.profile).localeCompare(getProfileTitle(right.profile));
+    })
+    .filter((profile) => getProfileFingerprint(profile.profile) !== activeProfileKey);
+
   return (
     <WorkflowPanel
       className="md:flex md:h-full md:min-h-0 md:flex-col"
-      contentClassName="md:flex md:min-h-0 md:flex-1 px-0 py-0"
+      contentClassName="px-0 py-0 md:flex md:min-h-0 md:flex-1"
       title="Choose Profile"
     >
       <div className="grid gap-0 md:min-h-0 md:flex-1 md:grid-rows-[auto_auto_minmax(0,1fr)]">
-        <ProfileLibraryActions
-          isImporting={isImporting}
-          isVisualizerReady={isVisualizerReady}
-          libraryStatus={libraryStatus}
-          onImportVisualizerProfile={onImportVisualizerProfile}
-        />
-        <CurrentProfileRow
-          onOpenFrames={() => onOpenFrames(activeProfile)}
-          profile={activeProfile}
-        />
+        <ProfileLibraryActions />
+        <CurrentProfileRow />
         <div className="grid md:min-h-0 md:overflow-hidden">
           <p className="border-b border-border/30 px-3 py-1.5 font-mono text-[0.5rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
             Saved profiles
@@ -58,11 +58,8 @@ export function WorkflowProfileChooserPanel({
             <div className="max-h-[420px] divide-y divide-border/30 overflow-y-auto overscroll-contain md:max-h-none md:min-h-0">
               {availableProfiles.map((record) => (
                 <ProfileCard
-                  isActive={false}
-                  isApplying={isApplying}
+                  isApplying={updateWorkflowMutation.isPending}
                   key={record.id}
-                  onApply={() => onApplyProfile(record)}
-                  onOpenFrames={() => onOpenFrames(record.profile)}
                   record={record}
                 />
               ))}
@@ -81,29 +78,38 @@ export function WorkflowProfileChooserPanel({
   );
 }
 
-function ProfileLibraryActions({
-  isImporting,
-  isVisualizerReady,
-  libraryStatus,
-  onImportVisualizerProfile,
-}: {
-  isImporting: boolean;
-  isVisualizerReady: boolean;
-  libraryStatus: {
-    message: string | null;
-    tone: "error" | "success";
-  };
-  onImportVisualizerProfile: (shareCode: string) => Promise<void>;
-}) {
+function ProfileLibraryActions() {
   const [shareCode, setShareCode] = useState("");
-  const isImportDisabled = isImporting || !shareCode.trim() || !isVisualizerReady;
+  const { data: visualizerSettings } = useVisualizerSettingsQuery();
+  const importVisualizerProfileMutation = useImportVisualizerProfileMutation();
+  const isVisualizerReady = isVisualizerEnabled(visualizerSettings);
+  const libraryStatus = useWorkflowPageStore((state) => state.profileLibraryStatus);
+  const setProfileLibraryError = useWorkflowPageStore((state) => state.setProfileLibraryError);
+  const setProfileLibrarySuccess = useWorkflowPageStore((state) => state.setProfileLibrarySuccess);
+  const isImportDisabled =
+    importVisualizerProfileMutation.isPending || !shareCode.trim() || !isVisualizerReady;
 
   async function handleVisualizerImport() {
     if (isImportDisabled) {
       return;
     }
 
-    await onImportVisualizerProfile(shareCode.trim());
+    let importedProfileTitle = "Visualizer profile";
+
+    try {
+      const result = await importVisualizerProfileMutation.mutateAsync(shareCode.trim());
+
+      if (result.profileTitle) {
+        importedProfileTitle = result.profileTitle;
+      }
+    } catch (error) {
+      setProfileLibraryError(
+        getWorkflowActionErrorMessage(error, "Unable to import from Visualizer."),
+      );
+      return;
+    }
+
+    setProfileLibrarySuccess(`Imported ${importedProfileTitle}.`);
     setShareCode("");
   }
 
@@ -135,7 +141,7 @@ function ProfileLibraryActions({
               size="sm"
               type="button"
             >
-              {isImporting ? "..." : "Import"}
+              {importVisualizerProfileMutation.isPending ? "..." : "Import"}
             </Button>
           </div>
         </div>
@@ -163,13 +169,11 @@ function ProfileLibraryActions({
   );
 }
 
-function CurrentProfileRow({
-  onOpenFrames,
-  profile,
-}: {
-  onOpenFrames: () => void;
-  profile: WorkflowProfile | undefined;
-}) {
+function CurrentProfileRow() {
+  const { data: workflow } = useWorkflowQuery();
+  const openFramePreview = useWorkflowPageStore((state) => state.openFramePreview);
+  const profile = workflow?.profile;
+
   return (
     <div className="border-b border-border/30 bg-panel-strong/30 px-3 py-2">
       <div className="flex items-center gap-2">
@@ -191,7 +195,7 @@ function CurrentProfileRow({
         <FrameCountButton
           count={profile?.steps?.length ?? 0}
           disabled={!profile?.steps?.length}
-          onClick={onOpenFrames}
+          onClick={() => openFramePreview(profile)}
         />
       </div>
     </div>
@@ -199,27 +203,25 @@ function CurrentProfileRow({
 }
 
 function ProfileCard({
-  isActive,
   isApplying,
-  onApply,
-  onOpenFrames,
   record,
 }: {
-  isActive: boolean;
   isApplying: boolean;
-  onApply: () => void;
-  onOpenFrames: () => void;
   record: ProfileRecord;
 }) {
+  const updateWorkflowMutation = useUpdateWorkflowMutation();
+  const openFramePreview = useWorkflowPageStore((state) => state.openFramePreview);
   const profile = record.profile;
-  const isDisabled = isApplying || isActive;
+  const isDisabled = isApplying;
 
   function handleApply() {
     if (isDisabled) {
       return;
     }
 
-    onApply();
+    updateWorkflowMutation.mutate({
+      profile,
+    });
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -229,7 +231,7 @@ function ProfileCard({
 
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      onApply();
+      handleApply();
     }
   }
 
@@ -241,7 +243,6 @@ function ProfileCard({
         isDisabled
           ? "opacity-60"
           : "cursor-pointer hover:bg-panel-strong/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/40",
-        isActive ? "bg-highlight/8" : null,
       )}
       onClick={handleApply}
       onKeyDown={handleKeyDown}
@@ -269,7 +270,7 @@ function ProfileCard({
           <FrameCountButton
             count={profile.steps?.length ?? 0}
             disabled={!profile.steps?.length}
-            onClick={onOpenFrames}
+            onClick={() => openFramePreview(profile)}
           />
         </div>
         <p
@@ -310,4 +311,12 @@ function FrameCountButton({
       {count}f
     </button>
   );
+}
+
+function getWorkflowActionErrorMessage(error: unknown, fallbackMessage: string) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallbackMessage;
 }

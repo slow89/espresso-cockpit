@@ -1,47 +1,49 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { WorkflowShotSetupPanel } from "./workflow-shot-setup-panel";
 
+const queryMocks = vi.hoisted(() => ({
+  useUpdateWorkflowMutation: vi.fn(),
+  useWorkflowQuery: vi.fn(),
+}));
+
+vi.mock("@/rest/queries", async () => {
+  const actual = await vi.importActual<typeof import("@/rest/queries")>("@/rest/queries");
+
+  return {
+    ...actual,
+    useUpdateWorkflowMutation: queryMocks.useUpdateWorkflowMutation,
+    useWorkflowQuery: queryMocks.useWorkflowQuery,
+  };
+});
+
 describe("WorkflowShotSetupPanel", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    queryMocks.useWorkflowQuery.mockReturnValue({
+      data: {
+        context: {
+          coffeeName: "Sweet Bloom",
+          coffeeRoaster: "Passenger",
+          grinderModel: "Lagom Mini",
+          grinderSetting: "4.2",
+          targetDoseWeight: 18,
+          targetYield: 36,
+        },
+        description: "Dial-in",
+        name: "Morning spro",
+      },
+    });
+    queryMocks.useUpdateWorkflowMutation.mockReturnValue({
+      isPending: false,
+      mutate: vi.fn(),
+    });
+  });
+
   it("renders dose and yield controls in a compact inline row", () => {
-    render(
-      <WorkflowShotSetupPanel
-        dosePresets={[
-          { label: "16g", value: 16 },
-          { label: "18g", value: 18 },
-          { label: "20g", value: 20 },
-          { label: "22g", value: 22 },
-        ]}
-        drinkPresets={[
-          { label: "1:1.5", value: 1.5 },
-          { label: "1:2.0", value: 2.0 },
-          { label: "1:2.5", value: 2.5 },
-          { label: "1:3.0", value: 3.0 },
-        ]}
-        isUpdating={false}
-        onDecreaseDose={vi.fn()}
-        onDecreaseDrink={vi.fn()}
-        onIncreaseDose={vi.fn()}
-        onIncreaseDrink={vi.fn()}
-        onSelectDosePreset={vi.fn()}
-        onSelectDrinkPreset={vi.fn()}
-        onSubmit={vi.fn()}
-        ratio="1:2.0"
-        targetDose={18}
-        targetYield={36}
-        workflow={{
-          context: {
-            coffeeName: "Sweet Bloom",
-            coffeeRoaster: "Passenger",
-            grinderModel: "Lagom Mini",
-            grinderSetting: "4.2",
-          },
-          description: "Dial-in",
-          name: "Morning spro",
-        }}
-      />,
-    );
+    render(<WorkflowShotSetupPanel />);
 
     expect(screen.getByText("Dose")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Decrease Dose" })).toBeInTheDocument();

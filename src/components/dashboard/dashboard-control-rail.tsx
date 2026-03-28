@@ -7,18 +7,13 @@ import type {
   DashboardControlRow,
   DashboardRecipeControls,
 } from "@/components/dashboard/dashboard-view-model";
+import { useDashboardControlPanelModel } from "@/components/dashboard/dashboard-view-model";
 import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function DashboardControlRail({
-  controlRows,
-  recipeControls,
-  workflowDisabled,
-}: {
-  controlRows: ReadonlyArray<DashboardControlRow>;
-  recipeControls: DashboardRecipeControls;
-  workflowDisabled: boolean;
-}) {
+export function DashboardControlRail() {
+  const { controlRows, recipeControls, workflowDisabled } = useDashboardControlPanelModel();
+
   return (
     <aside className="border-b border-border/40 md:h-full md:min-h-0 md:overflow-y-auto md:overscroll-contain md:border-b-0 md:border-r md:border-border/40">
       <DoseDrinkControlRow disabled={workflowDisabled} {...recipeControls} />

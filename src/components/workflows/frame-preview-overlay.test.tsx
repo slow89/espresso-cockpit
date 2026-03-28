@@ -76,10 +76,8 @@ describe("FramePreviewOverlay", () => {
       />,
     );
 
-    const details = container.querySelector("details");
-
-    expect(screen.getByText("Raw frame JSON")).toBeInTheDocument();
-    expect(details?.hasAttribute("open")).toBe(false);
+    expect(screen.getByText("Raw frame")).toBeInTheDocument();
+    expect(container.querySelector("details")).toBeNull();
   });
 
   it("shows the chart empty state while keeping structured frame data for non-numeric frames", () => {

@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { useWorkflowPageStore, workflowPageDefaultState } from "@/stores/workflow-page-store";
+
 import { WorkflowsPage } from "./workflows-page";
 
 const {
@@ -36,6 +38,9 @@ describe("WorkflowsPage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useWorkflowPageStore.setState({
+      ...workflowPageDefaultState,
+    });
 
     useWorkflowQueryMock.mockReturnValue({
       data: {

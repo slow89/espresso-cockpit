@@ -4,20 +4,16 @@ import type {
   DashboardControlRow,
   DashboardRecipeControls,
 } from "@/components/dashboard/dashboard-view-model";
-import type { DashboardPrepStatus } from "@/lib/dashboard-utils";
+import {
+  useDashboardControlPanelModel,
+  useDashboardPrepStatusModel,
+} from "@/components/dashboard/dashboard-view-model";
 import { cn } from "@/lib/utils";
 
-export function DashboardTabletPrepBoard({
-  controlRows,
-  prepStatus,
-  recipeControls,
-  workflowDisabled,
-}: {
-  controlRows: ReadonlyArray<DashboardControlRow>;
-  prepStatus: DashboardPrepStatus;
-  recipeControls: DashboardRecipeControls;
-  workflowDisabled: boolean;
-}) {
+export function DashboardTabletPrepBoard() {
+  const { controlRows, recipeControls, workflowDisabled } = useDashboardControlPanelModel();
+  const prepStatus = useDashboardPrepStatusModel();
+
   return (
     <div
       className="min-h-0 flex-1 overflow-y-auto"

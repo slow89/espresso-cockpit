@@ -1,15 +1,9 @@
 import { cn } from "@/lib/utils";
+import { useDashboardShotSummaryItems } from "./dashboard-view-model";
 
-export type DashboardShotSummaryItem = {
-  label: string;
-  value: string;
-};
+export function DashboardTabletShotSummary() {
+  const items = useDashboardShotSummaryItems();
 
-export function DashboardTabletShotSummary({
-  items,
-}: {
-  items: ReadonlyArray<DashboardShotSummaryItem>;
-}) {
   return (
     <div
       className="flex items-stretch border-b border-border/40"

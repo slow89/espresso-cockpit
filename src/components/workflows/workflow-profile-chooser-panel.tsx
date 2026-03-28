@@ -295,10 +295,10 @@ function FrameCountButton({
   return (
     <button
       className={cn(
-        "rounded-[2px] border px-1.5 py-0.5 font-mono text-[0.46rem] uppercase tabular-nums tracking-[0.08em] transition",
+        "rounded-[3px] border px-2 py-1 font-mono text-[0.56rem] font-semibold uppercase tabular-nums tracking-[0.08em] transition md:px-2.5 md:py-1 md:text-[0.6rem]",
         disabled
           ? "border-border/30 text-muted-foreground/40"
-          : "border-border/50 text-muted-foreground hover:border-highlight/40 hover:text-foreground",
+          : "border-highlight/40 bg-highlight/8 text-highlight hover:border-highlight/60 hover:bg-highlight/15 hover:text-foreground",
       )}
       disabled={disabled}
       onClick={(event) => {

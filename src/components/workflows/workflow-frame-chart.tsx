@@ -104,7 +104,7 @@ export function WorkflowFrameChart({
   return (
     <div
       className={cn(
-        "panel flex h-full min-h-0 flex-col rounded-[20px] border-chart-border bg-chart-surface p-3 md:p-4 xl:p-5",
+        "panel flex h-full min-h-0 flex-col rounded-[3px] border-chart-border bg-chart-surface p-2 md:p-3 xl:p-5",
         className,
       )}
     >
@@ -238,7 +238,7 @@ export function WorkflowFrameMetricGrid({
 
   return (
     <div className="grid gap-2 sm:grid-cols-2">
-      <div className="rounded-[10px] border border-chart-border bg-panel-muted px-3 py-2.5">
+      <div className="rounded-[3px] border border-chart-border bg-panel-muted px-3 py-2.5">
         <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-muted-foreground">
           Frame
         </p>

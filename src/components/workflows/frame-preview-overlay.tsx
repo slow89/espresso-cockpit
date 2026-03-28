@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { X } from "lucide-react";
 
@@ -12,7 +12,8 @@ import {
   formatFrameValue,
   formatSeriesKey,
 } from "@/lib/workflow-frame-preview";
-import { getProfileTitle, joinValues } from "@/lib/workflow-utils";
+import { getProfileTitle } from "@/lib/workflow-utils";
+import { cn } from "@/lib/utils";
 import {
   deriveWorkflowFrameActivePreset,
   sanitizeWorkflowFrameSelection,
@@ -71,27 +72,45 @@ export function FramePreviewOverlay({
       role="dialog"
     >
       <div
-        className="flex min-h-screen flex-col bg-shell text-foreground"
+        className="flex h-[100svh] flex-col bg-shell text-foreground"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="sticky top-0 z-10 border-b border-border bg-shell/96 px-3 py-1.5 backdrop-blur md:px-4 md:py-1.5 xl:px-6 xl:py-3">
-          <div className="flex items-center justify-between gap-2 md:gap-3">
-            <div className="min-w-0 flex-1">
-              <h2 className="truncate font-display text-[0.98rem] leading-none text-foreground md:text-[1.1rem] xl:text-[1.8rem]">
-                {getProfileTitle(profile)}
-              </h2>
-              <p className="mt-1 truncate font-mono text-[0.54rem] uppercase tracking-[0.12em] text-muted-foreground md:text-[0.58rem] xl:text-[0.66rem]">
-                {joinValues([
-                  profile.author ?? "Unknown author",
-                  `${preview.frames.length} frames`,
-                  formatPresetLabel(activePreset),
-                ])}
+        {/* ── Trading-style header ── */}
+        <header className="shrink-0 border-b border-border/40 bg-panel-strong/30 pt-[env(safe-area-inset-top,0px)]">
+          <div className="flex items-stretch">
+            {/* Status beacon + frame counter */}
+            <div className="flex items-center gap-2 border-r border-border/40 px-3 py-1.5 md:px-4">
+              <span className="block size-2 rounded-full bg-status-success-foreground shadow-[0_0_6px_rgba(107,231,159,0.5)]" />
+              <p className="font-mono text-[0.58rem] font-semibold uppercase tabular-nums tracking-[0.08em] text-status-success-foreground md:text-[0.64rem]">
+                F{selectedFrameIndex + 1}/{preview.frames.length}
               </p>
             </div>
 
+            {/* Profile name */}
+            <div className="flex min-w-0 flex-1 items-center border-r border-border/30 px-3 py-1.5 md:px-4">
+              <p className="truncate font-mono text-[0.72rem] font-semibold text-foreground md:text-[0.78rem]">
+                {getProfileTitle(profile)}
+              </p>
+            </div>
+
+            {/* Author */}
+            <div className="hidden items-center border-r border-border/30 px-3 py-1.5 md:flex md:px-4">
+              <p className="font-mono text-[0.56rem] uppercase tracking-[0.06em] text-muted-foreground md:text-[0.6rem]">
+                {profile.author ?? "Unknown"}
+              </p>
+            </div>
+
+            {/* Preset label */}
+            <div className="hidden items-center border-r border-border/30 px-3 py-1.5 md:flex md:px-4">
+              <p className="font-mono text-[0.56rem] uppercase tracking-[0.08em] text-highlight md:text-[0.6rem]">
+                {formatPresetLabel(activePreset)}
+              </p>
+            </div>
+
+            {/* Close */}
             <Button
               autoFocus
-              className="size-8 rounded-[10px] border-border bg-panel px-0 text-muted-foreground hover:bg-panel-muted md:size-9 xl:min-h-[36px] xl:w-auto xl:px-3 xl:font-mono xl:text-[0.68rem] xl:uppercase xl:tracking-[0.16em] xl:text-foreground"
+              className="my-auto mx-2 size-9 shrink-0 rounded-[8px] border-border/40 bg-panel px-0 text-muted-foreground hover:bg-panel-muted md:mx-3 md:size-10 xl:min-h-[36px] xl:w-auto xl:px-3 xl:font-mono xl:text-[0.68rem] xl:uppercase xl:tracking-[0.16em] xl:text-foreground"
               onClick={onClose}
               type="button"
               variant="outline"
@@ -102,59 +121,41 @@ export function FramePreviewOverlay({
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid gap-3 px-3 py-3 md:px-4 md:py-3 xl:grid-cols-[minmax(0,1.15fr)_340px] xl:gap-4 xl:px-6 xl:py-5">
-            <section className="grid min-w-0 gap-3 xl:gap-4">
+        {/* ── Main content ── */}
+        <div className="min-h-0 flex-1 overflow-hidden xl:overflow-y-auto">
+          {/* Tablet layout: chart fills viewport, frame nav below */}
+          <div className="flex h-full flex-col xl:hidden">
+            <div className="min-h-0 flex-1 p-2 md:p-3">
               <WorkflowFrameChart
-                className="p-2.5 md:p-3 xl:p-5"
+                className="h-full"
+                layout="tablet"
                 onSelectFrame={setSelectedFrameIndex}
                 preview={preview}
                 selectedFrameIndex={selectedFrameIndex}
               />
+            </div>
 
-              <details className="rounded-[14px] border border-border bg-panel p-2.5 md:p-3 xl:hidden">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-muted-foreground">
-                  <span>Selected frame fields</span>
-                  <span>
-                    {selectedFrame
-                      ? `F${selectedFrameIndex + 1}/${preview.frames.length} • ${Object.keys(selectedFrame).length}`
-                      : "Unavailable"}
-                  </span>
-                </summary>
-                <div className="mt-2 grid max-h-[30vh] gap-1 overflow-y-auto pr-1 sm:grid-cols-2 md:grid-cols-3">
-                  {selectedFrame ? (
-                    Object.entries(selectedFrame).map(([key, value]) => (
-                      <div
-                        className="rounded-[8px] border border-border bg-panel-muted px-1.5 py-1 md:px-2 md:py-1.5"
-                        key={key}
-                      >
-                        <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.14em] text-muted-foreground md:text-[0.5rem]">
-                          {formatSeriesKey(key)}
-                        </p>
-                        <p className="mt-0.5 break-words font-mono text-[0.64rem] leading-4 text-foreground md:text-[0.68rem]">
-                          {formatFrameValue(value)}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <WorkflowEmptyState body="No frame selected." title="Unavailable" />
-                  )}
-                </div>
-              </details>
+            {/* Frame navigator strip */}
+            <FrameNavigator
+              frameCount={preview.frames.length}
+              onSelectFrame={setSelectedFrameIndex}
+              selectedFrameIndex={selectedFrameIndex}
+            />
+          </div>
 
-              <details className="rounded-[14px] border border-border bg-panel p-2.5 md:p-3 xl:hidden">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-muted-foreground">
-                  <span>Raw frame JSON</span>
-                  <span>F{selectedFrameIndex + 1}</span>
-                </summary>
-                <pre className="mt-2.5 overflow-x-auto rounded-[10px] border border-border bg-panel-muted p-2.5 font-mono text-[0.64rem] leading-5 text-muted-foreground">
-                  {JSON.stringify(selectedFrame ?? {}, null, 2)}
-                </pre>
-              </details>
+          {/* Desktop layout: chart + sidebar */}
+          <div className="hidden h-full xl:grid xl:grid-cols-[minmax(0,1.15fr)_340px] xl:gap-4 xl:px-6 xl:py-5">
+            <section className="grid min-w-0 gap-4">
+              <WorkflowFrameChart
+                className="p-5"
+                onSelectFrame={setSelectedFrameIndex}
+                preview={preview}
+                selectedFrameIndex={selectedFrameIndex}
+              />
             </section>
 
-            <aside className="hidden xl:grid xl:content-start xl:gap-4">
-              <div className="rounded-[14px] border border-border bg-panel p-3 md:p-4">
+            <aside className="grid content-start gap-4 overflow-y-auto">
+              <div className="rounded-[3px] border border-border bg-panel p-3 md:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                     Selected frame
@@ -172,7 +173,7 @@ export function FramePreviewOverlay({
                 </div>
               </div>
 
-              <div className="rounded-[14px] border border-border bg-panel p-3 md:p-4">
+              <div className="rounded-[3px] border border-border bg-panel p-3 md:p-4">
                 <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Structured frame
                 </p>
@@ -180,7 +181,7 @@ export function FramePreviewOverlay({
                   {selectedFrame ? (
                     Object.entries(selectedFrame).map(([key, value]) => (
                       <div
-                        className="rounded-[9px] border border-border bg-panel-muted px-2.5 py-2"
+                        className="rounded-[3px] border border-border bg-panel-muted px-2.5 py-2"
                         key={key}
                       >
                         <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
@@ -197,16 +198,76 @@ export function FramePreviewOverlay({
                 </div>
               </div>
 
-              <div className="rounded-[14px] border border-border bg-panel p-3 md:p-4">
+              <div className="rounded-[3px] border border-border bg-panel p-3 md:p-4">
                 <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Raw frame
                 </p>
-                <pre className="mt-3 overflow-x-auto rounded-[10px] border border-border bg-panel-muted p-3 font-mono text-[0.68rem] leading-5 text-muted-foreground">
+                <pre className="mt-3 overflow-x-auto rounded-[3px] border border-border bg-panel-muted p-3 font-mono text-[0.68rem] leading-5 text-muted-foreground">
                   {JSON.stringify(selectedFrame ?? {}, null, 2)}
                 </pre>
               </div>
             </aside>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FrameNavigator({
+  frameCount,
+  onSelectFrame,
+  selectedFrameIndex,
+}: {
+  frameCount: number;
+  onSelectFrame: (index: number) => void;
+  selectedFrameIndex: number;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const activeButton = container.children[selectedFrameIndex] as HTMLElement | undefined;
+
+    if (activeButton) {
+      activeButton.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
+  }, [selectedFrameIndex]);
+
+  if (frameCount === 0) {
+    return null;
+  }
+
+  return (
+    <div className="shrink-0 border-t border-border/40 bg-panel-strong/30 pb-[env(safe-area-inset-bottom,0px)]">
+      <div className="flex items-center gap-2 px-2.5 py-1 md:px-3 md:py-1.5">
+        <p className="shrink-0 font-mono text-[0.46rem] font-medium uppercase tracking-[0.1em] text-muted-foreground md:text-[0.5rem]">
+          Frame
+        </p>
+        <div
+          className="-mx-0.5 flex min-w-0 flex-1 gap-1 overflow-x-auto px-0.5 py-1 scrollbar-none md:gap-1.5"
+          ref={scrollRef}
+        >
+          {Array.from({ length: frameCount }, (_, i) => (
+            <button
+              className={cn(
+                "shrink-0 rounded-[4px] px-2 py-1.5 font-mono text-[0.56rem] font-medium tabular-nums transition-colors md:min-w-[36px] md:px-2.5 md:py-2 md:text-[0.62rem]",
+                i === selectedFrameIndex
+                  ? "border border-accent/50 bg-accent/12 text-accent"
+                  : "border border-border/30 text-muted-foreground hover:border-highlight/40 hover:text-foreground active:bg-highlight/8",
+              )}
+              key={i}
+              onClick={() => onSelectFrame(i)}
+              type="button"
+            >
+              {i + 1}
+            </button>
+          ))}
         </div>
       </div>
     </div>

@@ -6,18 +6,28 @@ export function DashboardTabletPrepStatus({
 }: {
   status: DashboardPrepStatus;
 }) {
+  const isWarming = status.tone === "warming";
+
   return (
     <section
-      className="flex items-stretch"
+      className={cn(
+        "flex items-stretch",
+        isWarming && "animate-pulse bg-highlight-muted/10",
+      )}
       data-testid="dashboard-tablet-prep-status"
     >
       {/* Status beacon */}
-      <div className="flex items-center gap-2 border-r border-border/70 px-3 py-1.5 md:px-5 md:py-2">
+      <div
+        className={cn(
+          "flex items-center gap-2 border-r border-border/70 px-3 py-1.5 md:px-5 md:py-2",
+          isWarming && "gap-3 py-2.5 md:gap-4 md:py-3",
+        )}
+      >
         <span
           className={cn(
             "block size-2 rounded-full md:size-3",
             status.tone === "ready" && "bg-status-success-foreground shadow-[0_0_6px_rgba(107,231,159,0.5)]",
-            status.tone === "warming" && "bg-highlight-muted animate-pulse shadow-[0_0_6px_rgba(217,152,38,0.4)]",
+            isWarming && "size-3 bg-highlight-muted shadow-[0_0_10px_rgba(217,152,38,0.6)] md:size-4",
             status.tone === "offline" && "bg-status-warning-foreground",
             status.tone === "sleeping" && "bg-muted-foreground/40",
           )}
@@ -26,7 +36,7 @@ export function DashboardTabletPrepStatus({
           className={cn(
             "font-mono text-[0.64rem] font-semibold uppercase tracking-[0.08em] md:text-[0.88rem]",
             status.tone === "ready" && "text-status-success-foreground",
-            status.tone === "warming" && "text-highlight-muted",
+            isWarming && "text-[0.82rem] text-highlight-muted md:text-[1.1rem]",
             status.tone === "offline" && "text-status-warning-foreground",
             status.tone === "sleeping" && "text-muted-foreground",
           )}

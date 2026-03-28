@@ -20,7 +20,12 @@ export function DashboardTabletPrepBoard() {
       data-testid="dashboard-tablet-prep-board"
     >
       {/* Status ticker — compact, full-bleed */}
-      <div className="border-b border-border/70 bg-panel/60">
+      <div
+        className={cn(
+          "border-b border-border/70 bg-panel/60",
+          prepStatus.tone === "warming" && "border-b-highlight-muted/30 bg-highlight-muted/5",
+        )}
+      >
         <DashboardTabletPrepStatus status={prepStatus} />
       </div>
 

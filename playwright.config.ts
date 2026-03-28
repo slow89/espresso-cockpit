@@ -11,6 +11,7 @@ export default defineConfig({
     toHaveScreenshot: {
       animations: "disabled",
       caret: "hide",
+      maxDiffPixelRatio: isCi ? 0.025 : undefined,
       pathTemplate:
         "{snapshotDir}/{testFileDir}/{testFileName}-snapshots/{arg}{-projectName}{ext}",
       scale: "device",

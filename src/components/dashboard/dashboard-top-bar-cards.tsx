@@ -21,7 +21,7 @@ export function DashboardRecipeButton() {
   return (
     <Button
       asChild
-      className="h-auto min-h-8 min-w-[160px] flex-1 justify-between rounded-[3px] border-border/50 bg-panel-strong/60 px-2.5 py-1 font-mono text-[0.68rem] font-medium text-foreground hover:bg-panel-strong md:flex-none md:max-w-[260px] md:max-xl:min-h-9 md:max-xl:min-w-[190px] md:max-xl:px-3 md:max-xl:py-1.5 md:max-xl:text-[0.72rem]"
+      className="h-auto min-h-8 min-w-[160px] flex-1 justify-between rounded-[3px] border-border/50 bg-panel-strong/60 px-2.5 py-1 font-mono text-[0.68rem] font-medium text-foreground hover:bg-panel-strong md:flex-none md:max-w-[260px] md:max-xl:min-h-10 md:max-xl:min-w-[190px] md:max-xl:px-3 md:max-xl:py-2 md:max-xl:text-[0.78rem]"
       size="sm"
       variant="outline"
     >

@@ -14,6 +14,8 @@ on:
 jobs:
   full-browser-suite:
     runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_REAL_GATEWAY_URL: ${{ secrets.REAL_GATEWAY_URL }}
 
     steps:
       - name: Checkout code
@@ -40,9 +42,7 @@ jobs:
         run: pnpm test:browser:full
 
       - name: Run optional real-gateway smoke
-        if: github.event_name == 'workflow_dispatch' && inputs.run_real_gateway && secrets.REAL_GATEWAY_URL != ''
-        env:
-          PLAYWRIGHT_REAL_GATEWAY_URL: ${{ secrets.REAL_GATEWAY_URL }}
+        if: github.event_name == 'workflow_dispatch' && inputs.run_real_gateway && env.PLAYWRIGHT_REAL_GATEWAY_URL != ''
         run: pnpm test:browser:real
 
       - name: Upload browser failure artifacts

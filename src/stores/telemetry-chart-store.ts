@@ -21,6 +21,7 @@ interface TelemetryChartState extends TelemetryChartPreferences {
 export const telemetryChartDefaultLaneVisibility: Record<TelemetrySeriesFamily, boolean> = {
   pressure: true,
   flow: true,
+  weight: true,
   temperature: true,
   progress: true,
 };
@@ -81,7 +82,7 @@ export const useTelemetryChartStore = create<TelemetryChartState>()(
         }),
     }),
     {
-      name: "decent-skin-telemetry-chart",
+      name: "espresso-cockpit-telemetry-chart",
       partialize: (state) => ({
         selectedSeriesIds: uniqueSeriesIds(state.selectedSeriesIds),
         laneVisibility: state.laneVisibility,

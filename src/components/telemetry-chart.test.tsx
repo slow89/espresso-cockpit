@@ -27,6 +27,8 @@ const samples: TelemetrySample[] = [
     substate: "preinfusion",
     elapsedSeconds: 10,
     shotElapsedSeconds: 0,
+    weight: 0,
+    weightFlow: 0,
   },
   {
     timestamp: "2026-03-21T12:00:01.000Z",
@@ -44,6 +46,8 @@ const samples: TelemetrySample[] = [
     substate: "pouring",
     elapsedSeconds: 11,
     shotElapsedSeconds: 1,
+    weight: 18.5,
+    weightFlow: 2.1,
   },
 ];
 
@@ -106,7 +110,7 @@ describe("TelemetryChart", () => {
     expect(screen.getAllByText("Shot time").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Open chart controls")).toBeInTheDocument();
     expect(screen.queryByText("Configuration")).not.toBeInTheDocument();
-    expect(screen.getByText("Mix")).toBeInTheDocument();
+    expect(screen.getAllByText("Mix").length).toBeGreaterThan(0);
     expect(screen.queryByText("Phase")).not.toBeInTheDocument();
     expect(screen.queryByText("Frame")).not.toBeInTheDocument();
   });

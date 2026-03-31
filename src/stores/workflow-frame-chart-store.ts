@@ -135,7 +135,7 @@ export const useWorkflowFrameChartStore = create<WorkflowFrameChartState>()(
         }),
     }),
     {
-      name: "decent-skin-workflow-frame-chart",
+      name: "espresso-cockpit-workflow-frame-chart",
       partialize: (state) => ({
         activePreset: state.activePreset,
         laneVisibility: state.laneVisibility,

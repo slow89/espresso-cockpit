@@ -29,7 +29,7 @@ export const useWaterAlertStore = create<WaterAlertState>()(
       resetDismiss: () => set({ dismissed: false }),
     }),
     {
-      name: "decent-skin-water-alert",
+      name: "espresso-cockpit-water-alert",
       partialize: (state) => ({ alertThreshold: state.alertThreshold }),
     },
   ),

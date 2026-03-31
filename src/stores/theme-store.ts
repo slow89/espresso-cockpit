@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 
 export type AppTheme = "dark" | "light";
 
-const themeStorageKey = "decent-skin-theme";
+const themeStorageKey = "espresso-cockpit-theme";
 const fallbackTheme: AppTheme = "dark";
 
 function isAppTheme(value: unknown): value is AppTheme {

@@ -52,10 +52,12 @@ export function TelemetryChart({
     .map((seriesId) => getTelemetrySeriesDefinition(seriesId))
     .filter((series): series is TelemetrySeriesDefinition => series != null);
   const summarySeries = selectedSeries.filter((series) => laneVisibility[series.family]);
+  const isLive = usesShotTimeline && timelineSamples.length > 0;
   const model = {
     activePreset,
     activeSample,
     hoveredSampleIndex,
+    isLive,
     laneVisibility,
     latestSample,
     selectedSeries,

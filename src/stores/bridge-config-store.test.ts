@@ -14,7 +14,7 @@ describe("useBridgeConfigStore", () => {
     useBridgeConfigStore.getState().setGatewayUrl("http://bridge.local:8080/");
 
     expect(useBridgeConfigStore.getState().gatewayUrl).toBe("http://bridge.local:8080");
-    expect(localStorage.getItem("decent-skin-config")).toContain(
+    expect(localStorage.getItem("espresso-cockpit-config")).toContain(
       "\"gatewayUrl\":\"http://bridge.local:8080\"",
     );
   });

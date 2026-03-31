@@ -21,7 +21,7 @@ describe("useTelemetryChartStore", () => {
     useTelemetryChartStore.getState().setPreset("all-signals");
     useTelemetryChartStore.getState().toggleLane("progress");
 
-    const raw = localStorage.getItem("decent-skin-telemetry-chart");
+    const raw = localStorage.getItem("espresso-cockpit-telemetry-chart");
 
     expect(raw).not.toBeNull();
     expect(raw).toContain("\"activePreset\":\"all-signals\"");

@@ -1,6 +1,6 @@
-import type { MachineSnapshot } from "@/rest/types";
+import type { MachineSnapshot, ScaleSnapshot } from "@/rest/types";
 
-export type TelemetrySeriesFamily = "pressure" | "flow" | "temperature" | "progress";
+export type TelemetrySeriesFamily = "pressure" | "flow" | "weight" | "temperature" | "progress";
 export type TelemetryStrokeStyle = "solid" | "dashed";
 export const maxTelemetrySamples = 180;
 
@@ -22,6 +22,8 @@ export type TelemetrySample = Pick<
   substate: MachineSnapshot["state"]["substate"];
   elapsedSeconds: number;
   shotElapsedSeconds: number | null;
+  weight: number | null;
+  weightFlow: number | null;
 };
 
 export type TelemetrySeriesDefinition = {
@@ -88,6 +90,30 @@ export const telemetrySeriesRegistry: readonly TelemetrySeriesDefinition[] = [
     digits: 1,
     defaultVisible: true,
     accessor: (sample) => sample.targetFlow,
+  },
+  {
+    id: "weight",
+    label: "Weight",
+    shortLabel: "Weight",
+    unit: "g",
+    family: "weight",
+    color: "#5bbfed",
+    strokeStyle: "solid",
+    digits: 1,
+    defaultVisible: true,
+    accessor: (sample) => sample.weight,
+  },
+  {
+    id: "weightFlow",
+    label: "Weight flow",
+    shortLabel: "W. flow",
+    unit: "g/s",
+    family: "weight",
+    color: "#94d6f5",
+    strokeStyle: "solid",
+    digits: 1,
+    defaultVisible: true,
+    accessor: (sample) => sample.weightFlow,
   },
   {
     id: "mixTemperature",
@@ -176,6 +202,7 @@ export type TelemetryChartPreferences = {
 export const telemetryFamilyOrder = [
   "pressure",
   "flow",
+  "weight",
   "temperature",
   "progress",
 ] as const satisfies readonly TelemetrySeriesFamily[];
@@ -183,6 +210,7 @@ export const telemetryFamilyOrder = [
 export const telemetryFamilyLabels: Record<TelemetrySeriesFamily, string> = {
   pressure: "Pressure",
   flow: "Flow",
+  weight: "Weight",
   temperature: "Temperature",
   progress: "Progress",
 };
@@ -270,7 +298,7 @@ export function getTelemetryTimelineSample(samples: TelemetrySample[]) {
   return shotSamples.length > 0 ? shotSamples : samples;
 }
 
-export function appendTelemetryHistory(telemetry: TelemetrySample[], snapshot: MachineSnapshot) {
+export function appendTelemetryHistory(telemetry: TelemetrySample[], snapshot: MachineSnapshot, scaleSnapshot?: ScaleSnapshot | null) {
   const previousSample = telemetry[telemetry.length - 1];
   const firstTimestampMs = getTimestampMs(telemetry[0]?.timestamp) ?? getTimestampMs(snapshot.timestamp);
   const currentTimestampMs = getTimestampMs(snapshot.timestamp);
@@ -315,6 +343,8 @@ export function appendTelemetryHistory(telemetry: TelemetrySample[], snapshot: M
       substate: snapshot.state.substate,
       elapsedSeconds,
       shotElapsedSeconds,
+      weight: scaleSnapshot?.weight ?? null,
+      weightFlow: scaleSnapshot?.weightFlow ?? null,
     },
   ].slice(-maxTelemetrySamples);
 }

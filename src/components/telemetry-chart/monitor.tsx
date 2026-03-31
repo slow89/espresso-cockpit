@@ -3,7 +3,7 @@ import type { PointerEvent } from "react";
 import { GridColumns, GridRows } from "@visx/grid";
 import { Group } from "@visx/group";
 import { scaleLinear } from "@visx/scale";
-import { LinePath } from "@visx/shape";
+import { AreaClosed, LinePath } from "@visx/shape";
 
 import {
   CompactMonitorBar as SharedCompactMonitorBar,
@@ -19,20 +19,23 @@ import {
 } from "@/lib/telemetry";
 import { TelemetryConfigPanel } from "./config";
 import {
+  axisFamilyMapping,
   buildMonitorStatusItems,
-  buildVisibleLanes,
   chartTheme,
   compactStateLabel,
   findNearestSampleIndex,
   formatPresetLabel,
-  getChartMetrics,
-  getLaneDomain,
+  getAreaGradientId,
+  getAxisDomain,
+  getGlowFilterId,
   getLaneTicks,
   getSampleXValue,
   getStateEvents,
   getTimelineTicks,
+  getUnifiedChartMetrics,
+  getUniqueSeriesColors,
+  type ChartAxisSide,
   type ChartDensity,
-  type LaneConfig,
   type LinearScale,
   type SelectableTelemetryChartPreset,
   type TelemetryChartDataModel,
@@ -62,6 +65,7 @@ export function TabletTelemetryMonitor({
       <TelemetryMonitorCanvas
         density="compact"
         hoveredSample={model.activeSample}
+        isLive={model.isLive}
         laneVisibility={model.laneVisibility}
         onPointerLeave={onPointerLeave}
         onPointerMove={onPointerMove}
@@ -103,6 +107,7 @@ export function DesktopTelemetryMonitor({
           <TelemetryMonitorCanvas
             density="regular"
             hoveredSample={model.activeSample}
+            isLive={model.isLive}
             laneVisibility={model.laneVisibility}
             onPointerLeave={onPointerLeave}
             onPointerMove={onPointerMove}
@@ -160,6 +165,7 @@ function DesktopMonitorBar({
 function TelemetryMonitorCanvas({
   density,
   hoveredSample,
+  isLive,
   laneVisibility,
   onPointerLeave,
   onPointerMove,
@@ -169,6 +175,7 @@ function TelemetryMonitorCanvas({
 }: {
   density: ChartDensity;
   hoveredSample: TelemetrySample | null;
+  isLive: boolean;
   laneVisibility: Record<TelemetrySeriesFamily, boolean>;
   onPointerLeave: () => void;
   onPointerMove: (index: number | null) => void;
@@ -177,8 +184,26 @@ function TelemetryMonitorCanvas({
   usesShotTimeline: boolean;
 }) {
   const [containerRef, containerSize] = useElementSize<HTMLDivElement>();
-  const visibleLanes = buildVisibleLanes(selectedSeries, laneVisibility, density);
-  const chartMetrics = getChartMetrics(density, visibleLanes, containerSize);
+  const chartMetrics = getUnifiedChartMetrics(density, containerSize);
+
+  const visibleSeries = selectedSeries.filter(
+    (series) => series.family !== "progress" && laneVisibility[series.family],
+  );
+  const leftSeries = visibleSeries.filter((s) => axisFamilyMapping[s.family] === "left");
+  const rightSeries = visibleSeries.filter((s) => axisFamilyMapping[s.family] === "right");
+
+  const leftDomain = getAxisDomain("left", leftSeries, timelineSamples);
+  const rightDomain = getAxisDomain("right", rightSeries, timelineSamples);
+
+  const leftScale: LinearScale = scaleLinear<number>({
+    domain: leftDomain,
+    range: [chartMetrics.plotHeight, 0],
+  });
+  const rightScale: LinearScale = scaleLinear<number>({
+    domain: rightDomain,
+    range: [chartMetrics.plotHeight, 0],
+  });
+
   const timelineValues = timelineSamples.map((sample) =>
     getSampleXValue(sample, usesShotTimeline),
   );
@@ -192,6 +217,18 @@ function TelemetryMonitorCanvas({
       ? null
       : xScale(getSampleXValue(hoveredSample, usesShotTimeline));
   const stateEvents = getStateEvents(timelineSamples, usesShotTimeline);
+  const allColors = getUniqueSeriesColors(visibleSeries);
+  const solidSeries = visibleSeries.filter((s) => s.strokeStyle === "solid");
+  const lastSample = timelineSamples[timelineSamples.length - 1];
+  const tickCount = density === "compact" ? 3 : 4;
+
+  function getSeriesScale(series: TelemetrySeriesDefinition) {
+    return axisFamilyMapping[series.family] === "left" ? leftScale : rightScale;
+  }
+
+  function getSeriesDomain(series: TelemetrySeriesDefinition): [number, number] {
+    return axisFamilyMapping[series.family] === "left" ? leftDomain : rightDomain;
+  }
 
   function handlePointerMove(event: PointerEvent<SVGRectElement>) {
     if (timelineSamples.length === 0) {
@@ -226,6 +263,47 @@ function TelemetryMonitorCanvas({
         preserveAspectRatio="none"
         viewBox={`0 0 ${chartMetrics.width} ${chartHeight}`}
       >
+        <defs>
+          {allColors.map((color) => (
+            <filter
+              id={getGlowFilterId(color)}
+              key={`filter-${color}`}
+              filterUnits="userSpaceOnUse"
+              x={-chartMetrics.margin.left}
+              y={-chartMetrics.margin.top}
+              width={chartMetrics.width + chartMetrics.margin.left}
+              height={chartHeight + chartMetrics.margin.top}
+            >
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+              <feFlood floodColor={color} floodOpacity="0.25" result="color" />
+              <feComposite in="color" in2="blur" operator="in" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          ))}
+
+          {solidSeries.map((series) => (
+            <linearGradient
+              id={getAreaGradientId(series.id)}
+              key={`grad-${series.id}`}
+              x1="0"
+              x2="0"
+              y1="0"
+              y2="1"
+            >
+              <stop offset="0%" stopColor={series.color} stopOpacity="0.08" />
+              <stop offset="100%" stopColor={series.color} stopOpacity="0" />
+            </linearGradient>
+          ))}
+
+          <linearGradient id="atmosphere-edge" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor={chartTheme.atmosphereEdge} stopOpacity="0" />
+            <stop offset="100%" stopColor={chartTheme.atmosphereEdge} stopOpacity="1" />
+          </linearGradient>
+        </defs>
+
         <rect
           fill={chartTheme.surface}
           height={chartHeight}
@@ -237,33 +315,174 @@ function TelemetryMonitorCanvas({
         />
 
         <Group left={chartMetrics.margin.left} top={chartMetrics.margin.top}>
-          {visibleLanes.length > 0 ? (
-            visibleLanes.map((lane, laneIndex) => (
-              <TelemetryLane
-                density={density}
-                index={laneIndex}
-                key={lane.family}
-                lane={lane}
-                maxTimelineValue={maxTimelineValue}
-                samples={timelineSamples}
-                stateEvents={lane.family === "progress" ? stateEvents : []}
-                usesShotTimeline={usesShotTimeline}
-                width={chartMetrics.innerWidth}
-                xScale={xScale}
+          {/* Plot background */}
+          <rect
+            fill={chartTheme.laneSurface}
+            height={chartMetrics.plotHeight}
+            rx={3}
+            width={chartMetrics.innerWidth}
+            x={0}
+            y={0}
+          />
+
+          {isLive ? (
+            <rect
+              fill={chartTheme.atmosphereTint}
+              height={chartMetrics.plotHeight}
+              rx={3}
+              width={chartMetrics.innerWidth}
+              x={0}
+              y={0}
+              style={{ pointerEvents: "none" }}
+            />
+          ) : null}
+
+          {/* Grid */}
+          <GridColumns
+            height={chartMetrics.plotHeight}
+            numTicks={density === "compact" ? 4 : Math.max(Math.round(maxTimelineValue / 4), 5)}
+            scale={xScale}
+            stroke={chartTheme.grid}
+            width={chartMetrics.innerWidth}
+          />
+
+          {leftSeries.length > 0 ? (
+            <GridRows
+              height={chartMetrics.plotHeight}
+              numTicks={tickCount}
+              scale={leftScale}
+              stroke={chartTheme.grid}
+              width={chartMetrics.innerWidth}
+            />
+          ) : null}
+
+          {/* State events as vertical markers */}
+          {stateEvents.map((event, index) => {
+            const x = xScale(event.xValue);
+            const eventLabelY = index % 2 === 0
+              ? (density === "compact" ? 10 : 14)
+              : (density === "compact" ? 22 : 28);
+
+            return (
+              <Group key={`${event.label}-${event.xValue}`}>
+                <line
+                  stroke={chartTheme.event}
+                  strokeDasharray="4 4"
+                  x1={x}
+                  x2={x}
+                  y1={0}
+                  y2={chartMetrics.plotHeight}
+                />
+                <text
+                  dominantBaseline="hanging"
+                  fill={chartTheme.muted}
+                  fontFamily={chartTheme.mono}
+                  fontSize={density === "compact" ? "8" : "9"}
+                  textAnchor="middle"
+                  x={Math.max(40, Math.min(chartMetrics.innerWidth - 40, x))}
+                  y={eventLabelY}
+                >
+                  {density === "compact" ? compactStateLabel(event.label) : event.label}
+                </text>
+              </Group>
+            );
+          })}
+
+          {/* Area fills */}
+          {solidSeries.map((series) => {
+            const yScale = getSeriesScale(series);
+            const domain = getSeriesDomain(series);
+            return (
+              <AreaClosed
+                data={timelineSamples}
+                key={`area-${series.id}`}
+                fill={`url(#${getAreaGradientId(series.id)})`}
+                x={(sample: TelemetrySample) => xScale(getSampleXValue(sample, usesShotTimeline))}
+                y0={chartMetrics.plotHeight}
+                y1={(sample: TelemetrySample) => yScale(series.accessor(sample) ?? domain[0])}
+                yScale={yScale}
               />
-            ))
-          ) : (
+            );
+          })}
+
+          {/* Data lines */}
+          {visibleSeries.map((series) => {
+            const yScale = getSeriesScale(series);
+            const domain = getSeriesDomain(series);
+            return (
+              <LinePath
+                data={timelineSamples}
+                key={series.id}
+                filter={`url(#${getGlowFilterId(series.color)})`}
+                stroke={series.color}
+                strokeDasharray={
+                  series.strokeStyle === "dashed"
+                    ? density === "compact"
+                      ? "5 4"
+                      : "8 6"
+                    : undefined
+                }
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={
+                  series.strokeStyle === "dashed"
+                    ? density === "compact"
+                      ? 1
+                      : 1.5
+                    : density === "compact"
+                      ? 1.5
+                      : 2
+                }
+                x={(sample: TelemetrySample) => xScale(getSampleXValue(sample, usesShotTimeline))}
+                y={(sample: TelemetrySample) => yScale(series.accessor(sample) ?? domain[0])}
+              />
+            );
+          })}
+
+          {/* Pulsing live indicators */}
+          {isLive && lastSample
+            ? solidSeries.map((series) => {
+                const value = series.accessor(lastSample);
+                if (value == null) return null;
+                const yScale = getSeriesScale(series);
+                const cx = xScale(getSampleXValue(lastSample, usesShotTimeline));
+                const cy = yScale(value);
+                return (
+                  <g key={`pulse-${series.id}`}>
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={4}
+                      fill={series.color}
+                      opacity={0.5}
+                      style={{
+                        animation: "telemetry-pulse 1.5s ease-out infinite",
+                      }}
+                    />
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={density === "compact" ? 2.5 : 3}
+                      fill={series.color}
+                      filter={`url(#${getGlowFilterId(series.color)})`}
+                    />
+                  </g>
+                );
+              })
+            : null}
+
+          {visibleSeries.length === 0 ? (
             <text
               fill={chartTheme.muted}
               fontFamily={chartTheme.sans}
               fontSize={density === "compact" ? "12" : "14"}
               textAnchor="middle"
               x={chartMetrics.innerWidth / 2}
-              y={density === "compact" ? 96 : 120}
+              y={chartMetrics.plotHeight / 2}
             >
-              Enable at least one lane to view live telemetry.
+              Enable at least one signal to view telemetry.
             </text>
-          )}
+          ) : null}
 
           {timelineSamples.length === 0 ? (
             <text
@@ -272,23 +491,74 @@ function TelemetryMonitorCanvas({
               fontSize={density === "compact" ? "12" : "14"}
               textAnchor="middle"
               x={chartMetrics.innerWidth / 2}
-              y={density === "compact" ? 118 : 140}
+              y={chartMetrics.plotHeight / 2 + (density === "compact" ? 16 : 20)}
             >
               Waiting for the bridge to stream machine snapshots.
             </text>
           ) : null}
 
+          {/* Crosshair + hover dots */}
           {hoveredX != null ? (
-            <line
-              stroke={chartTheme.crosshair}
-              strokeDasharray="4 4"
-              x1={hoveredX}
-              x2={hoveredX}
-              y1={0}
-              y2={chartMetrics.plotHeight}
+            <>
+              <line
+                stroke={chartTheme.crosshairGlow}
+                strokeWidth={6}
+                x1={hoveredX}
+                x2={hoveredX}
+                y1={0}
+                y2={chartMetrics.plotHeight}
+              />
+              <line
+                stroke={chartTheme.crosshair}
+                strokeWidth={1}
+                x1={hoveredX}
+                x2={hoveredX}
+                y1={0}
+                y2={chartMetrics.plotHeight}
+              />
+            </>
+          ) : null}
+
+          {hoveredX != null && hoveredSample
+            ? solidSeries.map((series) => {
+                const value = series.accessor(hoveredSample);
+                if (value == null) return null;
+                const yScale = getSeriesScale(series);
+                return (
+                  <circle
+                    key={`hover-${series.id}`}
+                    cx={hoveredX}
+                    cy={yScale(value)}
+                    r={density === "compact" ? 3 : 3.5}
+                    fill={series.color}
+                    filter={`url(#${getGlowFilterId(series.color)})`}
+                  />
+                );
+              })
+            : null}
+
+          {/* Legend */}
+          {visibleSeries.length > 0 ? (
+            <ChartLegend
+              density={density}
+              series={solidSeries}
+              width={chartMetrics.innerWidth}
             />
           ) : null}
 
+          {/* Atmosphere edge glow */}
+          {isLive ? (
+            <rect
+              fill="url(#atmosphere-edge)"
+              height={chartMetrics.plotHeight}
+              width={chartMetrics.innerWidth * 0.15}
+              x={chartMetrics.innerWidth * 0.85}
+              y={0}
+              style={{ pointerEvents: "none" }}
+            />
+          ) : null}
+
+          {/* Pointer interaction area */}
           <rect
             fill="transparent"
             height={Math.max(chartMetrics.plotHeight, 0)}
@@ -298,6 +568,33 @@ function TelemetryMonitorCanvas({
             x={0}
             y={0}
           />
+
+          {/* Left Y axis */}
+          {leftSeries.length > 0 ? (
+            <ChartYAxis
+              density={density}
+              domain={leftDomain}
+              plotHeight={chartMetrics.plotHeight}
+              scale={leftScale}
+              series={leftSeries}
+              side="left"
+              tickCount={tickCount}
+            />
+          ) : null}
+
+          {/* Right Y axis */}
+          {rightSeries.length > 0 ? (
+            <ChartYAxis
+              density={density}
+              domain={rightDomain}
+              plotHeight={chartMetrics.plotHeight}
+              scale={rightScale}
+              series={rightSeries}
+              side="right"
+              tickCount={tickCount}
+              x={chartMetrics.innerWidth}
+            />
+          ) : null}
 
           <ChartXAxis
             density={density}
@@ -313,251 +610,78 @@ function TelemetryMonitorCanvas({
   );
 }
 
-function TelemetryLane({
+function ChartYAxis({
   density,
-  index,
-  lane,
-  maxTimelineValue,
-  samples,
-  stateEvents,
-  usesShotTimeline,
-  width,
-  xScale,
+  domain,
+  plotHeight,
+  scale,
+  series,
+  side,
+  tickCount,
+  x = 0,
 }: {
   density: ChartDensity;
-  index: number;
-  lane: LaneConfig;
-  maxTimelineValue: number;
-  samples: TelemetrySample[];
-  stateEvents: Array<{ label: string; xValue: number }>;
-  usesShotTimeline: boolean;
-  width: number;
-  xScale: LinearScale;
+  domain: [number, number];
+  plotHeight: number;
+  scale: LinearScale;
+  series: TelemetrySeriesDefinition[];
+  side: ChartAxisSide;
+  tickCount: number;
+  x?: number;
 }) {
-  const backgroundFill = index % 2 === 0 ? chartTheme.laneSurface : chartTheme.laneSurfaceAlt;
-  const isProgressLane = lane.family === "progress";
-  const domain = getLaneDomain(lane.family, lane.series, samples);
-  const laneScale: LinearScale = scaleLinear<number>({
-    domain,
-    range: [lane.height, 0],
-  });
-  const laneTickCount = density === "compact" ? 3 : 4;
+  const ticks = getLaneTicks(domain, tickCount);
+  const isLeft = side === "left";
+  const fontSize = density === "compact" ? "8.5" : "10";
+  const offset = density === "compact" ? 6 : 8;
+
+  const unitEntries: Array<{ unit: string; color: string }> = [];
+  const seenUnits = new Set<string>();
+  for (const s of series) {
+    if (s.strokeStyle === "solid" && !seenUnits.has(s.unit)) {
+      seenUnits.add(s.unit);
+      unitEntries.push({ unit: s.unit, color: s.color });
+    }
+  }
+  const unitLabel = unitEntries.map((e) => e.unit).join(" / ");
 
   return (
-    <Group top={lane.yOffset}>
-      <rect
-        fill={backgroundFill}
-        height={lane.height}
-        rx={3}
-        stroke={chartTheme.border}
-        width={width}
-        x={0}
-        y={0}
-      />
+    <Group left={x}>
+      <line stroke={chartTheme.axis} x1={0} x2={0} y1={0} y2={plotHeight} />
 
-      <GridColumns
-        height={lane.height}
-        numTicks={density === "compact" ? 4 : Math.max(Math.round(maxTimelineValue / 4), 5)}
-        scale={xScale}
-        stroke={chartTheme.grid}
-        width={width}
-      />
-
-      {isProgressLane ? null : (
-        <GridRows
-          height={lane.height}
-          numTicks={laneTickCount}
-          scale={laneScale}
-          stroke={chartTheme.grid}
-          width={width}
-        />
-      )}
-
+      {/* Axis unit label at top */}
       <text
-        fill={chartTheme.text}
+        fill={chartTheme.muted}
         fontFamily={chartTheme.mono}
-        fontSize={density === "compact" ? "10" : "11"}
-        x={density === "compact" ? 10 : 12}
-        y={density === "compact" ? 14 : 16}
+        fontSize={density === "compact" ? "7" : "8.5"}
+        textAnchor={isLeft ? "end" : "start"}
+        x={isLeft ? -offset : offset}
+        y={-(density === "compact" ? 12 : 16)}
       >
-        {lane.label}
+        {unitLabel}
       </text>
 
-      {!isProgressLane
-        ? getLaneTicks(domain, laneTickCount).map((tick) => (
-            <text
-              key={tick}
-              fill={chartTheme.muted}
-              fontFamily={chartTheme.mono}
-              fontSize={density === "compact" ? "9" : "10"}
-              textAnchor="end"
-              x={density === "compact" ? -6 : -8}
-              y={laneScale(tick) + 4}
-            >
-              {tick.toFixed(tick >= 100 ? 0 : 1)}
-            </text>
-          ))
-        : null}
-
-      {isProgressLane ? (
-        <ProgressLane
-          density={density}
-          lane={lane}
-          samples={samples}
-          stateEvents={stateEvents}
-          usesShotTimeline={usesShotTimeline}
-          width={width}
-          xScale={xScale}
-        />
-      ) : (
-        lane.series.map((series) => (
-          <LinePath
-            data={samples}
-            key={series.id}
-            stroke={series.color}
-            strokeDasharray={
-              series.strokeStyle === "dashed"
-                ? density === "compact"
-                  ? "5 4"
-                  : "8 6"
-                : undefined
-            }
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={
-              series.strokeStyle === "dashed"
-                ? density === "compact"
-                  ? 2
-                  : 2.5
-                : density === "compact"
-                  ? 2.5
-                  : 3
-            }
-            x={(sample: TelemetrySample) => xScale(getSampleXValue(sample, usesShotTimeline))}
-            y={(sample: TelemetrySample) => laneScale(series.accessor(sample) ?? domain[0])}
+      {ticks.map((tick) => (
+        <Group key={tick}>
+          <line
+            stroke={chartTheme.axis}
+            x1={isLeft ? -(density === "compact" ? 4 : 5) : 0}
+            x2={isLeft ? 0 : (density === "compact" ? 4 : 5)}
+            y1={scale(tick)}
+            y2={scale(tick)}
           />
-        ))
-      )}
+          <text
+            fill={chartTheme.muted}
+            fontFamily={chartTheme.mono}
+            fontSize={fontSize}
+            textAnchor={isLeft ? "end" : "start"}
+            x={isLeft ? -offset : offset}
+            y={scale(tick) + 3.5}
+          >
+            {tick.toFixed(tick >= 100 ? 0 : 1)}
+          </text>
+        </Group>
+      ))}
     </Group>
-  );
-}
-
-function ProgressLane({
-  density,
-  lane,
-  samples,
-  stateEvents,
-  usesShotTimeline,
-  width,
-  xScale,
-}: {
-  density: ChartDensity;
-  lane: LaneConfig;
-  samples: TelemetrySample[];
-  stateEvents: Array<{ label: string; xValue: number }>;
-  usesShotTimeline: boolean;
-  width: number;
-  xScale: LinearScale;
-}) {
-  const frameSeries = lane.series.find((series) => series.id === "profileFrame");
-  const frameValues = samples.map((sample) => sample.profileFrame);
-  const frameMax = Math.max(1, ...frameValues);
-  const frameScale: LinearScale = scaleLinear<number>({
-    domain: [0, frameMax],
-    range: [lane.height - (density === "compact" ? 12 : 16), density === "compact" ? 16 : 20],
-  });
-  const visibleEvents =
-    density === "compact"
-      ? stateEvents.filter(
-          (_, index) => index === 0 || index === stateEvents.length - 1 || index % 2 === 0,
-        )
-      : stateEvents;
-
-  return (
-    <>
-      {visibleEvents.map((event, index) => {
-        const x = xScale(event.xValue);
-        const eventLabelY =
-          density === "compact"
-            ? 6 + (index % 2) * 12
-            : index % 2 === 0
-              ? 10
-              : 24;
-
-        return (
-          <Group key={`${event.label}-${event.xValue}`}>
-            <line
-              stroke={chartTheme.event}
-              strokeDasharray="4 4"
-              x1={x}
-              x2={x}
-              y1={0}
-              y2={lane.height}
-            />
-            <text
-              dominantBaseline="hanging"
-              fill={chartTheme.muted}
-              fontFamily={chartTheme.mono}
-              fontSize={density === "compact" ? "8.5" : "10"}
-              textAnchor="middle"
-              x={Math.max(40, Math.min(width - 40, x))}
-              y={eventLabelY}
-            >
-              {density === "compact" ? compactStateLabel(event.label) : event.label}
-            </text>
-          </Group>
-        );
-      })}
-
-      {frameSeries ? (
-        <>
-          <LinePath
-            data={samples}
-            key={frameSeries.id}
-            stroke={frameSeries.color}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={density === "compact" ? 2 : 2.5}
-            x={(sample: TelemetrySample) => xScale(getSampleXValue(sample, usesShotTimeline))}
-            y={(sample: TelemetrySample) => frameScale(sample.profileFrame)}
-          />
-          {samples
-            .filter(
-              (sample, index) =>
-                index === 0 || sample.profileFrame !== samples[index - 1]?.profileFrame,
-            )
-            .map((sample) => (
-              <Group
-                key={`${sample.timestamp}-${sample.profileFrame}`}
-                left={xScale(getSampleXValue(sample, usesShotTimeline))}
-                top={frameScale(sample.profileFrame)}
-              >
-                <circle fill={frameSeries.color} r={density === "compact" ? 2.75 : 3.5} />
-                <text
-                  fill={chartTheme.text}
-                  fontFamily={chartTheme.mono}
-                  fontSize={density === "compact" ? "8.5" : "10"}
-                  textAnchor="middle"
-                  x={0}
-                  y={density === "compact" ? -6 : -8}
-                >
-                  {sample.profileFrame}
-                </text>
-              </Group>
-            ))}
-        </>
-      ) : (
-        <text
-          fill={chartTheme.muted}
-          fontFamily={chartTheme.sans}
-          fontSize={density === "compact" ? "11" : "13"}
-          x={12}
-          y={lane.height - 12}
-        >
-          Frame line hidden. State changes remain visible.
-        </text>
-      )}
-    </>
   );
 }
 
@@ -616,6 +740,61 @@ function ChartXAxis({
       >
         {usesShotTimeline ? "Shot time" : "Stream time"}
       </text>
+    </Group>
+  );
+}
+
+function ChartLegend({
+  density,
+  series,
+  width,
+}: {
+  density: ChartDensity;
+  series: TelemetrySeriesDefinition[];
+  width: number;
+}) {
+  const fontSize = density === "compact" ? "7.5" : "9";
+  const lineW = density === "compact" ? 10 : 14;
+  const lineH = density === "compact" ? 1.5 : 2;
+  const gap = density === "compact" ? 10 : 14;
+  const itemPad = density === "compact" ? 3 : 4;
+  const topY = density === "compact" ? -10 : -14;
+  const charW = density === "compact" ? 4.2 : 5.2;
+
+  const items = series.reduce<Array<TelemetrySeriesDefinition & { x: number; itemWidth: number }>>((acc, s) => {
+    const prevEnd = acc.length > 0 ? acc[acc.length - 1].x + acc[acc.length - 1].itemWidth + gap : 0;
+    const itemWidth = lineW + itemPad + s.shortLabel.length * charW;
+    acc.push({ ...s, x: prevEnd, itemWidth });
+    return acc;
+  }, []);
+  const lastItem = items[items.length - 1];
+  const totalWidth = lastItem ? lastItem.x + lastItem.itemWidth : 0;
+  const offsetX = (width - totalWidth) / 2;
+
+  return (
+    <Group left={offsetX} top={topY}>
+      {items.map((s) => (
+        <Group key={s.id} left={s.x}>
+          <line
+            stroke={s.color}
+            strokeWidth={lineH}
+            strokeLinecap="round"
+            x1={0}
+            x2={lineW}
+            y1={0}
+            y2={0}
+          />
+          <text
+            fill={s.color}
+            fontFamily={chartTheme.mono}
+            fontSize={fontSize}
+            x={lineW + itemPad}
+            y={density === "compact" ? 3 : 3.5}
+          >
+            {s.shortLabel}
+          </text>
+        </Group>
+      ))}
     </Group>
   );
 }

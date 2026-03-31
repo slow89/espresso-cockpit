@@ -1,6 +1,6 @@
-# Decent Skin
+# Espresso Cockpit
 
-React skin scaffold for the Decent DE1 built on top of Streamline Bridge.
+Espresso Cockpit is a React skin for the Decent DE1 built on top of Streamline Bridge.
 
 Gateway source of truth for runtime, API, and deployment details:
 [tadelv/reaprime](https://github.com/tadelv/reaprime)

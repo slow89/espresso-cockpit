@@ -27,7 +27,7 @@ export const useBridgeConfigStore = create<BridgeConfigState>()(
         }),
     }),
     {
-      name: "decent-skin-config",
+      name: "espresso-cockpit-config",
     },
   ),
 );

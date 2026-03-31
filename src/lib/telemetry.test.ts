@@ -39,6 +39,8 @@ describe("telemetry registry", () => {
       "targetPressure",
       "flow",
       "targetFlow",
+      "weight",
+      "weightFlow",
       "mixTemperature",
       "targetMixTemperature",
       "groupTemperature",
@@ -124,7 +126,7 @@ describe("appendTelemetryHistory", () => {
         timestamp: new Date(Date.UTC(2026, 2, 21, 12, 0, index)).toISOString(),
         pressure: index,
       }),
-    ).reduce(appendTelemetryHistory, [] as ReturnType<typeof appendTelemetryHistory>);
+    ).reduce((telemetry, snapshot) => appendTelemetryHistory(telemetry, snapshot), [] as ReturnType<typeof appendTelemetryHistory>);
 
     expect(trimmed).toHaveLength(maxTelemetrySamples);
     expect(trimmed[0]?.pressure).toBe(8);

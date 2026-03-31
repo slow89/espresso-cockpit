@@ -98,6 +98,16 @@
   --chart-crosshair-alpha: 0.22;
   --chart-event-rgb: 255, 190, 87;
   --chart-event-alpha: 0.22;
+  --chart-crosshair-glow-rgb: 255, 255, 255;
+  --chart-crosshair-glow-alpha: 0.08;
+  --chart-atmosphere-tint-rgb: 255, 190, 87;
+  --chart-atmosphere-tint-alpha: 0.03;
+  --chart-atmosphere-edge-rgb: 255, 190, 87;
+  --chart-atmosphere-edge-alpha: 0.06;
+
+  --chart-crosshair-glow: rgba(var(--chart-crosshair-glow-rgb), var(--chart-crosshair-glow-alpha));
+  --chart-atmosphere-tint: rgba(var(--chart-atmosphere-tint-rgb), var(--chart-atmosphere-tint-alpha));
+  --chart-atmosphere-edge: rgba(var(--chart-atmosphere-edge-rgb), var(--chart-atmosphere-edge-alpha));
 
   --canvas: rgba(var(--canvas-rgb), var(--canvas-alpha));
   --chart: rgba(var(--chart-rgb), var(--chart-alpha));
@@ -225,6 +235,12 @@
   --chart-crosshair-alpha: 0.22;
   --chart-event-rgb: 177, 108, 18;
   --chart-event-alpha: 0.18;
+  --chart-crosshair-glow-rgb: 31, 35, 41;
+  --chart-crosshair-glow-alpha: 0.06;
+  --chart-atmosphere-tint-rgb: 177, 108, 18;
+  --chart-atmosphere-tint-alpha: 0.025;
+  --chart-atmosphere-edge-rgb: 177, 108, 18;
+  --chart-atmosphere-edge-alpha: 0.04;
 
   --surface-top-strip: rgba(255, 251, 244, 0.92);
   --surface-nav: rgba(251, 246, 238, 0.96);
@@ -274,6 +290,21 @@
     box-shadow: var(--shadow-panel);
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
+  }
+}
+
+@keyframes telemetry-pulse {
+  0% {
+    r: 4;
+    opacity: 0.6;
+  }
+  70% {
+    r: 12;
+    opacity: 0;
+  }
+  100% {
+    r: 12;
+    opacity: 0;
   }
 }
 

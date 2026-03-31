@@ -46,6 +46,8 @@ export function adaptShotMeasurementsToTelemetry(
       substate: measurement.machine.state.substate,
       elapsedSeconds,
       shotElapsedSeconds,
+      weight: measurement.scale?.weight ?? null,
+      weightFlow: measurement.scale?.weightFlow ?? null,
     };
   });
 }

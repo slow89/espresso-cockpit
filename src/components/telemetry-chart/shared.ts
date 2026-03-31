@@ -26,10 +26,25 @@ export const chartTheme = {
   text: "var(--foreground)",
   muted: "var(--muted-foreground)",
   crosshair: "var(--chart-crosshair)",
+  crosshairGlow: "var(--chart-crosshair-glow)",
   event: "var(--chart-event)",
+  atmosphereTint: "var(--chart-atmosphere-tint)",
+  atmosphereEdge: "var(--chart-atmosphere-edge)",
   mono: "var(--font-mono)",
   sans: "var(--font-sans)",
 } as const;
+
+export function getGlowFilterId(color: string) {
+  return `glow-${color.replace("#", "")}`;
+}
+
+export function getAreaGradientId(seriesId: string) {
+  return `area-${seriesId}`;
+}
+
+export function getUniqueSeriesColors(series: TelemetrySeriesDefinition[]) {
+  return [...new Set(series.map((s) => s.color))];
+}
 
 export type TelemetryLayoutMode = "auto" | "tablet" | "desktop";
 export type ChartDensity = "compact" | "regular";
@@ -49,12 +64,82 @@ export type LaneConfig<TSeries = TelemetrySeriesDefinition, TFamily extends stri
   yOffset: number;
 };
 
+export type ChartAxisSide = "left" | "right";
+
+export const axisFamilyMapping: Record<TelemetrySeriesFamily, ChartAxisSide> = {
+  pressure: "left",
+  flow: "left",
+  weight: "right",
+  temperature: "right",
+  progress: "left",
+};
+
+export function getUnifiedPlotHeight(density: ChartDensity) {
+  return density === "compact" ? 210 : 380;
+}
+
+export function getUnifiedChartMetrics(
+  density: ChartDensity,
+  containerSize: { height: number; width: number },
+) {
+  const plotHeight = getUnifiedPlotHeight(density);
+  const margin =
+    density === "compact"
+      ? { top: 22, right: 42, bottom: 22, left: 42 }
+      : { top: 30, right: 64, bottom: 34, left: 64 };
+
+  const height = margin.top + margin.bottom + plotHeight;
+  const width =
+    containerSize.width > 0 && containerSize.height > 0
+      ? Math.max(
+          margin.left + margin.right + 240,
+          Math.round(height * (containerSize.width / containerSize.height)),
+        )
+      : 1240;
+
+  return {
+    height,
+    innerWidth: width - margin.left - margin.right,
+    margin,
+    plotHeight,
+    width,
+  };
+}
+
+export function getAxisDomain(
+  side: ChartAxisSide,
+  series: TelemetrySeriesDefinition[],
+  samples: TelemetrySample[],
+): [number, number] {
+  const axisSeries = series.filter((s) => axisFamilyMapping[s.family] === side);
+  const values = axisSeries.flatMap((definition) =>
+    samples
+      .map((sample) => definition.accessor(sample))
+      .filter((value): value is number => value != null && Number.isFinite(value)),
+  );
+
+  if (values.length === 0) {
+    return side === "right" ? [80, 100] : [0, 12];
+  }
+
+  const hasTemperature = axisSeries.some((s) => s.family === "temperature");
+  if (side === "right" && hasTemperature) {
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    return [Math.floor(min - 2), Math.ceil(Math.max(max + 2, min + 6))];
+  }
+
+  const max = Math.max(...values);
+  return [0, max <= 0 ? 1 : Math.ceil(max * 1.15)];
+}
+
 export type LinearScale = ReturnType<typeof scaleLinear<number>>;
 
 export type TelemetryChartDataModel = {
   activePreset: TelemetryChartPreset;
   activeSample: TelemetrySample | null;
   hoveredSampleIndex: number | null;
+  isLive: boolean;
   laneVisibility: Record<TelemetrySeriesFamily, boolean>;
   latestSample: TelemetrySample | null;
   selectedSeries: TelemetrySeriesDefinition[];

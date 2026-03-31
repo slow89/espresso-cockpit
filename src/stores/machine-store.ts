@@ -158,7 +158,7 @@ export const useMachineStore = create<MachineState>((set, get) => ({
         visualizerRuntimeStore.getState().handleSnapshot(snapshot);
         set((state) => ({
           error: null,
-          telemetry: appendTelemetryHistory(state.telemetry, snapshot),
+          telemetry: appendTelemetryHistory(state.telemetry, snapshot, state.scaleSnapshot),
         }));
       };
 

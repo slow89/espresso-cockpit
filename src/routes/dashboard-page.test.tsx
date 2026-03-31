@@ -209,6 +209,8 @@ describe("DashboardPage", () => {
             targetMixTemperature: 93,
             targetPressure: 0,
             timestamp: "2026-03-25T10:00:04.000Z",
+            weight: 15.2,
+            weightFlow: 1.8,
           },
         ],
       });

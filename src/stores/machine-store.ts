@@ -16,6 +16,7 @@ import {
 } from "@/rest/types";
 import {
   appendTelemetryHistory,
+  mergeScaleSnapshotIntoTelemetry,
   type TelemetrySample,
 } from "@/lib/telemetry";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
@@ -88,10 +89,11 @@ export const useMachineStore = create<MachineState>((set, get) => ({
           return;
         }
 
-        set({
+        set((state) => ({
           scaleConnection: "live",
           scaleSnapshot: parsed.data,
-        });
+          telemetry: mergeScaleSnapshotIntoTelemetry(state.telemetry, parsed.data),
+        }));
       };
 
       scaleSocket.onerror = () => {

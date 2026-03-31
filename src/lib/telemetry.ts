@@ -349,6 +349,26 @@ export function appendTelemetryHistory(telemetry: TelemetrySample[], snapshot: M
   ].slice(-maxTelemetrySamples);
 }
 
+export function mergeScaleSnapshotIntoTelemetry(
+  telemetry: TelemetrySample[],
+  scaleSnapshot: ScaleSnapshot,
+) {
+  const latestSample = telemetry[telemetry.length - 1];
+
+  if (latestSample == null || latestSample.timestamp !== scaleSnapshot.timestamp) {
+    return telemetry;
+  }
+
+  return [
+    ...telemetry.slice(0, -1),
+    {
+      ...latestSample,
+      weight: scaleSnapshot.weight ?? null,
+      weightFlow: scaleSnapshot.weightFlow ?? null,
+    },
+  ];
+}
+
 function getTimestampMs(timestamp: string | undefined) {
   if (!timestamp) {
     return null;

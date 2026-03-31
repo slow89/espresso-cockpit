@@ -10,6 +10,7 @@ import {
 export function DashboardPage() {
   const { data: snapshot, error: machineQueryError } = useMachineStateQuery();
   const requestMachineStateMutation = useRequestMachineStateMutation();
+  const canWakeMachine = snapshot != null && !requestMachineStateMutation.isPending;
 
   function handleToggleMachinePower() {
     if (snapshot == null) {
@@ -24,11 +25,8 @@ export function DashboardPage() {
   if (snapshot?.state.state === "sleeping") {
     return (
       <DashboardSleepScreen
-        disabled={
-          snapshot == null ||
-          Boolean(machineQueryError) ||
-          requestMachineStateMutation.isPending
-        }
+        disabled={!canWakeMachine}
+        hasError={Boolean(machineQueryError)}
         isPending={requestMachineStateMutation.isPending}
         onWake={handleToggleMachinePower}
       />

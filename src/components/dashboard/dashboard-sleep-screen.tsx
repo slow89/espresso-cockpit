@@ -2,43 +2,30 @@ import { cn } from "@/lib/utils";
 
 export function DashboardSleepScreen({
   disabled,
+  hasError,
   isPending,
   onWake,
 }: {
   disabled: boolean;
+  hasError: boolean;
   isPending: boolean;
   onWake: () => void;
 }) {
   return (
-    <section
-      aria-disabled={disabled}
+    <button
       aria-label={isPending ? "Turning on machine" : "Turn on machine"}
       className={cn(
-        "fixed inset-x-0 top-0 z-10 flex w-full flex-col overflow-hidden bg-[#120f0d] bg-cover bg-center bg-no-repeat text-left text-foreground transition",
+        "fixed inset-x-0 top-0 z-10 flex w-full appearance-none flex-col overflow-hidden border-0 bg-[#120f0d] bg-cover bg-center bg-no-repeat p-0 text-left text-foreground transition",
         disabled ? "cursor-wait" : "cursor-pointer hover:brightness-[1.03]",
       )}
       data-testid="dashboard-sleep-screen"
-      onClick={() => {
-        if (!disabled) {
-          onWake();
-        }
-      }}
-      onKeyDown={(event) => {
-        if (disabled) {
-          return;
-        }
-
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onWake();
-        }
-      }}
-      role="button"
+      disabled={disabled}
+      onClick={onWake}
       style={{
         backgroundImage: "url('/corgi-drinking-espresso.png')",
         height: "calc(100vh - var(--app-footer-height) - env(safe-area-inset-bottom, 0px))",
       }}
-      tabIndex={disabled ? -1 : 0}
+      type="button"
     >
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(15,12,10,0.2)_0%,rgba(15,12,10,0.08)_32%,rgba(15,12,10,0.35)_68%,rgba(15,12,10,0.82)_100%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,_rgba(245,226,192,0.18),_transparent_62%)]" />
@@ -60,7 +47,12 @@ export function DashboardSleepScreen({
         <p className="font-mono text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground md:text-[0.84rem]">
           {isPending ? "Turning on..." : "Tap anywhere to turn on machine"}
         </p>
+        {hasError && !isPending ? (
+          <p className="mt-2 font-mono text-[0.66rem] uppercase tracking-[0.12em] text-status-warning-foreground">
+            Reconnecting to bridge. Wake retry stays available.
+          </p>
+        ) : null}
       </div>
-    </section>
+    </button>
   );
 }

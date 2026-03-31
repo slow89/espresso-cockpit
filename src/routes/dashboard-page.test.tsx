@@ -140,6 +140,26 @@ describe("DashboardPage", () => {
     });
   });
 
+  it("still allows waking from the sleep screen while the machine query is in error", async () => {
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("sleeping", "idle"),
+      error: new Error("Bridge offline"),
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByTestId("dashboard-sleep-screen")).toBeInTheDocument();
+    expect(
+      screen.getByText("Reconnecting to bridge. Wake retry stays available."),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Turn on machine" }));
+
+    await waitFor(() => {
+      expect(requestMachineStateMutate).toHaveBeenCalledWith("idle");
+    });
+  });
+
   it("clears stale scale UI when the bridge no longer reports a connected scale", () => {
     useMachineStore.setState({
       scaleConnection: "live",

@@ -129,6 +129,8 @@ describe("useMachineStore", () => {
       pressure: 8.8,
       state: "espresso",
       substate: "pouring",
+      weight: 15.4,
+      weightFlow: 1.2,
     });
   });
 

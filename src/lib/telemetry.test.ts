@@ -5,6 +5,7 @@ import type { MachineSnapshot } from "@/rest/types";
 import {
   appendTelemetryHistory,
   maxTelemetrySamples,
+  mergeScaleSnapshotIntoTelemetry,
   telemetrySeriesRegistry,
 } from "./telemetry";
 
@@ -130,5 +131,52 @@ describe("appendTelemetryHistory", () => {
 
     expect(trimmed).toHaveLength(maxTelemetrySamples);
     expect(trimmed[0]?.pressure).toBe(8);
+  });
+});
+
+describe("mergeScaleSnapshotIntoTelemetry", () => {
+  it("fills in scale values for the latest sample when timestamps match", () => {
+    const telemetry = appendTelemetryHistory(
+      [],
+      buildSnapshot({
+        timestamp: "2026-03-21T12:00:01.000Z",
+        state: {
+          state: "espresso",
+          substate: "pouring",
+        },
+      }),
+    );
+
+    const merged = mergeScaleSnapshotIntoTelemetry(telemetry, {
+      batteryLevel: 82,
+      timerValue: 8,
+      timestamp: "2026-03-21T12:00:01.000Z",
+      weight: 15.4,
+      weightFlow: 1.2,
+    });
+
+    expect(merged.at(-1)).toMatchObject({
+      weight: 15.4,
+      weightFlow: 1.2,
+    });
+  });
+
+  it("leaves telemetry unchanged when the timestamps do not match", () => {
+    const telemetry = appendTelemetryHistory(
+      [],
+      buildSnapshot({
+        timestamp: "2026-03-21T12:00:01.000Z",
+      }),
+    );
+
+    const merged = mergeScaleSnapshotIntoTelemetry(telemetry, {
+      batteryLevel: 82,
+      timerValue: 8,
+      timestamp: "2026-03-21T12:00:02.000Z",
+      weight: 15.4,
+      weightFlow: 1.2,
+    });
+
+    expect(merged).toEqual(telemetry);
   });
 });

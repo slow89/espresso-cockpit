@@ -36,7 +36,7 @@ export function DashboardPage() {
   return (
     <div>
       <DashboardWaterAlertOverlay />
-      <div className="min-h-[calc(100svh-var(--app-footer-height))] overflow-hidden border-b border-border/30 bg-shell md:flex md:h-[calc(100svh-var(--app-footer-height))] md:flex-col">
+      <div className="flex h-[calc(100svh-var(--app-footer-height))] flex-col overflow-hidden border-b border-border/30 bg-shell">
         <DashboardTopBar />
         <DashboardWorkspaceContainer />
       </div>

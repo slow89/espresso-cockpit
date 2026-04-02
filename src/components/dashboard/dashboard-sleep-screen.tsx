@@ -15,7 +15,7 @@ export function DashboardSleepScreen({
     <button
       aria-label={isPending ? "Turning on machine" : "Turn on machine"}
       className={cn(
-        "fixed inset-x-0 top-0 z-10 flex w-full appearance-none flex-col overflow-hidden border-0 bg-[#120f0d] bg-cover bg-center bg-no-repeat p-0 text-center text-foreground transition",
+        "fixed inset-x-0 top-0 z-10 flex w-full appearance-none flex-col overflow-hidden border-0 bg-[#120f0d] bg-cover bg-center bg-no-repeat p-0 text-center transition dark",
         disabled ? "cursor-wait" : "cursor-pointer hover:brightness-[1.03]",
       )}
       data-testid="dashboard-sleep-screen"

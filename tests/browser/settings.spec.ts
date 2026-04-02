@@ -37,7 +37,7 @@ test.describe("settings", () => {
     }
   });
 
-  test("updates display, pairing, and local settings controls", async ({
+  test("updates display, pairing, and machine warning controls", async ({
     app,
     browserSignals,
     page,
@@ -66,7 +66,7 @@ test.describe("settings", () => {
     const waterAlertSlider = page.getByLabel("Water alert threshold");
     await waterAlertSlider.focus();
     await waterAlertSlider.press("End");
-    await expect(waterAlertSlider).toHaveValue("60");
+    await expect(waterAlertSlider).toHaveValue("30");
 
     await page.getByRole("button", { name: "Light" }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");

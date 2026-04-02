@@ -1,23 +1,26 @@
 import { useEffect } from "react";
 
+import { useMachineStateQuery } from "@/rest/queries";
 import { useMachineStore } from "@/stores/machine-store";
 import { useWaterAlertStore } from "@/stores/water-alert-store";
 
 export function DashboardWaterAlertOverlay() {
   const currentLevel = useMachineStore((state) => state.waterLevels?.currentLevel ?? null);
-  const alertThreshold = useWaterAlertStore((state) => state.alertThreshold);
+  const refillLevel = useMachineStore((state) => state.waterLevels?.refillLevel ?? null);
+  const { data: snapshot } = useMachineStateQuery();
   const dismissed = useWaterAlertStore((state) => state.dismissed);
   const dismiss = useWaterAlertStore((state) => state.dismiss);
   const resetDismiss = useWaterAlertStore((state) => state.resetDismiss);
+  const isThresholdLow =
+    currentLevel != null && refillLevel != null && currentLevel <= refillLevel;
+  const isNeedsWater = snapshot?.state.state === "needsWater";
+  const isLow = isThresholdLow || isNeedsWater;
 
-  const isLow = alertThreshold > 0 && currentLevel != null && currentLevel <= alertThreshold;
-
-  // Reset dismiss when water level recovers above threshold
   useEffect(() => {
-    if (currentLevel != null && alertThreshold > 0 && currentLevel > alertThreshold) {
+    if (!isLow) {
       resetDismiss();
     }
-  }, [currentLevel, alertThreshold, resetDismiss]);
+  }, [isLow, resetDismiss]);
 
   if (!isLow || dismissed) {
     return null;
@@ -47,7 +50,8 @@ export function DashboardWaterAlertOverlay() {
             Refill the tank!
           </h1>
           <p className="mt-1.5 font-mono text-[0.68rem] font-bold tabular-nums text-[#f5d485]">
-            Water level: {currentLevel?.toFixed(0) ?? 0}%
+            Water level: {formatMillimeters(currentLevel)}
+            {refillLevel != null ? ` / refill at ${formatMillimeters(refillLevel)}` : ""}
           </p>
         </div>
       </div>
@@ -64,4 +68,13 @@ export function DashboardWaterAlertOverlay() {
       </div>
     </section>
   );
+}
+
+function formatMillimeters(value: number | null) {
+  if (value == null || Number.isNaN(value)) {
+    return "-- mm";
+  }
+
+  const hasFraction = Math.abs(value % 1) > 0.001;
+  return `${value.toFixed(hasFraction ? 1 : 0)} mm`;
 }

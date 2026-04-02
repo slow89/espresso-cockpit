@@ -81,6 +81,42 @@ async function parseResponse<TSchema extends z.ZodTypeAny>(
   return parsed.data;
 }
 
+async function ensureResponseOk(
+  response: Response,
+  fallbackMessage: string,
+) {
+  if (response.ok) {
+    return;
+  }
+
+  let message = fallbackMessage;
+
+  if (typeof response.text === "function") {
+    const errorBody = await response.text();
+
+    if (errorBody) {
+      try {
+        const parsedError = JSON.parse(errorBody) as {
+          error?: unknown;
+          message?: unknown;
+        };
+        const errorMessage =
+          typeof parsedError.error === "string"
+            ? parsedError.error
+            : typeof parsedError.message === "string"
+              ? parsedError.message
+              : null;
+
+        message = errorMessage ?? errorBody;
+      } catch {
+        message = errorBody;
+      }
+    }
+  }
+
+  throw new BridgeClientError(message, response.status);
+}
+
 export function createBridgeClient(baseUrl: string) {
   const origin = normalizeGatewayUrl(baseUrl);
 
@@ -140,9 +176,7 @@ export function createBridgeClient(baseUrl: string) {
         body: JSON.stringify({ deviceId }),
       });
 
-      if (!response.ok) {
-        throw new BridgeClientError("Unable to connect device", response.status);
-      }
+      await ensureResponseOk(response, "Unable to connect device");
     },
     async disconnectDevice(deviceId: string) {
       const response = await fetch(`${origin}/api/v1/devices/disconnect`, {
@@ -153,9 +187,7 @@ export function createBridgeClient(baseUrl: string) {
         body: JSON.stringify({ deviceId }),
       });
 
-      if (!response.ok) {
-        throw new BridgeClientError("Unable to disconnect device", response.status);
-      }
+      await ensureResponseOk(response, "Unable to disconnect device");
     },
     async listShots() {
       return request("/api/v1/shots", shotListResponseSchema);
@@ -169,21 +201,14 @@ export function createBridgeClient(baseUrl: string) {
         method: "PUT",
       });
 
-      if (!response.ok) {
-        throw new BridgeClientError(
-          `Unable to request machine state ${parsedState}`,
-          response.status,
-        );
-      }
+      await ensureResponseOk(response, `Unable to request machine state ${parsedState}`);
     },
     async tareScale() {
       const response = await fetch(`${origin}/api/v1/scale/tare`, {
         method: "PUT",
       });
 
-      if (!response.ok) {
-        throw new BridgeClientError("Unable to tare scale", response.status);
-      }
+      await ensureResponseOk(response, "Unable to tare scale");
     },
     async signalHeartbeat() {
       return request("/api/v1/machine/heartbeat", heartbeatResponseSchema, {
@@ -206,9 +231,20 @@ export function createBridgeClient(baseUrl: string) {
         body: JSON.stringify(settings),
       });
 
-      if (!response.ok) {
-        throw new BridgeClientError("Unable to update bridge settings", response.status);
-      }
+      await ensureResponseOk(response, "Unable to update bridge settings");
+    },
+    async updateMachineWaterLevels(levels: {
+      refillLevel: number;
+    }) {
+      const response = await fetch(`${origin}/api/v1/machine/waterLevels`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(levels),
+      });
+
+      await ensureResponseOk(response, "Unable to update machine water levels");
     },
     async getPresenceSettings() {
       return request("/api/v1/presence/settings", presenceSettingsSchema);

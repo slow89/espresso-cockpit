@@ -325,6 +325,82 @@ describe("DashboardPage", () => {
     expect(screen.getByTestId("dashboard-desktop-workspace")).toBeInTheDocument();
   });
 
+  it("shows the native water warning when the live level falls below the machine threshold", () => {
+    useMachineStore.setState({
+      waterLevels: {
+        currentLevel: 8,
+        refillLevel: 10,
+      },
+    });
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("idle"),
+      error: null,
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByLabelText("Water tank low")).toBeInTheDocument();
+    expect(screen.getByText("Water level: 8 mm / refill at 10 mm")).toBeInTheDocument();
+  });
+
+  it("keeps the warning active when the machine reports needsWater", () => {
+    useMachineStore.setState({
+      waterLevels: {
+        currentLevel: 18,
+        refillLevel: 10,
+      },
+    });
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("needsWater", "idle"),
+      error: null,
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByLabelText("Water tank low")).toBeInTheDocument();
+  });
+
+  it("resets the dismissal after the water alert clears", () => {
+    useMachineStore.setState({
+      waterLevels: {
+        currentLevel: 8,
+        refillLevel: 10,
+      },
+    });
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("idle"),
+      error: null,
+    });
+
+    const { rerender } = render(<DashboardPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "I'll refill, I promise" }));
+    expect(screen.queryByLabelText("Water tank low")).not.toBeInTheDocument();
+
+    act(() => {
+      useMachineStore.setState({
+        waterLevels: {
+          currentLevel: 16,
+          refillLevel: 10,
+        },
+      });
+    });
+    rerender(<DashboardPage />);
+    expect(screen.queryByLabelText("Water tank low")).not.toBeInTheDocument();
+
+    act(() => {
+      useMachineStore.setState({
+        waterLevels: {
+          currentLevel: 9,
+          refillLevel: 10,
+        },
+      });
+    });
+    rerender(<DashboardPage />);
+
+    expect(screen.getByLabelText("Water tank low")).toBeInTheDocument();
+  });
+
   it("shows a simulator toggle when dev mode is enabled in the URL", () => {
     window.history.pushState({}, "", "/?dev=true");
 

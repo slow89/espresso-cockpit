@@ -269,6 +269,16 @@ export function useUpdateBridgeSettingsMutation() {
   });
 }
 
+export function useUpdateMachineWaterLevelsMutation() {
+  const gatewayOrigin = useGatewayOrigin();
+
+  return useMutation({
+    mutationFn: (levels: {
+      refillLevel: number;
+    }) => getClient(gatewayOrigin).updateMachineWaterLevels(levels),
+  });
+}
+
 export function useUpdateVisualizerSettingsMutation() {
   const client = useQueryClient();
   const gatewayOrigin = useGatewayOrigin();

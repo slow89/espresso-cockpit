@@ -65,9 +65,18 @@ export function DevShotToggleButton() {
 export function ReservoirStatusCard() {
   const reservoirLevel = useMachineStore((state) => state.waterLevels?.currentLevel ?? null);
   const reservoirRefillLevel = useMachineStore((state) => state.waterLevels?.refillLevel ?? null);
-  const level = clampPercentage(reservoirLevel);
-  const refillLevel = clampPercentage(reservoirRefillLevel);
-  const isLow = level != null && refillLevel != null && level <= refillLevel;
+  const isLow =
+    reservoirLevel != null &&
+    reservoirRefillLevel != null &&
+    reservoirLevel <= reservoirRefillLevel;
+  const statusLabel =
+    reservoirLevel == null
+      ? "No feed"
+      : isLow
+        ? "Refill"
+        : reservoirRefillLevel == null
+          ? "Live"
+          : `Warn ${formatMillimeters(reservoirRefillLevel)}`;
 
   return (
     <div className="min-w-[120px] flex-1 rounded-[4px] border border-border bg-panel-strong/80 px-2.5 py-1 md:flex-none md:max-w-[160px] md:max-xl:min-w-[150px] md:max-xl:px-3 md:max-xl:py-2">
@@ -82,42 +91,18 @@ export function ReservoirStatusCard() {
             isLow ? "text-status-warning-foreground" : "text-foreground",
           )}
         >
-          {formatPercentage(level)}
+          {formatMillimeters(reservoirLevel)}
         </p>
       </div>
 
-      <div className="mt-0.5 flex items-center gap-1.5">
-        <div className="flex min-w-0 flex-1 items-center">
-          <div className="relative h-[5px] flex-1 rounded-[2px] bg-panel-strong md:max-xl:h-2">
-            {refillLevel != null ? (
-              <div
-                className="absolute inset-y-0 w-px bg-status-warning-foreground/60"
-                style={{ left: `${refillLevel}%` }}
-              />
-            ) : null}
-            <div
-              className={cn(
-                "h-full rounded-[1px] transition-[width] duration-300",
-                level == null
-                  ? "w-[14%] bg-muted-foreground/35"
-                  : isLow
-                    ? "bg-status-warning-foreground"
-                    : level < 35
-                      ? "bg-highlight-muted"
-                      : "bg-status-success-foreground",
-              )}
-              style={{ width: `${level ?? 14}%` }}
-            />
-          </div>
-        </div>
+      <div className="mt-1 grid gap-0.5">
         <p className="shrink-0 font-mono text-[0.42rem] font-medium uppercase tracking-[0.06em] text-muted-foreground/90 md:max-xl:text-[0.52rem]">
-          {level == null
-            ? "No feed"
-            : isLow
-              ? "Refill"
-              : refillLevel == null
-                ? "OK"
-                : `${refillLevel.toFixed(0)}%`}
+          {statusLabel}
+        </p>
+        <p className="font-mono text-[0.42rem] uppercase tracking-[0.06em] text-muted-foreground/70 md:max-xl:text-[0.52rem]">
+          {reservoirRefillLevel == null
+            ? "Threshold unavailable"
+            : `Threshold ${formatMillimeters(reservoirRefillLevel)}`}
         </p>
       </div>
     </div>
@@ -330,20 +315,13 @@ export function MachineStatusCard() {
   );
 }
 
-function clampPercentage(value: number | null) {
+function formatMillimeters(value: number | null) {
   if (value == null || Number.isNaN(value)) {
-    return null;
+    return "-- mm";
   }
 
-  return Math.min(100, Math.max(0, value));
-}
-
-function formatPercentage(value: number | null) {
-  if (value == null) {
-    return "--";
-  }
-
-  return `${value.toFixed(0)}%`;
+  const hasFraction = Math.abs(value % 1) > 0.001;
+  return `${value.toFixed(hasFraction ? 1 : 0)} mm`;
 }
 
 function formatScaleWeight(weight: number | null) {

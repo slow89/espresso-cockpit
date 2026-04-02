@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { useDisplayStore } from "@/stores/display-store";
+import { useMachineStore } from "@/stores/machine-store";
 import { usePresenceStore } from "@/stores/presence-store";
 import { useThemeStore } from "@/stores/theme-store";
 
@@ -16,6 +17,7 @@ const {
   usePresenceSettingsQueryMock,
   useScanDevicesMutationMock,
   useUpdateBridgeSettingsMutationMock,
+  useUpdateMachineWaterLevelsMutationMock,
   useUpdateVisualizerSettingsMutationMock,
   useUpdatePresenceSettingsMutationMock,
   useVerifyVisualizerCredentialsMutationMock,
@@ -28,6 +30,7 @@ const {
   useDevicesQueryMock: vi.fn(),
   useScanDevicesMutationMock: vi.fn(),
   useUpdateBridgeSettingsMutationMock: vi.fn(),
+  useUpdateMachineWaterLevelsMutationMock: vi.fn(),
   useUpdateVisualizerSettingsMutationMock: vi.fn(),
   useUpdatePresenceSettingsMutationMock: vi.fn(),
   useVerifyVisualizerCredentialsMutationMock: vi.fn(),
@@ -51,6 +54,7 @@ vi.mock("@/rest/queries", async () => {
     usePresenceSettingsQuery: usePresenceSettingsQueryMock,
     useScanDevicesMutation: useScanDevicesMutationMock,
     useUpdateBridgeSettingsMutation: useUpdateBridgeSettingsMutationMock,
+    useUpdateMachineWaterLevelsMutation: useUpdateMachineWaterLevelsMutationMock,
     useUpdatePresenceSettingsMutation: useUpdatePresenceSettingsMutationMock,
     useUpdateVisualizerSettingsMutation: useUpdateVisualizerSettingsMutationMock,
     useVerifyVisualizerCredentialsMutation: useVerifyVisualizerCredentialsMutationMock,
@@ -63,6 +67,7 @@ describe("SettingsPage", () => {
   const disconnectMutateAsync = vi.fn(async () => undefined);
   const scanMutateAsync = vi.fn(async () => []);
   const updateBridgeSettingsMutateAsync = vi.fn(async (settings: unknown) => settings);
+  const updateMachineWaterLevelsMutateAsync = vi.fn(async (levels: unknown) => levels);
   const updatePresenceSettingsMutateAsync = vi.fn(async (patch: unknown) => patch);
   const updateVisualizerSettingsMutateAsync = vi.fn(async (settings: unknown) => settings);
   const verifyVisualizerCredentialsMutateAsync = vi.fn(async () => ({ valid: true }));
@@ -115,6 +120,22 @@ describe("SettingsPage", () => {
       },
       error: null,
       socket: null,
+    });
+    useMachineStore.setState({
+      error: null,
+      lastScaleReconnectAttemptAt: null,
+      liveConnection: "live",
+      machineSocket: null,
+      scaleConnection: "idle",
+      scaleSnapshot: null,
+      scaleSocket: null,
+      telemetry: [],
+      waterConnection: "live",
+      waterLevels: {
+        currentLevel: 48,
+        refillLevel: 25,
+      },
+      waterSocket: null,
     });
     usePresenceStore.setState({
       error: null,
@@ -178,6 +199,11 @@ describe("SettingsPage", () => {
       isPending: false,
       mutateAsync: updateBridgeSettingsMutateAsync,
     });
+    useUpdateMachineWaterLevelsMutationMock.mockReturnValue({
+      error: null,
+      isPending: false,
+      mutateAsync: updateMachineWaterLevelsMutateAsync,
+    });
     useUpdateVisualizerSettingsMutationMock.mockReturnValue({
       isPending: false,
       mutateAsync: updateVisualizerSettingsMutateAsync,
@@ -222,6 +248,8 @@ describe("SettingsPage", () => {
     expect(screen.getByText("connected")).toBeInTheDocument();
     expect(screen.getByText("disconnected")).toBeInTheDocument();
     expect(screen.getByText("Scale Pairing")).toBeInTheDocument();
+    expect(screen.getByText("Current tank level 48 mm")).toBeInTheDocument();
+    expect(screen.getByText("25 mm")).toBeInTheDocument();
     expect(screen.getByText("Visualizer")).toBeInTheDocument();
     expect(screen.getByDisplayValue("brew-user")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Disconnect scale" })).toBeInTheDocument();
@@ -324,6 +352,37 @@ describe("SettingsPage", () => {
         userPresenceEnabled: true,
       });
     });
+  });
+
+  it("updates the machine refill threshold from live water levels", async () => {
+    render(<SettingsPage />);
+
+    fireEvent.change(screen.getByLabelText("Water alert threshold"), {
+      target: { value: "30" },
+    });
+    fireEvent.pointerUp(screen.getByLabelText("Water alert threshold"));
+
+    await waitFor(() => {
+      expect(updateMachineWaterLevelsMutateAsync).toHaveBeenCalledWith({
+        refillLevel: 30,
+      });
+    });
+    expect(screen.getByLabelText("Water alert threshold")).toHaveValue("30");
+  });
+
+  it("shows a waiting state when live water levels are unavailable", () => {
+    useMachineStore.setState({
+      waterConnection: "connecting",
+      waterLevels: null,
+    });
+
+    render(<SettingsPage />);
+
+    expect(
+      screen.getByText("Waiting for the bridge to stream machine water levels."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Waiting")).toBeInTheDocument();
+    expect(screen.getByLabelText("Water alert threshold")).toBeDisabled();
   });
 
   it("shows the device loading state when the bridge query is refreshing", () => {

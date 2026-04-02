@@ -378,6 +378,19 @@ async function handleRequest(
     return;
   }
 
+  if (method === "POST" && path === "/api/v1/machine/waterLevels") {
+    const body = await readJsonBody(request);
+
+    runtime.state.waterLevels = {
+      ...runtime.state.waterLevels,
+      ...(typeof body === "object" && body ? body : {}),
+    };
+    broadcastChannel("water");
+    response.writeHead(202, corsHeaders());
+    response.end();
+    return;
+  }
+
   if (method === "GET" && path === "/api/v1/display") {
     sendJson(response, 200, runtime.state.displayState);
     return;

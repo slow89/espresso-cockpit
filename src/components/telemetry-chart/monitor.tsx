@@ -247,8 +247,6 @@ function TelemetryMonitorCanvas({
     onPointerMove(nextIndex);
   }
 
-  const chartHeight = Math.max(chartMetrics.height, density === "compact" ? 228 : 260);
-
   return (
     <div
       ref={containerRef}
@@ -261,7 +259,7 @@ function TelemetryMonitorCanvas({
         aria-label="espresso telemetry monitor"
         className="h-full w-full"
         preserveAspectRatio="none"
-        viewBox={`0 0 ${chartMetrics.width} ${chartHeight}`}
+        viewBox={`0 0 ${chartMetrics.width} ${chartMetrics.height}`}
       >
         <defs>
           {allColors.map((color) => (
@@ -272,7 +270,7 @@ function TelemetryMonitorCanvas({
               x={-chartMetrics.margin.left}
               y={-chartMetrics.margin.top}
               width={chartMetrics.width + chartMetrics.margin.left}
-              height={chartHeight + chartMetrics.margin.top}
+              height={chartMetrics.height + chartMetrics.margin.top}
             >
               <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
               <feFlood floodColor={color} floodOpacity="0.25" result="color" />
@@ -306,7 +304,7 @@ function TelemetryMonitorCanvas({
 
         <rect
           fill={chartTheme.surface}
-          height={chartHeight}
+          height={chartMetrics.height}
           rx={3}
           stroke={chartTheme.border}
           width={chartMetrics.width}

@@ -7,6 +7,15 @@ import {
 } from "./fixtures";
 
 test.describe("history", () => {
+  function isTabletProject(projectName: string) {
+    return (
+      projectName === "tablet-xs-portrait" ||
+      projectName === "tablet-xs-landscape" ||
+      projectName === "tablet-sm-portrait" ||
+      projectName === "tablet-sm-landscape"
+    );
+  }
+
   test("@smoke renders the latest shot detail and supports refresh", async ({
     app,
     browserSignals,
@@ -24,7 +33,7 @@ test.describe("history", () => {
     await assertNoCriticalOverflow(page);
     assertNoAppErrors(browserSignals);
 
-    if (testInfo.project.name === "tablet-sm-portrait") {
+    if (isTabletProject(testInfo.project.name)) {
       await expect(page).toHaveScreenshot("history-detail.png");
     }
   });

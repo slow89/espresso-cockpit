@@ -9,7 +9,6 @@ import {
   CompactMonitorBar as SharedCompactMonitorBar,
   DesktopMonitorBar as SharedDesktopMonitorBar,
 } from "@/components/chart-monitor/chrome";
-import { cn } from "@/lib/utils";
 import {
   formatTelemetryClock,
   type TelemetrySample,
@@ -250,10 +249,7 @@ function TelemetryMonitorCanvas({
   return (
     <div
       ref={containerRef}
-      className={cn(
-        "min-h-0 min-w-0 overflow-hidden rounded-[3px] border border-chart-border bg-chart-surface",
-        density === "regular" ? "h-full flex-1" : "flex-1",
-      )}
+      className="min-h-0 min-w-0 flex-1 overflow-hidden rounded-[3px] border border-chart-border bg-chart-surface"
     >
       <svg
         aria-label="espresso telemetry monitor"
@@ -362,7 +358,7 @@ function TelemetryMonitorCanvas({
               : (density === "compact" ? 22 : 28);
 
             return (
-              <Group key={`${event.label}-${event.xValue}`}>
+              <Group key={`${event.label}-${event.xValue}-${index}`}>
                 <line
                   stroke={chartTheme.event}
                   strokeDasharray="4 4"

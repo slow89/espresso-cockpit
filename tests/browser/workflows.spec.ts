@@ -7,6 +7,15 @@ import {
 } from "./fixtures";
 
 test.describe("workflows", () => {
+  function isTabletProject(projectName: string) {
+    return (
+      projectName === "tablet-xs-portrait" ||
+      projectName === "tablet-xs-landscape" ||
+      projectName === "tablet-sm-portrait" ||
+      projectName === "tablet-sm-landscape"
+    );
+  }
+
   test("@smoke imports a profile and applies a different saved workflow", async ({
     app,
     browserSignals,
@@ -31,7 +40,7 @@ test.describe("workflows", () => {
     await assertNoCriticalOverflow(page);
     assertNoAppErrors(browserSignals);
 
-    if (testInfo.project.name === "tablet-sm-portrait") {
+    if (isTabletProject(testInfo.project.name)) {
       await expect(page).toHaveScreenshot("workflows-main.png");
     }
   });

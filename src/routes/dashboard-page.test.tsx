@@ -241,7 +241,27 @@ describe("DashboardPage", () => {
     });
   });
 
-  it("shows brew heating status above tablet controls while temperatures are below target", () => {
+  it("shows brew heating status above tablet controls while the machine is warming", () => {
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("heating", "preparingForShot", {
+        groupTemperature: 89,
+        mixTemperature: 90,
+        targetGroupTemperature: 93,
+        targetMixTemperature: 93,
+      }),
+      error: null,
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByTestId("dashboard-tablet-prep-status")).toHaveTextContent(
+      "Heating up",
+    );
+    expect(screen.getByText("90°C / 93°C")).toBeInTheDocument();
+    expect(screen.getByText("89°C / 93°C")).toBeInTheDocument();
+  });
+
+  it("keeps the prep status ready after a flush-style temperature dip once the machine is idle again", () => {
     queryMocks.useMachineStateQuery.mockReturnValue({
       data: buildSnapshot("idle", "ready", {
         groupTemperature: 89,
@@ -255,7 +275,7 @@ describe("DashboardPage", () => {
     render(<DashboardPage />);
 
     expect(screen.getByTestId("dashboard-tablet-prep-status")).toHaveTextContent(
-      "Heating up",
+      "Ready to brew",
     );
     expect(screen.getByText("90°C / 93°C")).toBeInTheDocument();
     expect(screen.getByText("89°C / 93°C")).toBeInTheDocument();

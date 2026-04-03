@@ -29,16 +29,16 @@ export function DashboardWorkspaceContainer() {
       isShotActive={isShotActive}
       tabletPrepBoard={<DashboardTabletPrepBoard />}
       tabletShotContent={
-        <>
+        <div className="flex min-h-0 flex-1 flex-col gap-2.5">
           <DashboardTabletShotSummary />
-          <div className="mt-2.5 min-h-0 flex-1 overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-hidden">
             <TelemetryChart
               className="h-full rounded-[4px] border-0 bg-transparent p-0 shadow-none"
               data={telemetry}
               layout="tablet"
             />
           </div>
-        </>
+        </div>
       }
     />
   );

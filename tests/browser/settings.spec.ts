@@ -8,6 +8,15 @@ import {
 } from "./fixtures";
 
 test.describe("settings", () => {
+  function isTabletProject(projectName: string) {
+    return (
+      projectName === "tablet-xs-portrait" ||
+      projectName === "tablet-xs-landscape" ||
+      projectName === "tablet-sm-portrait" ||
+      projectName === "tablet-sm-landscape"
+    );
+  }
+
   test("@smoke saves the gateway target and enables visualizer uploads", async ({
     app,
     browserSignals,
@@ -32,7 +41,7 @@ test.describe("settings", () => {
     await assertNoCriticalOverflow(page);
     assertNoAppErrors(browserSignals);
 
-    if (testInfo.project.name === "tablet-sm-portrait") {
+    if (isTabletProject(testInfo.project.name)) {
       await expect(page).toHaveScreenshot("settings-main.png");
     }
   });

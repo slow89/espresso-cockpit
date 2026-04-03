@@ -88,9 +88,12 @@ export function getUnifiedChartMetrics(
       ? { top: 22, right: 42, bottom: 22, left: 42 }
       : { top: 30, right: 64, bottom: 34, left: 64 };
 
+  const availablePlotHeight = Math.max(containerSize.height - margin.top - margin.bottom, 0);
   const plotHeight =
     containerSize.height > 0
-      ? Math.max(minPlotHeight, containerSize.height - margin.top - margin.bottom)
+      ? density === "compact"
+        ? availablePlotHeight
+        : Math.max(minPlotHeight, availablePlotHeight)
       : minPlotHeight;
 
   const height = margin.top + margin.bottom + plotHeight;

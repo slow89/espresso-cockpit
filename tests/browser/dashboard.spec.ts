@@ -7,6 +7,24 @@ import {
 } from "./fixtures";
 
 test.describe("dashboard", () => {
+  function isTabletPortraitProject(projectName: string) {
+    return projectName === "tablet-xs-portrait" || projectName === "tablet-sm-portrait";
+  }
+
+  function usesTabletDashboardLayout(projectName: string) {
+    return (
+      isTabletPortraitProject(projectName) ||
+      projectName === "tablet-xs-landscape"
+    );
+  }
+
+  function isTabletProject(projectName: string) {
+    return (
+      usesTabletDashboardLayout(projectName) ||
+      projectName === "tablet-sm-landscape"
+    );
+  }
+
   test("@smoke renders the idle tablet workspace without layout regressions", async ({
     app,
     browserSignals,
@@ -17,7 +35,7 @@ test.describe("dashboard", () => {
       scenarioId: "dashboard-idle",
     });
 
-    if (testInfo.project.name === "tablet-sm-portrait") {
+    if (usesTabletDashboardLayout(testInfo.project.name)) {
       await expect(page.getByTestId("dashboard-tablet-prep-board")).toBeVisible();
     } else {
       await expect(page.getByTestId("dashboard-desktop-workspace")).toBeVisible();
@@ -27,7 +45,7 @@ test.describe("dashboard", () => {
     await assertNoCriticalOverflow(page);
     assertNoAppErrors(browserSignals);
 
-    if (testInfo.project.name === "tablet-sm-portrait") {
+    if (isTabletProject(testInfo.project.name)) {
       await expect(page).toHaveScreenshot("dashboard-idle.png");
     }
   });
@@ -42,13 +60,13 @@ test.describe("dashboard", () => {
       scenarioId: "dashboard-active-shot",
     });
 
-    if (testInfo.project.name === "tablet-sm-portrait") {
+    if (usesTabletDashboardLayout(testInfo.project.name)) {
       await expect(page.getByTestId("dashboard-tablet-prep-board")).toBeVisible();
     } else {
       await expect(page.getByTestId("dashboard-desktop-workspace")).toBeVisible();
     }
     await app.advanceStep();
-    if (testInfo.project.name === "tablet-sm-portrait") {
+    if (usesTabletDashboardLayout(testInfo.project.name)) {
       await expect(page.getByTestId("dashboard-tablet-shot-workspace")).toBeVisible();
       await expect(page.getByTestId("dashboard-shot-summary")).toBeVisible();
     } else {
@@ -61,7 +79,7 @@ test.describe("dashboard", () => {
     await assertNoCriticalOverflow(page);
     assertNoAppErrors(browserSignals);
 
-    if (testInfo.project.name === "tablet-sm-portrait") {
+    if (isTabletProject(testInfo.project.name)) {
       await expect(page).toHaveScreenshot("dashboard-shot-active.png");
     }
   });
@@ -146,7 +164,7 @@ test.describe("dashboard", () => {
 
     await app.advanceStep();
     await expect(page.getByRole("button", { name: "Sleep machine" })).toBeVisible();
-    if (testInfo.project.name === "tablet-sm-portrait") {
+    if (usesTabletDashboardLayout(testInfo.project.name)) {
       await expect(page.getByTestId("dashboard-tablet-prep-board")).toBeVisible();
     } else {
       await expect(page.getByTestId("dashboard-desktop-workspace")).toBeVisible();

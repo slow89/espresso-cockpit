@@ -154,6 +154,30 @@ export function getDashboardPrepStatus({
     };
   }
 
+  const normalizedState = snapshot.state.state.toLowerCase();
+  const normalizedSubstate = snapshot.state.substate.toLowerCase();
+
+  if (normalizedState === "idle") {
+    return {
+      items,
+      title: "Ready to brew",
+      tone: "ready",
+    };
+  }
+
+  if (
+    normalizedState === "booting" ||
+    normalizedState === "heating" ||
+    normalizedState === "preheating" ||
+    normalizedSubstate === "preparingforshot"
+  ) {
+    return {
+      items,
+      title: "Heating up",
+      tone: "warming",
+    };
+  }
+
   const mixGap = Math.max(
     (snapshot.targetMixTemperature ?? snapshot.mixTemperature) - snapshot.mixTemperature,
     0,

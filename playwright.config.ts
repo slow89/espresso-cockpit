@@ -66,6 +66,28 @@ export default defineConfig({
   workers: 1,
   projects: [
     {
+      name: "tablet-xs-portrait",
+      use: {
+        hasTouch: true,
+        isMobile: true,
+        viewport: {
+          height: 960,
+          width: 600,
+        },
+      },
+    },
+    {
+      name: "tablet-xs-landscape",
+      use: {
+        hasTouch: true,
+        isMobile: true,
+        viewport: {
+          height: 600,
+          width: 960,
+        },
+      },
+    },
+    {
       name: "tablet-sm-portrait",
       use: {
         hasTouch: true,

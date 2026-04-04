@@ -25,7 +25,7 @@ import {
   type WorkflowRecord,
 } from "../../src/rest/types";
 
-export type GatewayStreamChannel = "display" | "machine" | "scale" | "water";
+export type GatewayStreamChannel = "display" | "machine" | "scale" | "timeToReady" | "water";
 
 export interface GatewayRouteFault {
   body: unknown;

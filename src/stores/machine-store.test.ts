@@ -62,6 +62,8 @@ describe("useMachineStore", () => {
       scaleSnapshot: null,
       scaleSocket: null,
       telemetry: [],
+      timeToReady: null,
+      timeToReadySocket: null,
       waterConnection: "idle",
       waterLevels: null,
       waterSocket: null,
@@ -73,13 +75,21 @@ describe("useMachineStore", () => {
 
     expect(MockWebSocket.instances.map((socket) => socket.url)).toEqual([
       "ws://bridge.local:8080/ws/v1/machine/snapshot",
+      "ws://bridge.local:8080/ws/v1/plugins/time-to-ready.reaplugin/timeToReady",
       "ws://bridge.local:8080/ws/v1/machine/waterLevels",
       "ws://bridge.local:8080/ws/v1/scale/snapshot",
     ]);
 
     MockWebSocket.instances[0]?.emitOpen();
-    MockWebSocket.instances[1]?.emitOpen();
     MockWebSocket.instances[2]?.emitOpen();
+    MockWebSocket.instances[3]?.emitOpen();
+    MockWebSocket.instances[1]?.emitMessage({
+      currentTemp: 90,
+      remainingTimeMs: null,
+      status: "insufficient_data",
+      targetTemp: 93,
+      timestamp: 1_743_194_400_000,
+    });
     MockWebSocket.instances[0]?.emitMessage({
       flow: 2.4,
       groupTemperature: 93,
@@ -97,11 +107,11 @@ describe("useMachineStore", () => {
       targetPressure: 0,
       timestamp: "2026-03-28T20:00:08.000Z",
     });
-    MockWebSocket.instances[1]?.emitMessage({
+    MockWebSocket.instances[2]?.emitMessage({
       currentLevel: 48,
       refillLevel: 25,
     });
-    MockWebSocket.instances[2]?.emitMessage({
+    MockWebSocket.instances[3]?.emitMessage({
       batteryLevel: 82,
       timerValue: 8,
       timestamp: "2026-03-28T20:00:08.000Z",
@@ -116,6 +126,13 @@ describe("useMachineStore", () => {
       waterLevels: {
         currentLevel: 48,
         refillLevel: 25,
+      },
+      timeToReady: {
+        currentTemp: 90,
+        remainingTimeMs: null,
+        status: "insufficient_data",
+        targetTemp: 93,
+        timestamp: 1_743_194_400_000,
       },
     });
     expect(useMachineStore.getState().telemetry.at(-1)).toMatchObject({

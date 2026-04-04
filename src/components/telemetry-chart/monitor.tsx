@@ -247,10 +247,10 @@ function TelemetryMonitorCanvas({
       <svg
         aria-label="espresso telemetry monitor"
         className="block h-full w-full"
-        height={containerSize.height > 0 ? containerSize.height : undefined}
+        height={containerSize.height > 0 ? containerSize.height : "100%"}
         preserveAspectRatio="none"
         viewBox={`0 0 ${chartMetrics.width} ${chartMetrics.height}`}
-        width={containerSize.width > 0 ? containerSize.width : undefined}
+        width={containerSize.width > 0 ? containerSize.width : "100%"}
       >
         <defs>
           {allColors.map((color) => (

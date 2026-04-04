@@ -222,9 +222,9 @@ export function ScaleStatusCard() {
           {formatScaleWeight(weight)}
         </p>
 
-        <div className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-center gap-1 justify-self-end md:col-start-3 md:row-span-1">
+        <div className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-stretch gap-1 self-stretch justify-self-end md:col-start-3 md:row-span-1">
           <Button
-            className="h-[22px] rounded-[4px] border-status-info-border bg-status-info-surface px-2 font-mono text-[0.48rem] font-semibold text-status-info-foreground hover:brightness-110"
+            className="h-full min-h-0 min-w-[50px] rounded-[4px] border-status-info-border bg-status-info-surface px-2.5 font-mono text-[0.5rem] font-semibold text-status-info-foreground hover:brightness-110"
             disabled={scaleConnection !== "live" || tareScaleMutation.isPending}
             onClick={() => tareScaleMutation.mutate()}
             size="sm"
@@ -233,7 +233,7 @@ export function ScaleStatusCard() {
             {tareScaleMutation.isPending ? "Taring" : "Tare"}
           </Button>
           <Button
-            className="h-[22px] rounded-[4px] border-status-success-border bg-status-success-surface px-2 font-mono text-[0.48rem] font-semibold text-status-success-foreground hover:brightness-110"
+            className="h-full min-h-0 min-w-[68px] rounded-[4px] border-status-success-border bg-status-success-surface px-2.5 font-mono text-[0.5rem] font-semibold text-status-success-foreground hover:brightness-110"
             disabled={!canUseScaleWeightForDose || updateWorkflowMutation.isPending}
             onClick={handleSetDoseFromScale}
             size="sm"

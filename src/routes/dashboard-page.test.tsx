@@ -56,6 +56,7 @@ describe("DashboardPage", () => {
       scaleConnection: "idle",
       scaleSnapshot: null,
       telemetry: [],
+      timeToReady: null,
       waterLevels: null,
     });
 
@@ -242,8 +243,17 @@ describe("DashboardPage", () => {
   });
 
   it("shows brew heating status above tablet controls while the machine is warming", () => {
+    useMachineStore.setState({
+      timeToReady: {
+        currentTemp: 90,
+        remainingTimeMs: null,
+        status: "insufficient_data",
+        targetTemp: 93,
+        timestamp: 1_743_194_400_000,
+      },
+    });
     queryMocks.useMachineStateQuery.mockReturnValue({
-      data: buildSnapshot("heating", "preparingForShot", {
+      data: buildSnapshot("idle", "ready", {
         groupTemperature: 89,
         mixTemperature: 90,
         targetGroupTemperature: 93,
@@ -259,7 +269,32 @@ describe("DashboardPage", () => {
     expect(screen.getByText("89°C / 93°C")).toBeInTheDocument();
   });
 
+  it("keeps the prep status warming until the bridge reports readiness", () => {
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("heating", "preparingForShot", {
+        groupTemperature: 89,
+        mixTemperature: 90,
+        targetGroupTemperature: 93,
+        targetMixTemperature: 93,
+      }),
+      error: null,
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByTestId("dashboard-tablet-prep-status")).toHaveTextContent("Heating up");
+  });
+
   it("keeps the prep status ready after a flush-style temperature dip once the machine is idle again", () => {
+    useMachineStore.setState({
+      timeToReady: {
+        currentTemp: 93,
+        remainingTimeMs: 0,
+        status: "reached",
+        targetTemp: 93,
+        timestamp: 1_743_194_400_000,
+      },
+    });
     queryMocks.useMachineStateQuery.mockReturnValue({
       data: buildSnapshot("idle", "ready", {
         groupTemperature: 89,

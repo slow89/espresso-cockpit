@@ -1,4 +1,4 @@
-import type { MachineSnapshot } from "@/rest/types";
+import type { MachineSnapshot, TimeToReadySnapshot } from "@/rest/types";
 import type { TelemetrySample } from "@/lib/telemetry";
 
 export type DashboardPresentationMode = "controls" | "shot";
@@ -118,9 +118,11 @@ export function getDashboardPresentationMode({
 export function getDashboardPrepStatus({
   isOffline,
   snapshot,
+  timeToReady,
 }: {
   isOffline: boolean;
   snapshot?: MachineSnapshot | null;
+  timeToReady?: TimeToReadySnapshot | null;
 }): DashboardPrepStatus {
   const mixValue = formatTemperature(snapshot?.mixTemperature);
   const targetMixValue = formatTemperature(snapshot?.targetMixTemperature);
@@ -150,40 +152,7 @@ export function getDashboardPrepStatus({
     };
   }
 
-  const normalizedState = snapshot.state.state.toLowerCase();
-  const normalizedSubstate = snapshot.state.substate.toLowerCase();
-
-  if (normalizedState === "idle") {
-    return {
-      items,
-      title: "Ready to brew",
-      tone: "ready",
-    };
-  }
-
-  if (
-    normalizedState === "booting" ||
-    normalizedState === "heating" ||
-    normalizedState === "preheating" ||
-    normalizedSubstate === "preparingforshot"
-  ) {
-    return {
-      items,
-      title: "Heating up",
-      tone: "warming",
-    };
-  }
-
-  const mixGap = Math.max(
-    (snapshot.targetMixTemperature ?? snapshot.mixTemperature) - snapshot.mixTemperature,
-    0,
-  );
-  const groupGap = Math.max(
-    (snapshot.targetGroupTemperature ?? snapshot.groupTemperature) - snapshot.groupTemperature,
-    0,
-  );
-
-  if (Math.max(mixGap, groupGap) >= 0.75) {
+  if (timeToReady?.status !== "reached") {
     return {
       items,
       title: "Heating up",

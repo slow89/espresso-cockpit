@@ -7,6 +7,7 @@ import {
   machineSnapshotSchema,
   machineWaterLevelsSchema,
   scaleSnapshotSchema,
+  timeToReadySnapshotSchema,
 } from "./types";
 
 describe("bridge realtime schemas", () => {
@@ -106,6 +107,25 @@ describe("bridge realtime schemas", () => {
         brightness: true,
         wakeLock: true,
       },
+    });
+  });
+
+  it("accepts time-to-ready plugin snapshots", () => {
+    expect(
+      timeToReadySnapshotSchema.parse({
+        currentTemp: 90,
+        formattedTime: "00:45",
+        heatingRate: 0.2,
+        message: "Estimated 00:45 remaining",
+        remainingTimeMs: 45_000,
+        status: "heating",
+        targetTemp: 93,
+        timestamp: 1_743_194_400_000,
+      }),
+    ).toMatchObject({
+      currentTemp: 90,
+      remainingTimeMs: 45_000,
+      status: "heating",
     });
   });
 });

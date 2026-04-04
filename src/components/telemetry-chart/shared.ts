@@ -90,7 +90,6 @@ export function getUnifiedChartMetrics(
     density === "compact"
       ? { top: 22, right: 42, bottom: 22, left: 42 }
       : { top: 30, right: 64, bottom: 34, left: 64 };
-
   const availablePlotHeight = Math.max(containerSize.height - margin.top - margin.bottom, 0);
   const plotHeight =
     containerSize.height > 0
@@ -98,11 +97,13 @@ export function getUnifiedChartMetrics(
         ? availablePlotHeight
         : Math.max(minPlotHeight, availablePlotHeight)
       : minPlotHeight;
-
   const height = margin.top + margin.bottom + plotHeight;
   const width =
-    containerSize.width > 0
-      ? Math.max(margin.left + margin.right + 240, containerSize.width)
+    containerSize.width > 0 && containerSize.height > 0
+      ? Math.max(
+          margin.left + margin.right + 240,
+          Math.round(height * (containerSize.width / containerSize.height)),
+        )
       : 1240;
 
   return {
@@ -301,12 +302,31 @@ export function useElementSize<T extends HTMLElement>() {
       updateFromBounds();
     };
     window.addEventListener("resize", handleWindowResize);
+    window.addEventListener("orientationchange", handleWindowResize);
+    window.addEventListener("pageshow", handleWindowResize);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        updateFromBounds();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    let intervalId: ReturnType<typeof setInterval> | null = null;
 
     if (typeof ResizeObserver === "undefined") {
+      intervalId = setInterval(updateFromBounds, 250);
+
       return () => {
         cancelAnimationFrame(frameA);
         cancelAnimationFrame(frameB);
         window.removeEventListener("resize", handleWindowResize);
+        window.removeEventListener("orientationchange", handleWindowResize);
+        window.removeEventListener("pageshow", handleWindowResize);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        if (intervalId != null) {
+          clearInterval(intervalId);
+        }
       };
     }
 
@@ -326,6 +346,9 @@ export function useElementSize<T extends HTMLElement>() {
       cancelAnimationFrame(frameA);
       cancelAnimationFrame(frameB);
       window.removeEventListener("resize", handleWindowResize);
+      window.removeEventListener("orientationchange", handleWindowResize);
+      window.removeEventListener("pageshow", handleWindowResize);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       observer.disconnect();
     };
   }, []);

@@ -299,6 +299,7 @@ export function useDashboardShotSummaryItems(): ReadonlyArray<DashboardShotSumma
 export function useDashboardPrepStatusModel(): DashboardPrepStatus {
   const liveConnection = useMachineStore((state) => state.liveConnection);
   const machineError = useMachineStore((state) => state.error);
+  const timeToReady = useMachineStore((state) => state.timeToReady);
   const { data: snapshot, error: machineQueryError } = useMachineStateQuery();
   const { error: workflowQueryError } = useWorkflowQuery();
   const isOffline =
@@ -307,6 +308,7 @@ export function useDashboardPrepStatusModel(): DashboardPrepStatus {
   return getDashboardPrepStatus({
     isOffline,
     snapshot,
+    timeToReady,
   });
 }
 

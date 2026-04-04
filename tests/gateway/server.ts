@@ -25,6 +25,7 @@ const channelClients: Record<GatewayStreamChannel, Set<WebSocket>> = {
   display: new Set(),
   machine: new Set(),
   scale: new Set(),
+  timeToReady: new Set(),
   water: new Set(),
 };
 
@@ -537,6 +538,7 @@ function getChangedChannels(
 
   if (patch.machineSnapshot) {
     channels.push("machine");
+    channels.push("timeToReady");
   }
 
   if (patch.scaleSnapshot !== undefined) {
@@ -612,6 +614,10 @@ function getChannelPayload(channel: GatewayStreamChannel) {
     return runtime.state.scaleSnapshot;
   }
 
+  if (channel === "timeToReady") {
+    return buildTimeToReadyPayload(runtime.state.machineSnapshot);
+  }
+
   return runtime.state.waterLevels;
 }
 
@@ -635,7 +641,7 @@ function loadScenario(scenarioId: GatewayScenarioId) {
   runtime.scenarioId = nextRuntime.scenarioId;
   runtime.state = nextRuntime.state;
   runtime.stepIndex = nextRuntime.stepIndex;
-  broadcastState(["display", "machine", "scale", "water"]);
+  broadcastState(["display", "machine", "scale", "timeToReady", "water"]);
 }
 
 function summarizeRuntime() {
@@ -767,6 +773,10 @@ function getWebSocketChannel(path: string): GatewayStreamChannel | null {
     return "machine";
   }
 
+  if (path === "/ws/v1/plugins/time-to-ready.reaplugin/timeToReady") {
+    return "timeToReady";
+  }
+
   if (path === "/ws/v1/scale/snapshot") {
     return "scale";
   }
@@ -776,6 +786,43 @@ function getWebSocketChannel(path: string): GatewayStreamChannel | null {
   }
 
   return null;
+}
+
+function buildTimeToReadyPayload(snapshot: GatewayScenarioState["machineSnapshot"]) {
+  const currentTemp = snapshot.groupTemperature;
+  const targetTemp = snapshot.targetGroupTemperature;
+  const gap = targetTemp - currentTemp;
+
+  if (snapshot.state.state === "sleeping") {
+    return {
+      currentTemp,
+      message: null,
+      remainingTimeMs: null,
+      status: "not_heating",
+      targetTemp,
+      timestamp: Date.now(),
+    };
+  }
+
+  if (gap <= 0) {
+    return {
+      currentTemp,
+      message: "Target temperature reached",
+      remainingTimeMs: 0,
+      status: "reached",
+      targetTemp,
+      timestamp: Date.now(),
+    };
+  }
+
+  return {
+    currentTemp,
+    message: "Collecting temperature data...",
+    remainingTimeMs: null,
+    status: "insufficient_data",
+    targetTemp,
+    timestamp: Date.now(),
+  };
 }
 
 function normalizeMethod(method: string | undefined): GatewayRouteFault["method"] {

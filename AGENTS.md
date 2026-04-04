@@ -2,6 +2,7 @@ always use pnpm
 
 Streamline Gateway source of truth: https://github.com/tadelv/reaprime
 when questions depend on gateway behavior, APIs, deployment details, or browser/runtime details, inspect that repo before answering
+for machine readiness and warmup, trust Streamline Bridge as the source of truth and do not re-implement readiness heuristics in the skin
 when the user says `redeploy`, treat it as the tablet redeploy workflow in this repo: inspect `scripts/deploy-tablet-skin.mjs` and `README.md` if needed, then run `pnpm deploy:tablet` unless the user asks for a dry run or only wants an explanation
 for tablet deploy troubleshooting, check `.env`/environment expectations first, especially `TABLET_GATEWAY_ORIGIN`, plus optional `SKIN_DEPLOY_HOST` and `SKIN_DEPLOY_PORT`
 

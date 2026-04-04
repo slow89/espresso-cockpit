@@ -31,6 +31,24 @@ export const scaleSnapshotSchema = z.looseObject({
   batteryLevel: optionalNumber,
 });
 
+export const timeToReadyStatusSchema = z.enum([
+  "reached",
+  "insufficient_data",
+  "not_heating",
+  "heating",
+]);
+
+export const timeToReadySnapshotSchema = z.looseObject({
+  currentTemp: optionalNumber,
+  formattedTime: optionalString,
+  heatingRate: optionalNumber,
+  message: optionalString,
+  remainingTimeMs: optionalNumber,
+  status: timeToReadyStatusSchema,
+  targetTemp: optionalNumber,
+  timestamp: optionalNumber,
+});
+
 export const machineWaterLevelsSchema = z.looseObject({
   currentLevel: optionalNumber,
   refillLevel: optionalNumber,
@@ -223,6 +241,7 @@ export const profileRecordListSchema = z.array(profileRecordSchema);
 export type MachinePhase = z.infer<typeof machinePhaseSchema>;
 export type MachineSnapshot = z.infer<typeof machineSnapshotSchema>;
 export type ScaleSnapshot = z.infer<typeof scaleSnapshotSchema>;
+export type TimeToReadySnapshot = z.infer<typeof timeToReadySnapshotSchema>;
 export type MachineWaterLevels = z.infer<typeof machineWaterLevelsSchema>;
 export type HeartbeatResponse = z.infer<typeof heartbeatResponseSchema>;
 export type PresenceSettings = z.infer<typeof presenceSettingsSchema>;

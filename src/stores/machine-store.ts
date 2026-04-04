@@ -7,9 +7,11 @@ import {
   machineWaterLevelsSchema,
   machineSnapshotSchema,
   scaleSnapshotSchema,
+  timeToReadySnapshotSchema,
   type MachineWaterLevels,
   type MachineStateChange,
   type ScaleSnapshot,
+  type TimeToReadySnapshot,
 } from "@/rest/types";
 import {
   appendTelemetryHistory,
@@ -27,6 +29,8 @@ interface MachineState {
   lastScaleReconnectAttemptAt: number | null;
   liveConnection: LiveConnectionState;
   machineSocket: WebSocket | null;
+  timeToReady: TimeToReadySnapshot | null;
+  timeToReadySocket: WebSocket | null;
   connectScale: () => Promise<void>;
   disconnectScale: () => void;
   reconnectPreferredScale: () => Promise<void>;
@@ -125,6 +129,8 @@ export const useMachineStore = create<MachineState>((set, get) => ({
   scaleSnapshot: null,
   scaleSocket: null,
   telemetry: [],
+  timeToReady: null,
+  timeToReadySocket: null,
   waterConnection: "idle",
   waterLevels: null,
   waterSocket: null,
@@ -134,6 +140,7 @@ export const useMachineStore = create<MachineState>((set, get) => ({
     try {
       const client = getClient();
       const machineSocket = client.createMachineSnapshotSocket();
+      const timeToReadySocket = client.createTimeToReadySocket();
       const waterSocket = client.createMachineWaterLevelsSocket();
 
       machineSocket.onopen = () => {
@@ -171,6 +178,35 @@ export const useMachineStore = create<MachineState>((set, get) => ({
         set((state) => ({
           machineSocket: state.machineSocket === machineSocket ? null : state.machineSocket,
           liveConnection: "idle",
+        }));
+      };
+
+      timeToReadySocket.onmessage = (event) => {
+        const parsed = timeToReadySnapshotSchema.safeParse(JSON.parse(event.data));
+
+        if (!parsed.success) {
+          set({
+            timeToReady: null,
+          });
+          return;
+        }
+
+        set({
+          timeToReady: parsed.data,
+        });
+      };
+
+      timeToReadySocket.onerror = () => {
+        set((state) => ({
+          timeToReady: state.timeToReadySocket === timeToReadySocket ? null : state.timeToReady,
+        }));
+      };
+
+      timeToReadySocket.onclose = () => {
+        set((state) => ({
+          timeToReady: state.timeToReadySocket === timeToReadySocket ? null : state.timeToReady,
+          timeToReadySocket:
+            state.timeToReadySocket === timeToReadySocket ? null : state.timeToReadySocket,
         }));
       };
 
@@ -213,6 +249,8 @@ export const useMachineStore = create<MachineState>((set, get) => ({
       set({
         liveConnection: "connecting",
         machineSocket,
+        timeToReady: null,
+        timeToReadySocket,
         waterConnection: "connecting",
         waterSocket,
       });
@@ -229,6 +267,7 @@ export const useMachineStore = create<MachineState>((set, get) => ({
   },
   disconnectLive() {
     const currentMachineSocket = get().machineSocket;
+    const currentTimeToReadySocket = get().timeToReadySocket;
     const currentWaterSocket = get().waterSocket;
 
     if (currentMachineSocket) {
@@ -241,12 +280,19 @@ export const useMachineStore = create<MachineState>((set, get) => ({
       currentWaterSocket.close();
     }
 
+    if (currentTimeToReadySocket) {
+      currentTimeToReadySocket.onclose = null;
+      currentTimeToReadySocket.close();
+    }
+
     get().disconnectScale();
 
     set({
       liveConnection: "idle",
       machineSocket: null,
       telemetry: [],
+      timeToReady: null,
+      timeToReadySocket: null,
       waterConnection: "idle",
       waterLevels: null,
       waterSocket: null,

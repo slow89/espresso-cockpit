@@ -312,6 +312,11 @@ export function createBridgeClient(baseUrl: string) {
     createScaleSnapshotSocket() {
       return new WebSocket(`${toWebSocketUrl(origin)}/ws/v1/scale/snapshot`);
     },
+    createTimeToReadySocket() {
+      return new WebSocket(
+        `${toWebSocketUrl(origin)}/ws/v1/plugins/time-to-ready.reaplugin/timeToReady`,
+      );
+    },
     createMachineWaterLevelsSocket() {
       return new WebSocket(`${toWebSocketUrl(origin)}/ws/v1/machine/waterLevels`);
     },

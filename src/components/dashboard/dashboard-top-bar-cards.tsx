@@ -267,8 +267,8 @@ export function MachineStatusCard() {
   }
 
   return (
-    <div className="flex min-h-8 min-w-[100px] shrink-0 items-center justify-between gap-2 rounded-[4px] border border-border bg-panel-strong/80 px-2.5">
-      <div className="flex min-w-0 items-center gap-1.5">
+    <div className="flex min-h-8 min-w-[136px] shrink-0 items-stretch justify-between gap-2 rounded-[4px] border border-border bg-panel-strong/80 px-2.5">
+      <div className="flex min-w-0 items-center gap-1.5 self-center">
         <p className="shrink-0 font-mono text-[0.46rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           Machine
         </p>
@@ -278,7 +278,7 @@ export function MachineStatusCard() {
           </p>
         ) : null}
       </div>
-      <div className="flex shrink-0 items-center">
+      <div className="flex shrink-0 self-stretch">
         <button
           aria-label={
             requestMachineStateMutation.isPending
@@ -290,7 +290,7 @@ export function MachineStatusCard() {
                 : "Wake machine"
           }
           className={cn(
-            "flex size-6 items-center justify-center rounded-[4px] border transition disabled:cursor-not-allowed disabled:opacity-50",
+            "flex h-full min-h-0 min-w-[52px] items-center justify-center gap-1 rounded-[4px] border px-2 transition disabled:cursor-not-allowed disabled:opacity-50",
             isMachinePoweredOn
               ? "border-status-success-border bg-status-success-surface text-status-success-foreground hover:brightness-110"
               : "border-border bg-panel-strong text-muted-foreground hover:bg-panel",
@@ -299,7 +299,10 @@ export function MachineStatusCard() {
           onClick={handleToggleMachinePower}
           type="button"
         >
-          <Power className="size-3" />
+          <Power className="size-4 shrink-0" />
+          <span className="font-mono text-[0.5rem] font-semibold uppercase tracking-[0.06em]">
+            {isMachinePoweredOn ? "Sleep" : "Wake"}
+          </span>
         </button>
       </div>
     </div>

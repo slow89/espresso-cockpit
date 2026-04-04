@@ -358,9 +358,9 @@ function HistoryDetailContent({
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
       {/* Telemetry chart — takes full remaining height on tablet */}
-      <div className="h-[calc(100vh-var(--app-footer-height)-7.5rem)] min-h-[280px] shrink-0 overflow-hidden px-2 py-1.5 md:px-3 md:py-1.5">
+      <div className="flex h-[calc(100vh-var(--app-footer-height)-7.5rem)] min-h-[280px] shrink-0 overflow-hidden px-2 py-1.5 md:px-3 md:py-1.5">
         <TelemetryChart
-          className="h-full rounded-[4px] border-0 bg-transparent p-0 shadow-none"
+          className="rounded-[4px] border-0 bg-transparent p-0 shadow-none"
           data={selectedShotTelemetry}
           layout="desktop"
         />

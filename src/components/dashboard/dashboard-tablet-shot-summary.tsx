@@ -6,7 +6,7 @@ export function DashboardTabletShotSummary() {
 
   return (
     <div
-      className="flex items-stretch border-b border-border/70"
+      className="shrink-0 flex items-stretch border-b border-border/70"
       data-testid="dashboard-shot-summary"
     >
       {items.map((item, i) => (

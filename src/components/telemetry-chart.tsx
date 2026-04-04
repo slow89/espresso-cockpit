@@ -69,14 +69,14 @@ export function TelemetryChart({
   return (
     <div
       className={cn(
-        "panel flex h-full min-h-0 min-w-0 flex-col rounded-[20px] border-chart-border bg-chart-surface p-3 md:max-xl:rounded-[18px] xl:p-5",
+        "panel flex min-h-0 min-w-0 flex-1 flex-col rounded-[20px] border-chart-border bg-chart-surface p-3 md:max-xl:rounded-[18px] xl:p-5",
         className,
       )}
     >
       {layout === "auto" || layout === "tablet" ? (
         <div
           className={cn(
-            "flex min-h-0 min-w-0 flex-1 flex-col gap-1.5",
+            "grid min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-1.5",
             layout === "auto" && "xl:hidden",
           )}
         >

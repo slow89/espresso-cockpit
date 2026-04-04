@@ -101,11 +101,8 @@ export function getUnifiedChartMetrics(
 
   const height = margin.top + margin.bottom + plotHeight;
   const width =
-    containerSize.width > 0 && containerSize.height > 0
-      ? Math.max(
-          margin.left + margin.right + 240,
-          Math.round(height * (containerSize.width / containerSize.height)),
-        )
+    containerSize.width > 0
+      ? Math.max(margin.left + margin.right + 240, containerSize.width)
       : 1240;
 
   return {
@@ -286,11 +283,31 @@ export function useElementSize<T extends HTMLElement>() {
       );
     };
 
-    const bounds = node.getBoundingClientRect();
-    updateSize(bounds.width, bounds.height);
+    const updateFromBounds = () => {
+      const bounds = node.getBoundingClientRect();
+      updateSize(bounds.width, bounds.height);
+    };
+
+    updateFromBounds();
+
+    let frameA = requestAnimationFrame(() => {
+      updateFromBounds();
+    });
+    let frameB = requestAnimationFrame(() => {
+      updateFromBounds();
+    });
+
+    const handleWindowResize = () => {
+      updateFromBounds();
+    };
+    window.addEventListener("resize", handleWindowResize);
 
     if (typeof ResizeObserver === "undefined") {
-      return;
+      return () => {
+        cancelAnimationFrame(frameA);
+        cancelAnimationFrame(frameB);
+        window.removeEventListener("resize", handleWindowResize);
+      };
     }
 
     const observer = new ResizeObserver((entries) => {
@@ -306,6 +323,9 @@ export function useElementSize<T extends HTMLElement>() {
     observer.observe(node);
 
     return () => {
+      cancelAnimationFrame(frameA);
+      cancelAnimationFrame(frameB);
+      window.removeEventListener("resize", handleWindowResize);
       observer.disconnect();
     };
   }, []);

@@ -242,13 +242,15 @@ function TelemetryMonitorCanvas({
   return (
     <div
       ref={containerRef}
-      className="min-h-0 min-w-0 flex-1 overflow-hidden rounded-[3px] border border-chart-border bg-chart-surface"
+      className="relative min-h-0 min-w-0 flex-1 overflow-hidden rounded-[3px] border border-chart-border bg-chart-surface"
     >
       <svg
         aria-label="espresso telemetry monitor"
-        className="h-full w-full"
+        className="block h-full w-full"
+        height={containerSize.height > 0 ? containerSize.height : undefined}
         preserveAspectRatio="none"
         viewBox={`0 0 ${chartMetrics.width} ${chartMetrics.height}`}
+        width={containerSize.width > 0 ? containerSize.width : undefined}
       >
         <defs>
           {allColors.map((color) => (

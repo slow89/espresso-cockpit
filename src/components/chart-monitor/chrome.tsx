@@ -39,7 +39,7 @@ export function CompactMonitorBar({
   onOpenConfig: () => void;
 }) {
   return (
-    <div className="flex min-w-0 items-stretch gap-1">
+    <div className="shrink-0 flex min-w-0 items-stretch gap-1">
       {items.map((item, index) => (
         <div
           className="min-w-0 flex-1 rounded-[3px] border border-border/50 bg-panel-strong/60 px-2 py-1 md:max-xl:px-2.5 md:max-xl:py-1"

@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import { networkInterfaces } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { access, readFile, stat } from "node:fs/promises";
+import { access, readFile, stat, writeFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
@@ -24,6 +24,12 @@ async function main() {
   await access(distDir);
 
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  const stampedManifest = {
+    ...manifest,
+    version: await buildDeployVersion(manifest.version),
+  };
+  await writeFile(manifestPath, `${JSON.stringify(stampedManifest, null, 2)}\n`, "utf8");
+
   const skinId = manifest.id;
   const port = await findAvailablePort(deployPort);
 
@@ -31,7 +37,7 @@ async function main() {
     throw new Error(`Missing skin id in ${manifestPath}`);
   }
 
-  console.log(`Packaging ${skinId} from dist/...`);
+  console.log(`Packaging ${skinId}@${stampedManifest.version} from dist/...`);
   await execFileAsync("zip", ["-rFS", zipPath, "."], { cwd: distDir });
 
   const zipStats = await stat(zipPath);
@@ -61,6 +67,7 @@ async function main() {
     console.log(
       `Tablet skins: ${skins.map((skin) => `${skin.id}@${skin.version ?? "unknown"}`).join(", ")}`,
     );
+    console.log(`Activated version: ${stampedManifest.version}`);
     console.log(`Open on tablet: http://localhost:3000/`);
   } finally {
     await new Promise((resolve, reject) => {
@@ -73,6 +80,30 @@ async function main() {
         resolve();
       });
     });
+  }
+}
+
+async function buildDeployVersion(baseVersion) {
+  const timestamp = new Date()
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\..+$/, "")
+    .replace("T", ".");
+  const gitSha = await getGitShortSha();
+  const suffix = ["dev", timestamp, gitSha].filter(Boolean).join(".");
+
+  return `${baseVersion}-${suffix}`;
+}
+
+async function getGitShortSha() {
+  try {
+    const { stdout } = await execFileAsync("git", ["rev-parse", "--short", "HEAD"], {
+      cwd: rootDir,
+    });
+
+    return stdout.trim();
+  } catch {
+    return null;
   }
 }
 

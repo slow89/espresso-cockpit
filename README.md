@@ -93,6 +93,8 @@ That workflow:
 
 The deploy script reads `.env` from the repo root.
 
+For local tablet deploys, the script stamps `dist/manifest.json` with a unique development version based on the current time and git sha before packaging. This avoids the gateway/tablet reusing an older install under the same skin version.
+
 Required:
 
 ```bash

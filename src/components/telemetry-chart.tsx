@@ -69,14 +69,14 @@ export function TelemetryChart({
   return (
     <div
       className={cn(
-        "panel flex min-h-0 min-w-0 flex-1 flex-col rounded-[20px] border-chart-border bg-chart-surface p-3 md:max-xl:rounded-[18px] xl:p-5",
+        "panel flex h-full min-h-0 min-w-0 w-full flex-1 flex-col rounded-[20px] border-chart-border bg-chart-surface p-3 md:max-xl:rounded-[18px] xl:p-5",
         className,
       )}
     >
       {layout === "auto" || layout === "tablet" ? (
         <div
           className={cn(
-            "grid min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-1.5",
+            "grid h-full min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-1.5",
             layout === "auto" && "xl:hidden",
           )}
         >
@@ -90,7 +90,12 @@ export function TelemetryChart({
       ) : null}
 
       {layout === "auto" || layout === "desktop" ? (
-        <div className={cn("min-h-0 min-w-0 flex-1", layout === "auto" && "hidden xl:block")}>
+        <div
+          className={cn(
+            "flex h-full min-h-0 min-w-0 flex-1 flex-col",
+            layout === "auto" && "hidden xl:block",
+          )}
+        >
           <DesktopTelemetryMonitor
             model={model}
             onPointerLeave={() => setHoveredSampleIndex(null)}

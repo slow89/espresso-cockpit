@@ -265,7 +265,7 @@ export function getChartMetrics<
   };
 }
 
-export function useElementSize<T extends HTMLElement>() {
+export function useElementSize<T extends Element>() {
   const ref = useRef<T | null>(null);
   const [size, setSize] = useState({ height: 0, width: 0 });
 

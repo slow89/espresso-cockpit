@@ -14,9 +14,9 @@ export function DashboardWorkspaceContainer() {
     <DashboardWorkspace
       desktopMain={
         <div className="min-w-0 flex h-full min-h-0 flex-col overflow-hidden">
-          <div className="flex min-h-0 flex-1 overflow-hidden px-4 py-4">
+          <div className="h-full min-h-0 flex-1 overflow-hidden px-4 py-4">
             <TelemetryChart
-              className="rounded-[4px] border-0 bg-transparent p-0 shadow-none"
+              className="h-full rounded-[4px] border-0 bg-transparent p-0 shadow-none"
               data={telemetry}
               layout="desktop"
             />
@@ -27,11 +27,11 @@ export function DashboardWorkspaceContainer() {
       isShotActive={isShotActive}
       tabletPrepBoard={<DashboardTabletPrepBoard />}
       tabletShotContent={
-        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-2.5">
+        <div className="grid h-full min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-2.5">
           <DashboardTabletShotSummary />
-          <div className="flex min-h-0 overflow-hidden">
+          <div className="h-full min-h-0 overflow-hidden">
             <TelemetryChart
-              className="rounded-[4px] border-0 bg-transparent p-0 shadow-none"
+              className="h-full rounded-[4px] border-0 bg-transparent p-0 shadow-none"
               data={telemetry}
               layout="tablet"
             />

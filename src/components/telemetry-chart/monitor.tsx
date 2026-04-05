@@ -202,6 +202,17 @@ function TelemetryMonitorCanvas({
     domain: rightDomain,
     range: [chartMetrics.plotHeight, 0],
   });
+  const compactScaleGroups =
+    density === "compact"
+      ? buildCompactScaleGroups(visibleSeries, timelineSamples, chartMetrics.plotHeight)
+      : null;
+  const compactGridScale =
+    density === "compact"
+      ? scaleLinear<number>({
+          domain: [0, 1],
+          range: [chartMetrics.plotHeight, 0],
+        })
+      : null;
 
   const timelineValues = timelineSamples.map((sample) => getSampleXValue(sample, usesShotTimeline));
   const maxTimelineValue = Math.max(8, timelineValues[timelineValues.length - 1] ?? 0);
@@ -220,10 +231,18 @@ function TelemetryMonitorCanvas({
   const tickCount = density === "compact" ? 3 : 4;
 
   function getSeriesScale(series: TelemetrySeriesDefinition) {
+    if (compactScaleGroups) {
+      return compactScaleGroups.scales.get(getCompactScaleKey(series)) ?? leftScale;
+    }
+
     return axisFamilyMapping[series.family] === "left" ? leftScale : rightScale;
   }
 
   function getSeriesDomain(series: TelemetrySeriesDefinition): [number, number] {
+    if (compactScaleGroups) {
+      return compactScaleGroups.domains.get(getCompactScaleKey(series)) ?? [0, 1];
+    }
+
     return axisFamilyMapping[series.family] === "left" ? leftDomain : rightDomain;
   }
 
@@ -335,7 +354,17 @@ function TelemetryMonitorCanvas({
             width={chartMetrics.innerWidth}
           />
 
-          {leftSeries.length > 0 ? (
+          {density === "compact" && compactGridScale ? (
+            <GridRows
+              height={chartMetrics.plotHeight}
+              numTicks={tickCount}
+              scale={compactGridScale}
+              stroke={chartTheme.grid}
+              width={chartMetrics.innerWidth}
+            />
+          ) : null}
+
+          {density !== "compact" && leftSeries.length > 0 ? (
             <GridRows
               height={chartMetrics.plotHeight}
               numTicks={tickCount}
@@ -554,7 +583,7 @@ function TelemetryMonitorCanvas({
           />
 
           {/* Left Y axis */}
-          {leftSeries.length > 0 ? (
+          {density !== "compact" && leftSeries.length > 0 ? (
             <ChartYAxis
               density={density}
               domain={leftDomain}
@@ -567,7 +596,7 @@ function TelemetryMonitorCanvas({
           ) : null}
 
           {/* Right Y axis */}
-          {rightSeries.length > 0 ? (
+          {density !== "compact" && rightSeries.length > 0 ? (
             <ChartYAxis
               density={density}
               domain={rightDomain}
@@ -807,4 +836,82 @@ function CompactMonitorBar({
       onOpenConfig={onOpenConfig}
     />
   );
+}
+
+function buildCompactScaleGroups(
+  series: TelemetrySeriesDefinition[],
+  samples: TelemetrySample[],
+  plotHeight: number,
+) {
+  const groupedSeries = new Map<string, TelemetrySeriesDefinition[]>();
+
+  for (const definition of series) {
+    const key = getCompactScaleKey(definition);
+    const existing = groupedSeries.get(key);
+
+    if (existing) {
+      existing.push(definition);
+      continue;
+    }
+
+    groupedSeries.set(key, [definition]);
+  }
+
+  const domains = new Map<string, [number, number]>();
+  const scales = new Map<string, LinearScale>();
+
+  for (const [key, group] of groupedSeries) {
+    const domain = getCompactScaleDomain(group, samples);
+    domains.set(key, domain);
+    scales.set(
+      key,
+      scaleLinear<number>({
+        domain,
+        range: [plotHeight, 0],
+      }),
+    );
+  }
+
+  return {
+    domains,
+    scales,
+  };
+}
+
+function getCompactScaleKey(series: TelemetrySeriesDefinition) {
+  return series.unit || series.id;
+}
+
+function getCompactScaleDomain(
+  series: TelemetrySeriesDefinition[],
+  samples: TelemetrySample[],
+): [number, number] {
+  const values = series.flatMap((definition) =>
+    samples
+      .map((sample) => definition.accessor(sample))
+      .filter((value): value is number => value != null && Number.isFinite(value)),
+  );
+
+  if (values.length === 0) {
+    if (series.some((definition) => definition.family === "temperature")) {
+      return [80, 100] as [number, number];
+    }
+
+    if (series.some((definition) => definition.unit === "bar")) {
+      return [0, 12] as [number, number];
+    }
+
+    return [0, 6] as [number, number];
+  }
+
+  if (series.some((definition) => definition.family === "temperature")) {
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+
+    return [Math.floor(min - 2), Math.ceil(Math.max(max + 2, min + 6))];
+  }
+
+  const max = Math.max(...values);
+
+  return [0, max <= 0 ? 1 : Math.ceil(max * 1.15)];
 }

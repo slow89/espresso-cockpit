@@ -22,7 +22,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="min-h-[calc(100svh-var(--app-footer-height))] overflow-y-auto border-b border-border/30 bg-shell">
+    <div className="app-shell overflow-y-auto border-b border-border/30 bg-shell">
       {/* Top bar — mirrors dashboard top bar styling */}
       <header className="shrink-0 border-b border-border/40 bg-panel-strong/30 px-2.5 py-1.5 pt-[calc(env(safe-area-inset-top,0px)+0.375rem)]">
         <div className="flex items-center justify-between gap-3">

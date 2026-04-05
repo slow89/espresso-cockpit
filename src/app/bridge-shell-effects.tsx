@@ -29,6 +29,34 @@ export function BridgeShellEffects() {
 
     void connectScale();
   });
+  // Older tablet WebViews can misreport `vh`/`svh`, so we expose a measured viewport height to CSS.
+  const syncViewportHeight = useEffectEvent(() => {
+    const nextHeight = window.visualViewport?.height ?? window.innerHeight;
+    document.documentElement.style.setProperty(
+      "--app-viewport-height",
+      `${Math.round(nextHeight)}px`,
+    );
+  });
+
+  useEffect(() => {
+    const visualViewport = window.visualViewport;
+
+    syncViewportHeight();
+    window.addEventListener("resize", syncViewportHeight);
+    window.addEventListener("orientationchange", syncViewportHeight);
+    window.addEventListener("pageshow", syncViewportHeight);
+    visualViewport?.addEventListener("resize", syncViewportHeight);
+    visualViewport?.addEventListener("scroll", syncViewportHeight);
+
+    return () => {
+      window.removeEventListener("resize", syncViewportHeight);
+      window.removeEventListener("orientationchange", syncViewportHeight);
+      window.removeEventListener("pageshow", syncViewportHeight);
+      visualViewport?.removeEventListener("resize", syncViewportHeight);
+      visualViewport?.removeEventListener("scroll", syncViewportHeight);
+      document.documentElement.style.removeProperty("--app-viewport-height");
+    };
+  }, [syncViewportHeight]);
 
   useEffect(() => {
     void useMachineStore.getState().connectLive();

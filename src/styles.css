@@ -5,6 +5,7 @@
 :root,
 :root[data-theme="dark"] {
   --app-footer-height: 4.5rem;
+  --app-viewport-height: 100vh;
 
   --canvas-rgb: 2, 3, 4;
   --canvas-alpha: 1;
@@ -292,16 +293,23 @@
   }
 
   html {
+    height: 100%;
     font-family: var(--font-sans);
     color: var(--foreground);
     background: var(--canvas);
   }
 
   body {
-    min-height: 100vh;
+    min-height: 100%;
+    height: 100%;
     background:
       radial-gradient(circle at top center, var(--body-glow), transparent 18%),
       linear-gradient(180deg, var(--body-start), var(--body-end)), var(--canvas);
+  }
+
+  #root {
+    min-height: 100%;
+    height: 100%;
   }
 
   button,
@@ -338,6 +346,15 @@
 }
 
 @layer utilities {
+  .app-shell {
+    min-height: calc(var(--app-viewport-height) - var(--app-footer-height));
+    height: calc(var(--app-viewport-height) - var(--app-footer-height));
+  }
+
+  .app-chart-shell {
+    height: calc(var(--app-viewport-height) - var(--app-footer-height) - 7.5rem);
+  }
+
   .tablet-safe {
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--app-footer-height));
   }

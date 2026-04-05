@@ -86,7 +86,7 @@ export function HistoryPage({
   }
 
   return (
-    <div className="min-h-[calc(100vh-var(--app-footer-height))] overflow-hidden border-b border-border/30 bg-shell md:flex md:h-[calc(100vh-var(--app-footer-height))] md:flex-col">
+    <div className="app-shell overflow-hidden border-b border-border/30 bg-shell md:flex md:flex-col">
       {/* Top bar — matches dashboard top bar style */}
       <HistoryTopBar
         isRefreshing={isRefreshing}
@@ -143,7 +143,7 @@ export function HistoryPage({
         </aside>
 
         {/* Detail workspace — right pane */}
-        <div className="flex min-h-0 min-w-0 flex-col">
+        <div className="flex h-full min-h-0 min-w-0 flex-col">
           {selectedShot ? (
             <HistoryDetailContent
               selectedShot={selectedShot}
@@ -356,11 +356,11 @@ function HistoryDetailContent({
   selectedShotTelemetry: ReturnType<typeof adaptShotMeasurementsToTelemetry>;
 }) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto">
       {/* Telemetry chart — takes full remaining height on tablet */}
-      <div className="flex h-[calc(100vh-var(--app-footer-height)-7.5rem)] min-h-[280px] shrink-0 overflow-hidden px-2 py-1.5 md:px-3 md:py-1.5">
+      <div className="app-chart-shell min-h-[280px] shrink-0 overflow-hidden px-2 py-1.5 md:px-3 md:py-1.5">
         <TelemetryChart
-          className="rounded-[4px] border-0 bg-transparent p-0 shadow-none"
+          className="h-full rounded-[4px] border-0 bg-transparent p-0 shadow-none"
           data={selectedShotTelemetry}
           layout="desktop"
         />

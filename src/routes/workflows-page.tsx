@@ -12,7 +12,7 @@ export function WorkflowsPage() {
 
   return (
     <div>
-      <div className="min-h-[calc(100svh-var(--app-footer-height))] overflow-hidden border-b border-border/30 bg-shell md:flex md:h-[calc(100svh-var(--app-footer-height))] md:flex-col">
+      <div className="app-shell overflow-hidden border-b border-border/30 bg-shell md:flex md:flex-col">
         <WorkflowActiveTicker />
 
         <section className="min-h-0 flex-1 overflow-y-auto md:overflow-hidden">

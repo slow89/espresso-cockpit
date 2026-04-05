@@ -362,5 +362,3 @@ export const useMachineStore = create<MachineState>((set, get) => ({
     }
   },
 }));
-
-export const machineStore = useMachineStore;

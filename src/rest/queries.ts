@@ -339,7 +339,3 @@ export async function prefetchWorkflowQuery() {
 export async function prefetchShotsQuery() {
   await queryClient.prefetchQuery(shotsQueryOptions(getGatewayOrigin()));
 }
-
-export async function prefetchDevicesQuery() {
-  await queryClient.prefetchQuery(devicesQueryOptions(getGatewayOrigin()));
-}

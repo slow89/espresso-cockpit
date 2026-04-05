@@ -1,16 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { initializeDeviceAutoConnectCoordinator } from "@/stores/device-auto-connect-coordinator";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
-import { useDevicesStore } from "@/stores/devices-store";
+import { initializeDevicesStoreRuntime, useDevicesStore } from "@/stores/devices-store";
 import { useMachineStore } from "@/stores/machine-store";
 
-describe("device auto-connect coordinator", () => {
-  let cleanupCoordinator: (() => void) | undefined;
+describe("devices store runtime", () => {
+  let cleanupRuntime: (() => void) | undefined;
 
   afterEach(() => {
-    cleanupCoordinator?.();
-    cleanupCoordinator = undefined;
+    cleanupRuntime?.();
+    cleanupRuntime = undefined;
   });
 
   beforeEach(() => {
@@ -56,12 +55,12 @@ describe("device auto-connect coordinator", () => {
     });
   });
 
-  it("requests a gateway-managed auto-connect scan when both streams are live without a connected scale", async () => {
+  it("requests a gateway-managed auto-connect scan when both streams are live without a connected scale", () => {
     const requestAutoConnectSpy = vi
       .spyOn(useDevicesStore.getState(), "requestAutoConnect")
       .mockResolvedValue(undefined);
 
-    cleanupCoordinator = initializeDeviceAutoConnectCoordinator();
+    cleanupRuntime = initializeDevicesStoreRuntime();
 
     useDevicesStore.setState({
       connection: "live",
@@ -73,7 +72,7 @@ describe("device auto-connect coordinator", () => {
     expect(requestAutoConnectSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("does not request auto-connect while the devices stream is scanning", async () => {
+  it("does not request auto-connect while the devices stream is scanning", () => {
     const requestAutoConnectSpy = vi
       .spyOn(useDevicesStore.getState(), "requestAutoConnect")
       .mockResolvedValue(undefined);
@@ -90,12 +89,58 @@ describe("device auto-connect coordinator", () => {
       scanning: true,
     });
 
-    cleanupCoordinator = initializeDeviceAutoConnectCoordinator();
+    cleanupRuntime = initializeDevicesStoreRuntime();
 
     useMachineStore.setState({
       liveConnection: "live",
     });
 
     expect(requestAutoConnectSpy).not.toHaveBeenCalled();
+  });
+
+  it("connects the scale feed when a connected scale appears", () => {
+    const connectScaleSpy = vi
+      .spyOn(useMachineStore.getState(), "connectScale")
+      .mockResolvedValue(undefined);
+
+    cleanupRuntime = initializeDevicesStoreRuntime();
+
+    useDevicesStore.setState({
+      devices: [
+        {
+          id: "scale-1",
+          name: "Acaia Lunar",
+          state: "connected",
+          type: "scale",
+        },
+      ],
+    });
+
+    expect(connectScaleSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("disconnects the scale feed when the connected scale disappears", () => {
+    const disconnectScaleSpy = vi
+      .spyOn(useMachineStore.getState(), "disconnectScale")
+      .mockImplementation(() => undefined);
+
+    useDevicesStore.setState({
+      devices: [
+        {
+          id: "scale-1",
+          name: "Acaia Lunar",
+          state: "connected",
+          type: "scale",
+        },
+      ],
+    });
+
+    cleanupRuntime = initializeDevicesStoreRuntime();
+
+    useDevicesStore.setState({
+      devices: [],
+    });
+
+    expect(disconnectScaleSpy).toHaveBeenCalled();
   });
 });

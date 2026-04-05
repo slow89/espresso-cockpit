@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { BridgeClientError, createBridgeClient } from "@/rest/client";
 import { devicesStateSchema, type DeviceSummary, type DevicesConnectionStatus } from "@/rest/types";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
+import { useMachineStore } from "@/stores/machine-store";
 
 type DevicesConnectionState = "idle" | "connecting" | "live" | "error";
 
@@ -56,6 +57,62 @@ function sendDevicesCommand(socket: WebSocket | null, command: DevicesCommand) {
   }
 
   socket.send(JSON.stringify(command));
+}
+
+function shouldRequestAutoConnect() {
+  const devicesState = useDevicesStore.getState();
+  const machineState = useMachineStore.getState();
+  const connectedScaleId =
+    devicesState.devices.find((device) => device.type === "scale" && device.state === "connected")
+      ?.id ?? null;
+  const devicesPhase = devicesState.connectionStatus?.phase ?? null;
+
+  if (connectedScaleId) {
+    return false;
+  }
+
+  if (
+    devicesState.autoConnectRequested ||
+    devicesState.connection !== "live" ||
+    machineState.liveConnection !== "live"
+  ) {
+    return false;
+  }
+
+  if (devicesState.scanning || (devicesPhase !== "idle" && devicesPhase !== "ready")) {
+    return false;
+  }
+
+  return true;
+}
+
+function syncScaleFeed() {
+  const devicesState = useDevicesStore.getState();
+  const machineState = useMachineStore.getState();
+  const connectedScaleId =
+    devicesState.devices.find((device) => device.type === "scale" && device.state === "connected")
+      ?.id ?? null;
+
+  if (!connectedScaleId) {
+    machineState.disconnectScale();
+    return;
+  }
+
+  if (machineState.scaleConnection === "connecting" || machineState.scaleConnection === "live") {
+    return;
+  }
+
+  void machineState.connectScale();
+}
+
+function evaluateDevicesRuntime() {
+  syncScaleFeed();
+
+  if (!shouldRequestAutoConnect()) {
+    return;
+  }
+
+  void useDevicesStore.getState().requestAutoConnect();
 }
 
 export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
@@ -236,3 +293,46 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
 }));
 
 export const devicesStore = useDevicesStore;
+
+let cleanupDevicesRuntime: (() => void) | null = null;
+
+export function initializeDevicesStoreRuntime() {
+  if (cleanupDevicesRuntime) {
+    return cleanupDevicesRuntime;
+  }
+
+  const unsubscribeDevices = useDevicesStore.subscribe((state, previousState) => {
+    if (
+      state.autoConnectRequested === previousState.autoConnectRequested &&
+      state.connection === previousState.connection &&
+      state.connectionStatus?.phase === previousState.connectionStatus?.phase &&
+      state.scanning === previousState.scanning &&
+      state.devices === previousState.devices
+    ) {
+      return;
+    }
+
+    evaluateDevicesRuntime();
+  });
+
+  const unsubscribeMachine = useMachineStore.subscribe((state, previousState) => {
+    if (
+      state.liveConnection === previousState.liveConnection &&
+      state.scaleConnection === previousState.scaleConnection
+    ) {
+      return;
+    }
+
+    evaluateDevicesRuntime();
+  });
+
+  evaluateDevicesRuntime();
+
+  cleanupDevicesRuntime = () => {
+    unsubscribeDevices();
+    unsubscribeMachine();
+    cleanupDevicesRuntime = null;
+  };
+
+  return cleanupDevicesRuntime;
+}

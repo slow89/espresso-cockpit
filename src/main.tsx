@@ -2,8 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { AppProviders } from "@/app/providers";
+import { initializeAppRuntime } from "@/app/runtime";
 import { AppRouter } from "@/router";
-import { initializeDeviceAutoConnectCoordinator } from "@/stores/device-auto-connect-coordinator";
 import { initializeTheme } from "@/stores/theme-store";
 import "@/styles.css";
 
@@ -26,7 +26,7 @@ if (!container) {
 window.__espressoBoot?.mark("Espresso Cockpit booting...\n\nMain bundle loaded. Mounting app...");
 
 initializeTheme();
-initializeDeviceAutoConnectCoordinator();
+initializeAppRuntime();
 
 createRoot(container).render(
   <StrictMode>

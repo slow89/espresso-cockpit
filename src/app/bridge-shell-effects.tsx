@@ -1,33 +1,12 @@
 import { useEffect, useEffectEvent } from "react";
 
-import { useBridgeConfigStore } from "@/stores/bridge-config-store";
-import { devicesStore, useDevicesStore } from "@/stores/devices-store";
-import { displayStore } from "@/stores/display-store";
-import { useMachineStore } from "@/stores/machine-store";
 import { presenceStore } from "@/stores/presence-store";
 
 const activityEvents = ["keydown", "pointerdown", "touchstart"] as const;
 
 export function BridgeShellEffects() {
-  const gatewayUrl = useBridgeConfigStore((state) => state.gatewayUrl);
-  const connectScale = useMachineStore((state) => state.connectScale);
-  const disconnectScale = useMachineStore((state) => state.disconnectScale);
-  const connectedScaleId = useDevicesStore(
-    (state) =>
-      state.devices.find((device) => device.type === "scale" && device.state === "connected")?.id ??
-      null,
-  );
   const signalPresence = useEffectEvent(() => {
     void presenceStore.getState().signalPresence();
-  });
-  const reconnectScaleFeed = useEffectEvent(() => {
-    const currentScaleConnection = useMachineStore.getState().scaleConnection;
-
-    if (currentScaleConnection === "connecting" || currentScaleConnection === "live") {
-      return;
-    }
-
-    void connectScale();
   });
   // Older tablet WebViews can misreport `vh`/`svh`, so we expose a measured viewport height to CSS.
   const syncViewportHeight = useEffectEvent(() => {
@@ -57,31 +36,6 @@ export function BridgeShellEffects() {
       document.documentElement.style.removeProperty("--app-viewport-height");
     };
   }, [syncViewportHeight]);
-
-  useEffect(() => {
-    void useMachineStore.getState().connectLive();
-    devicesStore.getState().reset();
-    displayStore.getState().reset();
-    presenceStore.getState().reset();
-    void devicesStore.getState().connect();
-    void displayStore.getState().connect();
-
-    return () => {
-      useMachineStore.getState().disconnectLive();
-      devicesStore.getState().disconnect();
-      displayStore.getState().disconnect();
-      presenceStore.getState().reset();
-    };
-  }, [gatewayUrl]);
-
-  useEffect(() => {
-    if (!connectedScaleId) {
-      disconnectScale();
-      return;
-    }
-
-    reconnectScaleFeed();
-  }, [connectedScaleId, disconnectScale, reconnectScaleFeed]);
 
   useEffect(() => {
     function handleVisibilityChange() {

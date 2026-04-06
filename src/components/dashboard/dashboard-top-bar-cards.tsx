@@ -73,9 +73,7 @@ export function ReservoirStatusCard() {
     hasLevel && hasThreshold && reservoirRefillLevel > 0
       ? Math.min(100, Math.round((reservoirLevel / (reservoirRefillLevel * 4)) * 100))
       : null;
-  const thresholdPercent =
-    hasThreshold ? Math.min(100, Math.round((1 / 4) * 100))
-      : null;
+  const thresholdPercent = hasThreshold ? Math.min(100, Math.round((1 / 4) * 100)) : null;
 
   return (
     <div
@@ -95,7 +93,10 @@ export function ReservoirStatusCard() {
           )}
         >
           <Droplets
-            className={cn("size-2", isLow ? "text-status-warning-foreground" : "text-highlight-muted")}
+            className={cn(
+              "size-2",
+              isLow ? "text-status-warning-foreground" : "text-highlight-muted",
+            )}
           />
           Res
         </p>
@@ -116,9 +117,7 @@ export function ReservoirStatusCard() {
             <div
               className={cn(
                 "absolute inset-y-0 left-0 rounded-full transition-all duration-500",
-                isLow
-                  ? "bg-status-warning-foreground"
-                  : "bg-highlight-muted",
+                isLow ? "bg-status-warning-foreground" : "bg-highlight-muted",
               )}
               style={{ width: `${fillPercent}%` }}
             />
@@ -148,7 +147,10 @@ export function ReservoirStatusCard() {
 }
 
 export function ScaleStatusCard() {
+  const devicesConnection = useDevicesStore((state) => state.connection);
   const scaleConnection = useMachineStore((state) => state.scaleConnection);
+  const scanDevices = useDevicesStore((state) => state.scan);
+  const scanningDevices = useDevicesStore((state) => state.scanning);
   const scaleSnapshot = useMachineStore((state) => state.scaleSnapshot);
   const devices = useDevicesStore((state) => state.devices);
   const tareScaleMutation = useTareScaleMutation();
@@ -172,6 +174,10 @@ export function ScaleStatusCard() {
         targetDoseWeight: roundValue(weight, 0.1),
       },
     });
+  }
+
+  function handleRefreshScale() {
+    void scanDevices();
   }
 
   if (!isPaired) {
@@ -198,12 +204,13 @@ export function ScaleStatusCard() {
           </p>
 
           <Button
-            asChild
             className="col-start-2 row-span-2 row-start-1 h-full min-h-0 rounded-[4px] border-status-warning-foreground/50 bg-status-warning-foreground/15 px-4 font-mono text-[0.65rem] font-semibold text-status-warning-foreground hover:bg-status-warning-foreground/25 md:col-start-3 md:row-span-1"
+            disabled={devicesConnection !== "live" || scanningDevices}
+            onClick={handleRefreshScale}
             size="sm"
             variant="outline"
           >
-            <Link to="/settings">Pair in Setup</Link>
+            {scanningDevices ? "Scanning" : "Refresh"}
           </Button>
         </div>
       </div>
@@ -264,26 +271,38 @@ export function ScaleStatusCard() {
           {formatScaleWeight(weight)}
         </p>
 
-        <div className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-stretch gap-1 self-stretch justify-self-end md:col-start-3 md:row-span-1">
+        {isScaleDisconnected ? (
           <Button
-            className="h-full min-h-0 min-w-[70px] rounded-[4px] border-status-info-border bg-status-info-surface px-4 font-mono text-[0.65rem] font-semibold text-status-info-foreground hover:brightness-110"
-            disabled={scaleConnection !== "live" || tareScaleMutation.isPending}
-            onClick={() => tareScaleMutation.mutate()}
+            className="col-start-2 row-span-2 row-start-1 h-full min-h-0 rounded-[4px] border-destructive/40 bg-destructive/10 px-4 font-mono text-[0.65rem] font-semibold text-destructive hover:bg-destructive/15 md:col-start-3 md:row-span-1"
+            disabled={devicesConnection !== "live" || scanningDevices}
+            onClick={handleRefreshScale}
             size="sm"
             variant="outline"
           >
-            {tareScaleMutation.isPending ? "Taring" : "Tare"}
+            {scanningDevices ? "Scanning" : "Refresh"}
           </Button>
-          <Button
-            className="h-full min-h-0 min-w-[88px] rounded-[4px] border-status-success-border bg-status-success-surface px-4 font-mono text-[0.65rem] font-semibold text-status-success-foreground hover:brightness-110"
-            disabled={!canUseScaleWeightForDose || updateWorkflowMutation.isPending}
-            onClick={handleSetDoseFromScale}
-            size="sm"
-            variant="outline"
-          >
-            Use dose
-          </Button>
-        </div>
+        ) : (
+          <div className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-stretch gap-1 self-stretch justify-self-end md:col-start-3 md:row-span-1">
+            <Button
+              className="h-full min-h-0 min-w-[70px] rounded-[4px] border-status-info-border bg-status-info-surface px-4 font-mono text-[0.65rem] font-semibold text-status-info-foreground hover:brightness-110"
+              disabled={scaleConnection !== "live" || tareScaleMutation.isPending}
+              onClick={() => tareScaleMutation.mutate()}
+              size="sm"
+              variant="outline"
+            >
+              {tareScaleMutation.isPending ? "Taring" : "Tare"}
+            </Button>
+            <Button
+              className="h-full min-h-0 min-w-[88px] rounded-[4px] border-status-success-border bg-status-success-surface px-4 font-mono text-[0.65rem] font-semibold text-status-success-foreground hover:brightness-110"
+              disabled={!canUseScaleWeightForDose || updateWorkflowMutation.isPending}
+              onClick={handleSetDoseFromScale}
+              size="sm"
+              variant="outline"
+            >
+              Use dose
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

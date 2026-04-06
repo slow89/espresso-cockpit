@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import { useDashboardShotActive } from "@/components/dashboard/dashboard-view-model";
 import { useMachineStateQuery } from "@/rest/queries";
 import { useMachineStore } from "@/stores/machine-store";
 import { useWaterAlertStore } from "@/stores/water-alert-store";
@@ -8,6 +9,7 @@ export function DashboardWaterAlertOverlay() {
   const currentLevel = useMachineStore((state) => state.waterLevels?.currentLevel ?? null);
   const refillLevel = useMachineStore((state) => state.waterLevels?.refillLevel ?? null);
   const { data: snapshot } = useMachineStateQuery();
+  const isShotActive = useDashboardShotActive();
   const dismissed = useWaterAlertStore((state) => state.dismissed);
   const dismiss = useWaterAlertStore((state) => state.dismiss);
   const resetDismiss = useWaterAlertStore((state) => state.resetDismiss);
@@ -21,7 +23,7 @@ export function DashboardWaterAlertOverlay() {
     }
   }, [isLow, resetDismiss]);
 
-  if (!isLow || dismissed) {
+  if (!isLow || dismissed || isShotActive) {
     return null;
   }
 

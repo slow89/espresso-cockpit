@@ -71,7 +71,9 @@ export function getDashboardPrepStatus({
   const steamValue = formatTemperature(snapshot?.steamTemperature);
 
   const items = [
-    { label: "Water", value: `${mixValue} / ${targetMixValue}` },
+    ...(hasReliableWaterTemperature(snapshot)
+      ? ([{ label: "Water", value: `${mixValue} / ${targetMixValue}` }] as const)
+      : []),
     { label: "Brew head", value: `${groupValue} / ${targetGroupValue}` },
     { label: "Steam", value: steamValue },
   ] as const;
@@ -113,4 +115,18 @@ function formatTemperature(value: number | null | undefined) {
   }
 
   return `${value.toFixed(0)}°C`;
+}
+
+function hasReliableWaterTemperature(snapshot?: MachineSnapshot | null) {
+  switch (snapshot?.state.state) {
+    case "espresso":
+    case "flush":
+    case "hotWater":
+    case "hotWaterRinse":
+    case "clean":
+    case "descale":
+      return true;
+    default:
+      return false;
+  }
 }

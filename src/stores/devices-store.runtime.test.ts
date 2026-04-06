@@ -10,6 +10,7 @@ describe("devices store runtime", () => {
   afterEach(() => {
     cleanupRuntime?.();
     cleanupRuntime = undefined;
+    vi.useRealTimers();
   });
 
   beforeEach(() => {
@@ -18,7 +19,6 @@ describe("devices store runtime", () => {
       gatewayUrl: "http://bridge.local:8080",
     });
     useDevicesStore.setState({
-      autoConnectRequested: false,
       connection: "idle",
       connectionStatus: {
         error: null,
@@ -53,6 +53,28 @@ describe("devices store runtime", () => {
       waterLevels: null,
       waterSocket: null,
     });
+  });
+
+  it("retries auto-connect every 3 seconds while the scale stays unpaired", () => {
+    vi.useFakeTimers();
+    const requestAutoConnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestAutoConnect")
+      .mockResolvedValue(undefined);
+
+    cleanupRuntime = initializeDevicesStoreRuntime();
+
+    useDevicesStore.setState({
+      connection: "live",
+    });
+    useMachineStore.setState({
+      liveConnection: "live",
+    });
+
+    expect(requestAutoConnectSpy).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(3000);
+
+    expect(requestAutoConnectSpy).toHaveBeenCalledTimes(2);
   });
 
   it("requests a gateway-managed auto-connect scan when both streams are live without a connected scale", () => {

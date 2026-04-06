@@ -7,6 +7,9 @@ import { useMachineStore } from "@/stores/machine-store";
 
 type DevicesConnectionState = "idle" | "connecting" | "live" | "error";
 
+const AUTO_CONNECT_INTERVAL_MS = 3000;
+let lastAutoConnectRequestAt = 0;
+
 type DevicesCommand =
   | {
       command: "scan";
@@ -19,7 +22,6 @@ type DevicesCommand =
     };
 
 interface DevicesStoreState {
-  autoConnectRequested: boolean;
   connection: DevicesConnectionState;
   connectionStatus: DevicesConnectionStatus | null;
   devices: DeviceSummary[];
@@ -59,23 +61,24 @@ function sendDevicesCommand(socket: WebSocket | null, command: DevicesCommand) {
   socket.send(JSON.stringify(command));
 }
 
+function getConnectedScaleId() {
+  return (
+    useDevicesStore
+      .getState()
+      .devices.find((device) => device.type === "scale" && device.state === "connected")?.id ?? null
+  );
+}
+
 function shouldRequestAutoConnect() {
   const devicesState = useDevicesStore.getState();
   const machineState = useMachineStore.getState();
-  const connectedScaleId =
-    devicesState.devices.find((device) => device.type === "scale" && device.state === "connected")
-      ?.id ?? null;
   const devicesPhase = devicesState.connectionStatus?.phase ?? null;
 
-  if (connectedScaleId) {
+  if (getConnectedScaleId()) {
     return false;
   }
 
-  if (
-    devicesState.autoConnectRequested ||
-    devicesState.connection !== "live" ||
-    machineState.liveConnection !== "live"
-  ) {
+  if (devicesState.connection !== "live" || machineState.liveConnection !== "live") {
     return false;
   }
 
@@ -83,15 +86,16 @@ function shouldRequestAutoConnect() {
     return false;
   }
 
+  if (Date.now() - lastAutoConnectRequestAt < AUTO_CONNECT_INTERVAL_MS) {
+    return false;
+  }
+
   return true;
 }
 
 function syncScaleFeed() {
-  const devicesState = useDevicesStore.getState();
   const machineState = useMachineStore.getState();
-  const connectedScaleId =
-    devicesState.devices.find((device) => device.type === "scale" && device.state === "connected")
-      ?.id ?? null;
+  const connectedScaleId = getConnectedScaleId();
 
   if (!connectedScaleId) {
     machineState.disconnectScale();
@@ -116,7 +120,6 @@ function evaluateDevicesRuntime() {
 }
 
 export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
-  autoConnectRequested: false,
   connection: "idle",
   connectionStatus: null,
   devices: [],
@@ -130,8 +133,8 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
       const socket = getClient().createDevicesSocket();
 
       socket.onopen = () => {
+        lastAutoConnectRequestAt = 0;
         set({
-          autoConnectRequested: false,
           connection: "live",
           error: null,
         });
@@ -149,16 +152,20 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
         }
 
         set({
-          autoConnectRequested:
-            parsed.data.devices.some(
-              (device) => device.type === "scale" && device.state === "connected",
-            ) || get().autoConnectRequested,
           connection: "live",
           connectionStatus: parsed.data.connectionStatus ?? null,
           devices: parsed.data.devices,
           error: null,
           scanning: parsed.data.scanning,
         });
+
+        if (
+          parsed.data.devices.some(
+            (device) => device.type === "scale" && device.state === "connected",
+          )
+        ) {
+          lastAutoConnectRequestAt = 0;
+        }
       };
 
       socket.onerror = () => {
@@ -179,7 +186,6 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
       };
 
       set({
-        autoConnectRequested: false,
         connection: "connecting",
         connectionStatus: null,
         devices: [],
@@ -189,7 +195,6 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
       });
     } catch (error) {
       set({
-        autoConnectRequested: false,
         connection: "error",
         connectionStatus: null,
         devices: [],
@@ -222,8 +227,9 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
       socket.close();
     }
 
+    lastAutoConnectRequestAt = 0;
+
     set({
-      autoConnectRequested: false,
       connection: "idle",
       connectionStatus: null,
       devices: [],
@@ -233,7 +239,7 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
     });
   },
   async requestAutoConnect() {
-    if (get().autoConnectRequested) {
+    if (!shouldRequestAutoConnect()) {
       return;
     }
 
@@ -241,11 +247,11 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
       sendDevicesCommand(get().socket, {
         command: "scan",
         connect: true,
-        quick: true,
       });
 
+      lastAutoConnectRequestAt = Date.now();
+
       set({
-        autoConnectRequested: true,
         error: null,
       });
     } catch (error) {
@@ -303,7 +309,6 @@ export function initializeDevicesStoreRuntime() {
 
   const unsubscribeDevices = useDevicesStore.subscribe((state, previousState) => {
     if (
-      state.autoConnectRequested === previousState.autoConnectRequested &&
       state.connection === previousState.connection &&
       state.connectionStatus?.phase === previousState.connectionStatus?.phase &&
       state.scanning === previousState.scanning &&
@@ -326,11 +331,16 @@ export function initializeDevicesStoreRuntime() {
     evaluateDevicesRuntime();
   });
 
+  const intervalId = window.setInterval(() => {
+    evaluateDevicesRuntime();
+  }, AUTO_CONNECT_INTERVAL_MS);
+
   evaluateDevicesRuntime();
 
   cleanupDevicesRuntime = () => {
     unsubscribeDevices();
     unsubscribeMachine();
+    window.clearInterval(intervalId);
     cleanupDevicesRuntime = null;
   };
 

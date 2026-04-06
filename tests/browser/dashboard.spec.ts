@@ -100,7 +100,7 @@ test.describe("dashboard", () => {
     });
 
     await expect(page.getByText("No scale paired")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Pair in Setup" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Refresh" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Tare" })).toBeHidden();
     assertNoAppErrors(browserSignals);
   });

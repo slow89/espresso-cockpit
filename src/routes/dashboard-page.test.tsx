@@ -73,6 +73,7 @@ describe("DashboardPage", () => {
       disconnect: vi.fn(() => undefined),
       disconnectDevice: vi.fn(async () => undefined),
       error: null,
+      requestAutoConnect: vi.fn(async () => undefined),
       reset: vi.fn(() => undefined),
       scan: vi.fn(async () => undefined),
       scanning: false,
@@ -198,8 +199,27 @@ describe("DashboardPage", () => {
 
     expect(screen.getByText("No scale paired")).toBeInTheDocument();
     expect(screen.getByText("--.- g")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Pair in Setup" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Refresh" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Tare" })).not.toBeInTheDocument();
+  });
+
+  it("refreshes scale discovery from the dashboard status card", async () => {
+    const scanSpy = vi.fn(async () => undefined);
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("idle"),
+      error: null,
+    });
+    useDevicesStore.setState({
+      scan: scanSpy,
+    });
+
+    render(<DashboardPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+    await waitFor(() => {
+      expect(scanSpy).toHaveBeenCalledWith();
+    });
   });
 
   it("keeps the control workspace active on tablet when the machine is idle", () => {
@@ -278,7 +298,7 @@ describe("DashboardPage", () => {
     render(<DashboardPage />);
 
     expect(screen.getByTestId("dashboard-tablet-prep-status")).toHaveTextContent("Heating up");
-    expect(screen.getByText("90°C / 93°C")).toBeInTheDocument();
+    expect(screen.queryByText("90°C / 93°C")).not.toBeInTheDocument();
     expect(screen.getByText("89°C / 93°C")).toBeInTheDocument();
   });
 
@@ -321,7 +341,7 @@ describe("DashboardPage", () => {
     render(<DashboardPage />);
 
     expect(screen.getByTestId("dashboard-tablet-prep-status")).toHaveTextContent("Ready to brew");
-    expect(screen.getByText("90°C / 93°C")).toBeInTheDocument();
+    expect(screen.queryByText("90°C / 93°C")).not.toBeInTheDocument();
     expect(screen.getByText("89°C / 93°C")).toBeInTheDocument();
   });
 
@@ -421,6 +441,23 @@ describe("DashboardPage", () => {
     render(<DashboardPage />);
 
     expect(screen.getByLabelText("Water tank low")).toBeInTheDocument();
+  });
+
+  it("does not show the water warning while a shot is active", () => {
+    useMachineStore.setState({
+      waterLevels: {
+        currentLevel: 8,
+        refillLevel: 10,
+      },
+    });
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("espresso", "pouring"),
+      error: null,
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.queryByLabelText("Water tank low")).not.toBeInTheDocument();
   });
 
   it("resets the dismissal after the water alert clears", () => {

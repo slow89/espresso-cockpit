@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
+import { useMachineStore } from "@/stores/machine-store";
 
 import { useDevicesStore } from "./devices-store";
 
@@ -54,6 +55,20 @@ describe("useDevicesStore", () => {
 
     useBridgeConfigStore.setState({
       gatewayUrl: "http://bridge.local:8080",
+    });
+    useMachineStore.setState({
+      error: null,
+      liveConnection: "live",
+      machineSocket: null,
+      scaleConnection: "idle",
+      scaleSnapshot: null,
+      scaleSocket: null,
+      telemetry: [],
+      timeToReady: null,
+      timeToReadySocket: null,
+      waterConnection: "idle",
+      waterLevels: null,
+      waterSocket: null,
     });
 
     useDevicesStore.getState().reset();
@@ -125,9 +140,21 @@ describe("useDevicesStore", () => {
     ]);
   });
 
-  it("requests one auto-connect scan through the devices socket", async () => {
+  it("requests one immediate auto-connect scan through the devices socket", async () => {
     await useDevicesStore.getState().connect();
     MockWebSocket.instances[0]?.emitOpen();
+    MockWebSocket.instances[0]?.emitMessage({
+      connectionStatus: {
+        error: null,
+        foundMachines: [],
+        foundScales: [],
+        pendingAmbiguity: null,
+        phase: "idle",
+      },
+      devices: [],
+      scanning: false,
+      timestamp: "2026-04-04T00:00:00.000Z",
+    });
 
     await useDevicesStore.getState().requestAutoConnect();
     await useDevicesStore.getState().requestAutoConnect();
@@ -136,10 +163,8 @@ describe("useDevicesStore", () => {
       JSON.stringify({
         command: "scan",
         connect: true,
-        quick: true,
       }),
     ]);
-    expect(useDevicesStore.getState().autoConnectRequested).toBe(true);
 
     MockWebSocket.instances[0]?.emitMessage({
       connectionStatus: {
@@ -160,7 +185,5 @@ describe("useDevicesStore", () => {
       scanning: false,
       timestamp: "2026-04-04T00:00:00.000Z",
     });
-
-    expect(useDevicesStore.getState().autoConnectRequested).toBe(true);
   });
 });

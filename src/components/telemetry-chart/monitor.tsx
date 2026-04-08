@@ -583,26 +583,57 @@ function TelemetryMonitorCanvas({
           />
 
           {/* Left Y axis */}
-          {density !== "compact" && leftSeries.length > 0 ? (
+          {leftSeries.length > 0 ? (
             <ChartYAxis
               density={density}
-              domain={leftDomain}
+              domain={
+                compactScaleGroups
+                  ? (compactScaleGroups.domains.get(getCompactScaleKey(leftSeries[0])) ??
+                    leftDomain)
+                  : leftDomain
+              }
               plotHeight={chartMetrics.plotHeight}
-              scale={leftScale}
-              series={leftSeries}
+              scale={
+                compactScaleGroups
+                  ? (compactScaleGroups.scales.get(getCompactScaleKey(leftSeries[0])) ?? leftScale)
+                  : leftScale
+              }
+              series={
+                compactScaleGroups
+                  ? leftSeries.filter(
+                      (s) => getCompactScaleKey(s) === getCompactScaleKey(leftSeries[0]),
+                    )
+                  : leftSeries
+              }
               side="left"
               tickCount={tickCount}
             />
           ) : null}
 
           {/* Right Y axis */}
-          {density !== "compact" && rightSeries.length > 0 ? (
+          {rightSeries.length > 0 ? (
             <ChartYAxis
               density={density}
-              domain={rightDomain}
+              domain={
+                compactScaleGroups
+                  ? (compactScaleGroups.domains.get(getCompactScaleKey(rightSeries[0])) ??
+                    rightDomain)
+                  : rightDomain
+              }
               plotHeight={chartMetrics.plotHeight}
-              scale={rightScale}
-              series={rightSeries}
+              scale={
+                compactScaleGroups
+                  ? (compactScaleGroups.scales.get(getCompactScaleKey(rightSeries[0])) ??
+                    rightScale)
+                  : rightScale
+              }
+              series={
+                compactScaleGroups
+                  ? rightSeries.filter(
+                      (s) => getCompactScaleKey(s) === getCompactScaleKey(rightSeries[0]),
+                    )
+                  : rightSeries
+              }
               side="right"
               tickCount={tickCount}
               x={chartMetrics.innerWidth}
@@ -612,7 +643,6 @@ function TelemetryMonitorCanvas({
           <ChartXAxis
             density={density}
             maxTimelineValue={maxTimelineValue}
-            usesShotTimeline={usesShotTimeline}
             width={chartMetrics.innerWidth}
             xScale={xScale}
             y={chartMetrics.plotHeight}
@@ -701,20 +731,18 @@ function ChartYAxis({
 function ChartXAxis({
   density,
   maxTimelineValue,
-  usesShotTimeline,
   width,
   xScale,
   y,
 }: {
   density: ChartDensity;
   maxTimelineValue: number;
-  usesShotTimeline: boolean;
   width: number;
   xScale: LinearScale;
   y: number;
 }) {
   const ticks = getTimelineTicks(maxTimelineValue, density === "compact" ? 4 : 6);
-  const tickLabelInset = density === "compact" ? 24 : 32;
+  const tickLabelInset = density === "compact" ? 120 : 32;
   const axisLabelInset = density === "compact" ? 8 : 12;
 
   return (
@@ -751,7 +779,7 @@ function ChartXAxis({
         x={width - axisLabelInset}
         y={density === "compact" ? 14 : 18}
       >
-        {usesShotTimeline ? "Shot time" : "Stream time"}
+        Time
       </text>
     </Group>
   );

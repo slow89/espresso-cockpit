@@ -2,14 +2,10 @@ import { WorkflowProfileChooserPanel } from "@/components/workflows/workflow-pro
 import { WorkflowShotSetupPanel } from "@/components/workflows/workflow-shot-setup-panel";
 import { FramePreviewOverlay } from "@/components/workflows/frame-preview-overlay";
 import { formatBrewRatio } from "@/lib/recipe-utils";
-import { getProfileFingerprint, getProfileTitle } from "@/lib/workflow-utils";
+import { getProfileTitle } from "@/lib/workflow-utils";
 import { useWorkflowQuery } from "@/rest/queries";
-import { useWorkflowPageStore } from "@/stores/workflow-page-store";
 
 export function WorkflowsPage() {
-  const framePreviewProfile = useWorkflowPageStore((state) => state.framePreviewProfile);
-  const closeFramePreview = useWorkflowPageStore((state) => state.closeFramePreview);
-
   return (
     <div>
       <div className="app-shell overflow-hidden border-b border-border/30 bg-shell md:flex md:flex-col">
@@ -23,13 +19,7 @@ export function WorkflowsPage() {
         </section>
       </div>
 
-      {framePreviewProfile ? (
-        <FramePreviewOverlay
-          key={getProfileFingerprint(framePreviewProfile)}
-          onClose={closeFramePreview}
-          profile={framePreviewProfile}
-        />
-      ) : null}
+      <FramePreviewOverlay />
     </div>
   );
 }

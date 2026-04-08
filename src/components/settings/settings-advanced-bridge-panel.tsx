@@ -1,24 +1,22 @@
+import { useState } from "react";
+
+import { useRouter } from "@tanstack/react-router";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EndpointRow } from "@/components/settings/settings-shell";
 import { toWebSocketUrl } from "@/rest/client";
+import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { useDevicesStore } from "@/stores/devices-store";
 
-export function SettingsAdvancedBridgePanel({
-  draftGatewayUrl,
-  gatewayUrl,
-  onSave,
-  onUseCurrentOrigin,
-  setDraftGatewayUrl,
-}: {
-  draftGatewayUrl: string;
-  gatewayUrl: string;
-  onSave: () => void | Promise<void>;
-  onUseCurrentOrigin: () => void;
-  setDraftGatewayUrl: (value: string) => void;
-}) {
+export function SettingsAdvancedBridgePanel() {
+  const router = useRouter();
+  const gatewayUrl = useBridgeConfigStore((state) => state.gatewayUrl);
+  const setGatewayUrl = useBridgeConfigStore((state) => state.setGatewayUrl);
   const devices = useDevicesStore((state) => state.devices);
+  const [draftGatewayUrl, setDraftGatewayUrl] = useState<string | null>(null);
+  const resolvedDraftGatewayUrl = draftGatewayUrl ?? gatewayUrl;
   const endpointRows = [
     { label: "REST origin", value: gatewayUrl },
     {
@@ -33,6 +31,12 @@ export function SettingsAdvancedBridgePanel({
     { label: "Devices API", value: `${gatewayUrl}/api/v1/devices` },
     { label: "Heartbeat API", value: `${gatewayUrl}/api/v1/machine/heartbeat` },
   ];
+
+  async function handleSave() {
+    setGatewayUrl(resolvedDraftGatewayUrl);
+    setDraftGatewayUrl(null);
+    await router.invalidate();
+  }
 
   return (
     <details className="group px-2.5 py-2.5 md:px-3 md:py-3">
@@ -64,20 +68,20 @@ export function SettingsAdvancedBridgePanel({
               id="gatewayUrl"
               onChange={(event) => setDraftGatewayUrl(event.target.value)}
               placeholder="http://localhost:8080"
-              value={draftGatewayUrl}
+              value={resolvedDraftGatewayUrl}
             />
           </label>
 
           <Button
             className="min-h-[36px] rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
-            onClick={() => void onSave()}
+            onClick={() => void handleSave()}
             size="sm"
           >
             Save & reconnect
           </Button>
           <Button
             className="min-h-[36px] rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
-            onClick={onUseCurrentOrigin}
+            onClick={() => setDraftGatewayUrl(window.location.origin)}
             size="sm"
             variant="secondary"
           >

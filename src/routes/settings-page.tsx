@@ -1,26 +1,9 @@
-import { useState } from "react";
-
-import { useRouter } from "@tanstack/react-router";
-
 import { SettingsAdvancedBridgePanel } from "@/components/settings/settings-advanced-bridge-panel";
 import { SettingsDevicePairingPanel } from "@/components/settings/settings-device-pairing-panel";
 import { SettingsDisplaySleepPanel } from "@/components/settings/settings-display-sleep-panel";
 import { SettingsWaterAlertPanel } from "@/components/settings/settings-water-alert-panel";
-import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 
 export function SettingsPage() {
-  const router = useRouter();
-  const gatewayUrl = useBridgeConfigStore((state) => state.gatewayUrl);
-  const setGatewayUrl = useBridgeConfigStore((state) => state.setGatewayUrl);
-  const [draftGatewayUrl, setDraftGatewayUrl] = useState<string | null>(null);
-  const resolvedDraftGatewayUrl = draftGatewayUrl ?? gatewayUrl;
-
-  async function handleSave() {
-    setGatewayUrl(resolvedDraftGatewayUrl);
-    setDraftGatewayUrl(null);
-    await router.invalidate();
-  }
-
   return (
     <div className="app-shell overflow-y-auto border-b border-border/30 bg-shell">
       {/* Top bar — mirrors dashboard top bar styling */}
@@ -40,13 +23,7 @@ export function SettingsPage() {
         <SettingsDevicePairingPanel />
         <SettingsDisplaySleepPanel />
         <SettingsWaterAlertPanel />
-        <SettingsAdvancedBridgePanel
-          draftGatewayUrl={resolvedDraftGatewayUrl}
-          gatewayUrl={gatewayUrl}
-          onSave={handleSave}
-          onUseCurrentOrigin={() => setDraftGatewayUrl(window.location.origin)}
-          setDraftGatewayUrl={setDraftGatewayUrl}
-        />
+        <SettingsAdvancedBridgePanel />
       </div>
     </div>
   );

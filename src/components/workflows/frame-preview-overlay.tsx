@@ -12,23 +12,40 @@ import {
   formatFrameValue,
   formatSeriesKey,
 } from "@/lib/workflow-frame-preview";
-import { getProfileTitle } from "@/lib/workflow-utils";
+import { getProfileFingerprint, getProfileTitle } from "@/lib/workflow-utils";
 import { cn } from "@/lib/utils";
 import {
   deriveWorkflowFrameActivePreset,
   sanitizeWorkflowFrameSelection,
   useWorkflowFrameChartStore,
 } from "@/stores/workflow-frame-chart-store";
-import type { WorkflowProfile } from "@/rest/types";
+import { useWorkflowPageStore } from "@/stores/workflow-page-store";
 
 import { WorkflowEmptyState } from "./workflow-empty-state";
 
-export function FramePreviewOverlay({
+export function FramePreviewOverlay() {
+  const onClose = useWorkflowPageStore((state) => state.closeFramePreview);
+  const profile = useWorkflowPageStore((state) => state.framePreviewProfile);
+
+  if (!profile) {
+    return null;
+  }
+
+  return (
+    <FramePreviewOverlayDialog
+      key={getProfileFingerprint(profile)}
+      onClose={onClose}
+      profile={profile}
+    />
+  );
+}
+
+function FramePreviewOverlayDialog({
   onClose,
   profile,
 }: {
   onClose: () => void;
-  profile: WorkflowProfile;
+  profile: NonNullable<ReturnType<typeof useWorkflowPageStore.getState>["framePreviewProfile"]>;
 }) {
   const preview = buildFramePreviewData(profile);
   const [selectedFrameIndex, setSelectedFrameIndex] = useState(0);

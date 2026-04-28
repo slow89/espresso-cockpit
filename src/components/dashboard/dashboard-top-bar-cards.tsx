@@ -78,7 +78,7 @@ export function ReservoirStatusCard() {
   return (
     <div
       className={cn(
-        "min-w-[120px] flex-1 rounded-[4px] border px-3 py-1.5 md:flex-none md:max-w-[180px]",
+        "w-[150px] shrink-0 rounded-[4px] border px-3 py-1.5",
         isLow
           ? "border-status-warning-foreground/50 bg-status-warning-surface"
           : "border-border bg-panel-strong/80",
@@ -102,7 +102,7 @@ export function ReservoirStatusCard() {
         </p>
         <p
           className={cn(
-            "font-mono text-[0.92rem] font-semibold tabular-nums",
+            "min-w-[7ch] text-right font-mono text-[0.92rem] font-semibold tabular-nums",
             isLow ? "text-status-warning-foreground" : "text-foreground",
           )}
         >
@@ -372,11 +372,10 @@ export function MachineStatusCard() {
 
 function formatMillimeters(value: number | null) {
   if (value == null || Number.isNaN(value)) {
-    return "-- mm";
+    return "--.- mm";
   }
 
-  const hasFraction = Math.abs(value % 1) > 0.001;
-  return `${value.toFixed(hasFraction ? 1 : 0)} mm`;
+  return `${value.toFixed(1)} mm`;
 }
 
 function formatScaleWeight(weight: number | null) {

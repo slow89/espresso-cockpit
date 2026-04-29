@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useUpdateBridgeSettingsMutation } from "@/rest/queries";
+import { useBridgeSettingsQuery, useUpdateBridgeSettingsMutation } from "@/rest/queries";
 import type { DeviceSummary } from "@/rest/types";
 import { MetricTile, SettingsSection, StateCallout } from "@/components/settings/settings-shell";
 import { useDevicesStore } from "@/stores/devices-store";
@@ -13,22 +13,30 @@ export function SettingsDevicePairingPanel() {
   const scanDevices = useDevicesStore((state) => state.scan);
   const connectDevice = useDevicesStore((state) => state.connectDevice);
   const disconnectDevice = useDevicesStore((state) => state.disconnectDevice);
+  const { data: bridgeSettings } = useBridgeSettingsQuery();
   const updateBridgeSettingsMutation = useUpdateBridgeSettingsMutation();
   const connectedDevices = devices.filter((device) => device.state === "connected");
   const disconnectedDevices = devices.filter((device) => device.state !== "connected");
+  const preferredScaleId = bridgeSettings?.preferredScaleId ?? null;
 
   async function handleDisconnectDevice(device: DeviceSummary) {
+    await disconnectDevice(device.id);
+  }
+
+  async function handleForgetDevice(device: DeviceSummary) {
     if (device.type === "scale") {
       await updateBridgeSettingsMutation.mutateAsync({
         preferredScaleId: null,
       });
     }
 
-    await disconnectDevice(device.id);
+    if (device.state === "connected") {
+      await disconnectDevice(device.id);
+    }
   }
 
   return (
-    <SettingsSection description="Auto-refreshing every 3s" title="Device Pairing">
+    <SettingsSection description="Bridge-managed device status" title="Device Pairing">
       <div className="grid gap-2">
         {/* Metric row + action buttons */}
         <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-[1fr_1fr_1fr_auto_auto]">
@@ -64,6 +72,8 @@ export function SettingsDevicePairingPanel() {
           isMutatingSettings={updateBridgeSettingsMutation.isPending}
           onConnectDevice={(deviceId) => void connectDevice(deviceId)}
           onDisconnectDevice={(device) => void handleDisconnectDevice(device)}
+          onForgetDevice={(device) => void handleForgetDevice(device)}
+          preferredScaleId={preferredScaleId}
           scanErrorMessage={undefined}
         />
       </div>
@@ -80,6 +90,8 @@ function DeviceSummaryPanel({
   isMutatingSettings,
   onConnectDevice,
   onDisconnectDevice,
+  onForgetDevice,
+  preferredScaleId,
   scanErrorMessage,
 }: {
   connectPendingDeviceId: string | null;
@@ -90,6 +102,8 @@ function DeviceSummaryPanel({
   isMutatingSettings: boolean;
   onConnectDevice: (deviceId: string) => void;
   onDisconnectDevice: (device: DeviceSummary) => void;
+  onForgetDevice: (device: DeviceSummary) => void;
+  preferredScaleId: string | null;
   scanErrorMessage?: string;
 }) {
   const scaleDevices = devices.filter((device) => device.type === "scale");
@@ -140,6 +154,8 @@ function DeviceSummaryPanel({
         isMutatingSettings={isMutatingSettings}
         onConnectDevice={onConnectDevice}
         onDisconnectDevice={onDisconnectDevice}
+        onForgetDevice={onForgetDevice}
+        preferredScaleId={preferredScaleId}
         title="Scale Pairing"
       />
 
@@ -152,6 +168,8 @@ function DeviceSummaryPanel({
           isMutatingSettings={isMutatingSettings}
           onConnectDevice={onConnectDevice}
           onDisconnectDevice={onDisconnectDevice}
+          onForgetDevice={onForgetDevice}
+          preferredScaleId={preferredScaleId}
           title="Other Devices"
         />
       ) : null}
@@ -170,6 +188,8 @@ function DeviceGroup({
   isMutatingSettings,
   onConnectDevice,
   onDisconnectDevice,
+  onForgetDevice,
+  preferredScaleId,
   title,
 }: {
   connectPendingDeviceId: string | null;
@@ -180,6 +200,8 @@ function DeviceGroup({
   isMutatingSettings: boolean;
   onConnectDevice: (deviceId: string) => void;
   onDisconnectDevice: (device: DeviceSummary) => void;
+  onForgetDevice: (device: DeviceSummary) => void;
+  preferredScaleId: string | null;
   title: string;
 }) {
   const connectedDevices = devices.filter((device) => device.state === "connected");
@@ -220,6 +242,8 @@ function DeviceGroup({
           isMutatingSettings={isMutatingSettings}
           onConnectDevice={onConnectDevice}
           onDisconnectDevice={onDisconnectDevice}
+          onForgetDevice={onForgetDevice}
+          preferredScaleId={preferredScaleId}
           title="Connected"
         />
       ) : null}
@@ -233,6 +257,8 @@ function DeviceGroup({
           isMutatingSettings={isMutatingSettings}
           onConnectDevice={onConnectDevice}
           onDisconnectDevice={onDisconnectDevice}
+          onForgetDevice={onForgetDevice}
+          preferredScaleId={preferredScaleId}
           title="Available"
         />
       ) : null}
@@ -248,6 +274,8 @@ function DeviceList({
   isMutatingSettings,
   onConnectDevice,
   onDisconnectDevice,
+  onForgetDevice,
+  preferredScaleId,
   title,
 }: {
   actionVariant: "default" | "secondary";
@@ -257,6 +285,8 @@ function DeviceList({
   isMutatingSettings: boolean;
   onConnectDevice: (deviceId: string) => void;
   onDisconnectDevice: (device: DeviceSummary) => void;
+  onForgetDevice: (device: DeviceSummary) => void;
+  preferredScaleId: string | null;
   title: string;
 }) {
   return (
@@ -284,6 +314,11 @@ function DeviceList({
               connectPendingDeviceId || disconnectPendingDeviceId || isMutatingSettings,
             )}
             key={device.id}
+            onForget={
+              device.type === "scale" && device.id === preferredScaleId
+                ? () => onForgetDevice(device)
+                : undefined
+            }
             onAction={
               device.state === "connected"
                 ? () => onDisconnectDevice(device)
@@ -301,12 +336,14 @@ function DeviceRow({
   actionVariant,
   device,
   disabled,
+  onForget,
   onAction,
 }: {
   actionLabel: string;
   actionVariant: "default" | "secondary";
   device: DeviceSummary;
   disabled: boolean;
+  onForget?: () => void;
   onAction: () => void;
 }) {
   return (
@@ -330,15 +367,28 @@ function DeviceRow({
         </div>
       </div>
 
-      <Button
-        className="min-h-[34px] shrink-0 rounded-[3px] px-2.5 text-[0.52rem] uppercase tracking-[0.12em]"
-        disabled={disabled}
-        onClick={onAction}
-        size="sm"
-        variant={actionVariant}
-      >
-        {actionLabel}
-      </Button>
+      <div className="flex shrink-0 items-center gap-1">
+        <Button
+          className="min-h-[34px] rounded-[3px] px-2.5 text-[0.52rem] uppercase tracking-[0.12em]"
+          disabled={disabled}
+          onClick={onAction}
+          size="sm"
+          variant={actionVariant}
+        >
+          {actionLabel}
+        </Button>
+        {onForget ? (
+          <Button
+            className="min-h-[34px] rounded-[3px] px-2.5 text-[0.52rem] uppercase tracking-[0.12em]"
+            disabled={disabled}
+            onClick={onForget}
+            size="sm"
+            variant="outline"
+          >
+            Forget scale
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -1,0 +1,3 @@
+# Bridge Owns Preferred Scale Reconnect
+
+Espresso Cockpit treats Preferred Scale Reconnect as Bridge behavior, not Skin behavior. The Skin may expose user-triggered scan, connect, disconnect, and forget actions, but it should not permanently run its own auto-scan or device readiness loop; missing reconnect behavior should be fixed in Streamline Bridge or tracked as upstream work. Until Streamline Bridge owns the full machine-first, scale-first, and scale-off-then-on-again cases, the Skin may keep a temporary Compatibility Reconnect Adapter that only asks the Bridge to scan with connect enabled for an existing Preferred Scale.

@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { queryClient } from "@/rest/query-client";
+import { bridgeQueryKeys, getGatewayOrigin } from "@/rest/queries";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { useMachineStore } from "@/stores/machine-store";
 
@@ -52,6 +54,7 @@ describe("useDevicesStore", () => {
     vi.restoreAllMocks();
     MockWebSocket.instances = [];
     vi.stubGlobal("WebSocket", MockWebSocket);
+    queryClient.clear();
 
     useBridgeConfigStore.setState({
       gatewayUrl: "http://bridge.local:8080",
@@ -140,7 +143,11 @@ describe("useDevicesStore", () => {
     ]);
   });
 
-  it("requests one immediate auto-connect scan through the devices socket", async () => {
+  it("requests one immediate preferred scale reconnect scan through the devices socket", async () => {
+    queryClient.setQueryData(bridgeQueryKeys.settings(getGatewayOrigin()), {
+      preferredScaleId: "scale-1",
+    });
+
     await useDevicesStore.getState().connect();
     MockWebSocket.instances[0]?.emitOpen();
     MockWebSocket.instances[0]?.emitMessage({
@@ -151,13 +158,20 @@ describe("useDevicesStore", () => {
         pendingAmbiguity: null,
         phase: "idle",
       },
-      devices: [],
+      devices: [
+        {
+          id: "machine-1",
+          name: "DE1",
+          state: "connected",
+          type: "machine",
+        },
+      ],
       scanning: false,
       timestamp: "2026-04-04T00:00:00.000Z",
     });
 
-    await useDevicesStore.getState().requestAutoConnect();
-    await useDevicesStore.getState().requestAutoConnect();
+    await useDevicesStore.getState().requestPreferredScaleReconnect();
+    await useDevicesStore.getState().requestPreferredScaleReconnect();
 
     expect(MockWebSocket.instances[0]?.sent).toEqual([
       JSON.stringify({
@@ -175,6 +189,12 @@ describe("useDevicesStore", () => {
         phase: "ready",
       },
       devices: [
+        {
+          id: "machine-1",
+          name: "DE1",
+          state: "connected",
+          type: "machine",
+        },
         {
           id: "scale-1",
           name: "Acaia Lunar",

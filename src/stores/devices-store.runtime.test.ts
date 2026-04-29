@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { queryClient } from "@/rest/query-client";
+import { bridgeQueryKeys, getGatewayOrigin } from "@/rest/queries";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { initializeDevicesStoreRuntime, useDevicesStore } from "@/stores/devices-store";
 import { useMachineStore } from "@/stores/machine-store";
@@ -15,8 +17,12 @@ describe("devices store runtime", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    queryClient.clear();
     useBridgeConfigStore.setState({
       gatewayUrl: "http://bridge.local:8080",
+    });
+    queryClient.setQueryData(bridgeQueryKeys.settings(getGatewayOrigin()), {
+      preferredScaleId: "scale-1",
     });
     useDevicesStore.setState({
       connection: "idle",
@@ -33,7 +39,7 @@ describe("devices store runtime", () => {
       disconnect: vi.fn(() => undefined),
       disconnectDevice: vi.fn(async () => undefined),
       error: null,
-      requestAutoConnect: vi.fn(async () => undefined),
+      requestPreferredScaleReconnect: vi.fn(async () => undefined),
       reset: vi.fn(() => undefined),
       scan: vi.fn(async () => undefined),
       scanning: false,
@@ -55,49 +61,59 @@ describe("devices store runtime", () => {
     });
   });
 
-  it("retries auto-connect every 3 seconds while the scale stays unpaired", () => {
+  it("retries preferred scale reconnect every 5 seconds while the scale stays unpaired", () => {
     vi.useFakeTimers();
-    const requestAutoConnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestAutoConnect")
+    const requestPreferredScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
       .mockResolvedValue(undefined);
 
     cleanupRuntime = initializeDevicesStoreRuntime();
 
     useDevicesStore.setState({
       connection: "live",
+      devices: [
+        {
+          id: "machine-1",
+          name: "DE1",
+          state: "connected",
+          type: "machine",
+        },
+      ],
     });
-    useMachineStore.setState({
-      liveConnection: "live",
-    });
 
-    expect(requestAutoConnectSpy).toHaveBeenCalledTimes(1);
+    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(1);
 
-    vi.advanceTimersByTime(3000);
+    vi.advanceTimersByTime(5000);
 
-    expect(requestAutoConnectSpy).toHaveBeenCalledTimes(2);
+    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(2);
   });
 
-  it("requests a gateway-managed auto-connect scan when both streams are live without a connected scale", () => {
-    const requestAutoConnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestAutoConnect")
+  it("requests a bridge-managed preferred scale reconnect scan when the machine is connected without a connected scale", () => {
+    const requestPreferredScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
       .mockResolvedValue(undefined);
 
     cleanupRuntime = initializeDevicesStoreRuntime();
 
     useDevicesStore.setState({
       connection: "live",
-    });
-    useMachineStore.setState({
-      liveConnection: "live",
+      devices: [
+        {
+          id: "machine-1",
+          name: "DE1",
+          state: "connected",
+          type: "machine",
+        },
+      ],
     });
 
-    expect(requestAutoConnectSpy).toHaveBeenCalledTimes(1);
+    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps retrying while the gateway reports connectingScale but is not actively scanning", () => {
+  it("does not retry while the bridge reports an active connection phase", () => {
     vi.useFakeTimers();
-    const requestAutoConnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestAutoConnect")
+    const requestPreferredScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
       .mockResolvedValue(undefined);
 
     useDevicesStore.setState({
@@ -109,25 +125,29 @@ describe("devices store runtime", () => {
         pendingAmbiguity: null,
         phase: "connectingScale",
       },
+      devices: [
+        {
+          id: "machine-1",
+          name: "DE1",
+          state: "connected",
+          type: "machine",
+        },
+      ],
       scanning: false,
     });
 
     cleanupRuntime = initializeDevicesStoreRuntime();
 
-    useMachineStore.setState({
-      liveConnection: "live",
-    });
+    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
 
-    expect(requestAutoConnectSpy).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(5000);
 
-    vi.advanceTimersByTime(3000);
-
-    expect(requestAutoConnectSpy).toHaveBeenCalledTimes(2);
+    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
   });
 
-  it("does not request auto-connect while the devices stream is scanning", () => {
-    const requestAutoConnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestAutoConnect")
+  it("does not request preferred scale reconnect while the devices stream is scanning", () => {
+    const requestPreferredScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
       .mockResolvedValue(undefined);
 
     useDevicesStore.setState({
@@ -139,41 +159,71 @@ describe("devices store runtime", () => {
         pendingAmbiguity: null,
         phase: "scanning",
       },
+      devices: [
+        {
+          id: "machine-1",
+          name: "DE1",
+          state: "connected",
+          type: "machine",
+        },
+      ],
       scanning: true,
     });
 
     cleanupRuntime = initializeDevicesStoreRuntime();
 
-    useMachineStore.setState({
-      liveConnection: "live",
-    });
-
-    expect(requestAutoConnectSpy).not.toHaveBeenCalled();
+    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
   });
 
-  it("stops retrying once a scale connects", () => {
-    vi.useFakeTimers();
-    const requestAutoConnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestAutoConnect")
+  it("does not request preferred scale reconnect without a connected machine", () => {
+    const requestPreferredScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
       .mockResolvedValue(undefined);
 
     cleanupRuntime = initializeDevicesStoreRuntime();
 
     useDevicesStore.setState({
       connection: "live",
-    });
-    useMachineStore.setState({
-      liveConnection: "live",
+      devices: [],
     });
 
-    expect(requestAutoConnectSpy).toHaveBeenCalledTimes(1);
+    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
+  });
 
-    vi.advanceTimersByTime(3000);
+  it("stops retrying once a scale connects", () => {
+    vi.useFakeTimers();
+    const requestPreferredScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+      .mockResolvedValue(undefined);
 
-    expect(requestAutoConnectSpy).toHaveBeenCalledTimes(2);
+    cleanupRuntime = initializeDevicesStoreRuntime();
+
+    useDevicesStore.setState({
+      connection: "live",
+      devices: [
+        {
+          id: "machine-1",
+          name: "DE1",
+          state: "connected",
+          type: "machine",
+        },
+      ],
+    });
+
+    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(5000);
+
+    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(2);
 
     useDevicesStore.setState({
       devices: [
+        {
+          id: "machine-1",
+          name: "DE1",
+          state: "connected",
+          type: "machine",
+        },
         {
           id: "scale-1",
           name: "Acaia Lunar",
@@ -183,9 +233,9 @@ describe("devices store runtime", () => {
       ],
     });
 
-    vi.advanceTimersByTime(6000);
+    vi.advanceTimersByTime(10000);
 
-    expect(requestAutoConnectSpy).toHaveBeenCalledTimes(2);
+    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(2);
   });
 
   it("connects the scale feed when a connected scale appears", () => {

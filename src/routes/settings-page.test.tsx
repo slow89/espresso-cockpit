@@ -319,6 +319,19 @@ describe("SettingsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Disconnect scale" }));
 
     await waitFor(() => {
+      expect(disconnectDevice).toHaveBeenCalledWith("scale-1");
+    });
+    expect(updateBridgeSettingsMutateAsync).not.toHaveBeenCalledWith({
+      preferredScaleId: null,
+    });
+  });
+
+  it("forgets a scale by clearing the preferred scale and disconnecting it when connected", async () => {
+    render(<SettingsPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Forget scale" }));
+
+    await waitFor(() => {
       expect(updateBridgeSettingsMutateAsync).toHaveBeenCalledWith({
         preferredScaleId: null,
       });
@@ -341,6 +354,7 @@ describe("SettingsPage", () => {
     render(<SettingsPage />);
 
     expect(screen.getByRole("button", { name: "Pair scale" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Forget scale" })).toBeInTheDocument();
     expect(
       screen.getByText("Discovered scales can be paired directly from this page."),
     ).toBeInTheDocument();

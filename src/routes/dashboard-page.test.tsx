@@ -74,7 +74,7 @@ describe("DashboardPage", () => {
       disconnect: vi.fn(() => undefined),
       disconnectDevice: vi.fn(async () => undefined),
       error: null,
-      requestAutoConnect: vi.fn(async () => undefined),
+      requestPreferredScaleReconnect: vi.fn(async () => undefined),
       reset: vi.fn(() => undefined),
       scan: vi.fn(async () => undefined),
       scanning: false,

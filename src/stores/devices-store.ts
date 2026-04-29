@@ -1,14 +1,26 @@
 import { create } from "zustand";
 
 import { BridgeClientError, createBridgeClient } from "@/rest/client";
-import { devicesStateSchema, type DeviceSummary, type DevicesConnectionStatus } from "@/rest/types";
+import { queryClient } from "@/rest/query-client";
+import { bridgeQueryKeys, bridgeSettingsQueryOptions, getGatewayOrigin } from "@/rest/queries";
+import {
+  devicesStateSchema,
+  type BridgeSettings,
+  type DeviceSummary,
+  type DevicesConnectionStatus,
+} from "@/rest/types";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { useMachineStore } from "@/stores/machine-store";
 
 type DevicesConnectionState = "idle" | "connecting" | "live" | "error";
 
-const AUTO_CONNECT_INTERVAL_MS = 3000;
-let lastAutoConnectRequestAt = 0;
+const PREFERRED_SCALE_RECONNECT_INTERVAL_MS = 5000;
+const reconnectBlockedPhases = new Set<DevicesConnectionStatus["phase"]>([
+  "scanning",
+  "connectingMachine",
+  "connectingScale",
+]);
+let lastPreferredScaleReconnectRequestAt = 0;
 
 type DevicesCommand =
   | {
@@ -27,7 +39,7 @@ interface DevicesStoreState {
   devices: DeviceSummary[];
   error: string | null;
   scanning: boolean;
-  requestAutoConnect: () => Promise<void>;
+  requestPreferredScaleReconnect: () => Promise<void>;
   socket: WebSocket | null;
   connect: () => Promise<void>;
   connectDevice: (deviceId: string) => Promise<void>;
@@ -69,15 +81,24 @@ function getConnectedScaleId() {
   );
 }
 
-function shouldRequestAutoConnect() {
+function hasConnectedMachine() {
+  return useDevicesStore
+    .getState()
+    .devices.some((device) => device.type === "machine" && device.state === "connected");
+}
+
+function shouldRequestPreferredScaleReconnect() {
   const devicesState = useDevicesStore.getState();
-  const machineState = useMachineStore.getState();
 
   if (getConnectedScaleId()) {
     return false;
   }
 
-  if (devicesState.connection !== "live" || machineState.liveConnection !== "live") {
+  if (!hasConnectedMachine()) {
+    return false;
+  }
+
+  if (devicesState.connection !== "live") {
     return false;
   }
 
@@ -85,11 +106,36 @@ function shouldRequestAutoConnect() {
     return false;
   }
 
-  if (Date.now() - lastAutoConnectRequestAt < AUTO_CONNECT_INTERVAL_MS) {
+  if (
+    devicesState.connectionStatus?.phase &&
+    reconnectBlockedPhases.has(devicesState.connectionStatus.phase)
+  ) {
+    return false;
+  }
+
+  if (Date.now() - lastPreferredScaleReconnectRequestAt < PREFERRED_SCALE_RECONNECT_INTERVAL_MS) {
     return false;
   }
 
   return true;
+}
+
+async function getPreferredScaleId() {
+  const gatewayOrigin = getGatewayOrigin();
+  const cachedSettings = queryClient.getQueryData<BridgeSettings>(
+    bridgeQueryKeys.settings(gatewayOrigin),
+  );
+
+  if (cachedSettings) {
+    return cachedSettings.preferredScaleId ?? null;
+  }
+
+  try {
+    const settings = await queryClient.fetchQuery(bridgeSettingsQueryOptions(gatewayOrigin));
+    return settings.preferredScaleId ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function syncScaleFeed() {
@@ -111,11 +157,11 @@ function syncScaleFeed() {
 function evaluateDevicesRuntime() {
   syncScaleFeed();
 
-  if (!shouldRequestAutoConnect()) {
+  if (!shouldRequestPreferredScaleReconnect()) {
     return;
   }
 
-  void useDevicesStore.getState().requestAutoConnect();
+  void useDevicesStore.getState().requestPreferredScaleReconnect();
 }
 
 export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
@@ -132,7 +178,7 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
       const socket = getClient().createDevicesSocket();
 
       socket.onopen = () => {
-        lastAutoConnectRequestAt = 0;
+        lastPreferredScaleReconnectRequestAt = 0;
         set({
           connection: "live",
           error: null,
@@ -163,7 +209,7 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
             (device) => device.type === "scale" && device.state === "connected",
           )
         ) {
-          lastAutoConnectRequestAt = 0;
+          lastPreferredScaleReconnectRequestAt = 0;
         }
       };
 
@@ -226,7 +272,7 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
       socket.close();
     }
 
-    lastAutoConnectRequestAt = 0;
+    lastPreferredScaleReconnectRequestAt = 0;
 
     set({
       connection: "idle",
@@ -237,8 +283,14 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
       socket: null,
     });
   },
-  async requestAutoConnect() {
-    if (!shouldRequestAutoConnect()) {
+  async requestPreferredScaleReconnect() {
+    if (!shouldRequestPreferredScaleReconnect()) {
+      return;
+    }
+
+    const preferredScaleId = await getPreferredScaleId();
+
+    if (!preferredScaleId || !shouldRequestPreferredScaleReconnect()) {
       return;
     }
 
@@ -248,7 +300,7 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
         connect: true,
       });
 
-      lastAutoConnectRequestAt = Date.now();
+      lastPreferredScaleReconnectRequestAt = Date.now();
 
       set({
         error: null,
@@ -332,7 +384,7 @@ export function initializeDevicesStoreRuntime() {
 
   const intervalId = window.setInterval(() => {
     evaluateDevicesRuntime();
-  }, AUTO_CONNECT_INTERVAL_MS);
+  }, PREFERRED_SCALE_RECONNECT_INTERVAL_MS);
 
   evaluateDevicesRuntime();
 

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   getTelemetrySeriesDefinition,
   getTelemetryTimelineSample,
+  isShotActiveMachinePhase,
   type TelemetrySample,
   type TelemetrySeriesDefinition,
 } from "@/lib/telemetry";
@@ -45,7 +46,7 @@ export function TelemetryChart({
   const activeSample = hoveredSample ?? latestSample;
   const usesShotTimeline =
     timelineSamples.length > 0 &&
-    latestSample?.state === "espresso" &&
+    isShotActiveMachinePhase(latestSample) &&
     timelineSamples.every((sample) => sample.shotElapsedSeconds != null);
   const selectedSeries = selectedSeriesIds
     .map((seriesId) => getTelemetrySeriesDefinition(seriesId))

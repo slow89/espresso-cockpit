@@ -3,14 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { showVisualizerToast } from "@/lib/toast";
 import { queryClient } from "@/rest/query-client";
 import { bridgeQueryKeys, getGatewayOrigin } from "@/rest/queries";
-import type { MachineSnapshot } from "@/rest/types";
+import type { MachineSnapshot, MachineState } from "@/rest/types";
 import { visualizerRuntimeStore } from "@/stores/visualizer-runtime-store";
 
 vi.mock("@/lib/toast", () => ({
   showVisualizerToast: vi.fn(),
 }));
 
-function buildSnapshot(state: string): MachineSnapshot {
+function buildSnapshot(state: MachineState): MachineSnapshot {
   return {
     flow: 0,
     groupTemperature: 93,

@@ -3,8 +3,32 @@ import { z } from "zod";
 const optionalNumber = z.number().nullish();
 const optionalString = z.string().nullish();
 
+export const machineStateSchema = z.enum([
+  "booting",
+  "busy",
+  "idle",
+  "schedIdle",
+  "sleeping",
+  "heating",
+  "preheating",
+  "espresso",
+  "hotWater",
+  "flush",
+  "steam",
+  "steamRinse",
+  "skipStep",
+  "cleaning",
+  "descaling",
+  "calibration",
+  "selfTest",
+  "airPurge",
+  "needsWater",
+  "error",
+  "fwUpgrade",
+]);
+
 export const machinePhaseSchema = z.object({
-  state: z.string(),
+  state: machineStateSchema,
   substate: z.string(),
 });
 
@@ -279,6 +303,7 @@ export const machineStateChangeSchema = z.enum([
 export const deviceSummaryListSchema = z.array(deviceSummarySchema);
 export const profileRecordListSchema = z.array(profileRecordSchema);
 
+export type MachineState = z.infer<typeof machineStateSchema>;
 export type MachinePhase = z.infer<typeof machinePhaseSchema>;
 export type MachineSnapshot = z.infer<typeof machineSnapshotSchema>;
 export type ScaleSnapshot = z.infer<typeof scaleSnapshotSchema>;

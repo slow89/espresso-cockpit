@@ -1,5 +1,5 @@
 import type { MachineSnapshot, TimeToReadySnapshot } from "@/rest/types";
-import type { TelemetrySample } from "@/lib/telemetry";
+import { isShotActiveMachinePhase, type TelemetrySample } from "@/lib/telemetry";
 
 export type DashboardPresentationMode = "controls" | "shot";
 export type DashboardPrepStatusTone = "warming" | "ready" | "offline" | "sleeping";
@@ -46,13 +46,13 @@ export function getDashboardPresentationMode({
     return "shot";
   }
 
-  if (snapshot?.state.state === "espresso") {
+  if (isShotActiveMachinePhase(snapshot?.state)) {
     return "shot";
   }
 
   const latestTelemetry = telemetry[telemetry.length - 1];
 
-  return latestTelemetry?.state === "espresso" ? "shot" : "controls";
+  return isShotActiveMachinePhase(latestTelemetry) ? "shot" : "controls";
 }
 
 export function getDashboardPrepStatus({
@@ -86,41 +86,28 @@ export function getDashboardPrepStatus({
     };
   }
 
-  if (snapshot.state.state === "sleeping") {
+  const statusTone = getMachinePrepStatusTone(snapshot, timeToReady);
+  const title = formatMachinePhase(snapshot.state);
+
+  if (statusTone === "sleeping") {
     return {
       items,
-      title: "Machine asleep",
+      title,
       tone: "sleeping",
     };
   }
 
-  if (isMachineHeating(snapshot)) {
+  if (statusTone === "warming") {
     return {
       items,
-      title: "Heating up",
-      tone: "warming",
-    };
-  }
-
-  if (isMachineReady(snapshot)) {
-    return {
-      items,
-      title: "Ready to brew",
-      tone: "ready",
-    };
-  }
-
-  if (timeToReady?.status !== "reached") {
-    return {
-      items,
-      title: "Heating up",
+      title,
       tone: "warming",
     };
   }
 
   return {
     items,
-    title: "Ready to brew",
+    title,
     tone: "ready",
   };
 }
@@ -133,28 +120,55 @@ function formatTemperature(value: number | null | undefined) {
   return `${value.toFixed(0)}°C`;
 }
 
+function formatMachinePhase(phase: MachineSnapshot["state"]) {
+  return `${startCase(phase.state)} / ${startCase(phase.substate)}`;
+}
+
+function getMachinePrepStatusTone(
+  snapshot: MachineSnapshot,
+  timeToReady?: TimeToReadySnapshot | null,
+): Exclude<DashboardPrepStatusTone, "offline"> {
+  switch (snapshot.state.state) {
+    case "sleeping":
+      return "sleeping";
+    case "heating":
+    case "preheating":
+      return "warming";
+    case "idle":
+      if (snapshot.state.substate === "preparingForShot") {
+        return "warming";
+      }
+
+      if (snapshot.state.substate === "idle") {
+        return "ready";
+      }
+
+      break;
+    default:
+      if (snapshot.state.substate === "preparingForShot") {
+        return "warming";
+      }
+  }
+
+  return timeToReady?.status === "reached" ? "ready" : "warming";
+}
+
 function hasReliableWaterTemperature(snapshot?: MachineSnapshot | null) {
   switch (snapshot?.state.state) {
     case "espresso":
     case "flush":
     case "hotWater":
-    case "hotWaterRinse":
-    case "clean":
-    case "descale":
+    case "cleaning":
+    case "descaling":
       return true;
     default:
       return false;
   }
 }
 
-function isMachineHeating(snapshot: MachineSnapshot) {
-  return (
-    snapshot.state.state === "heating" ||
-    snapshot.state.state === "preheating" ||
-    snapshot.state.substate === "preparingForShot"
-  );
-}
-
-function isMachineReady(snapshot: MachineSnapshot) {
-  return snapshot.state.state === "idle" && snapshot.state.substate === "idle";
+function startCase(value: string) {
+  return value
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
 }

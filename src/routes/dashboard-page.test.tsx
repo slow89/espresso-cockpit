@@ -356,7 +356,7 @@ describe("DashboardPage", () => {
 
     render(<DashboardPage />);
 
-    expect(screen.getByTestId("dashboard-tablet-prep-status")).toHaveTextContent("Ready to brew");
+    expect(screen.getByTestId("dashboard-tablet-prep-status")).toHaveTextContent("Idle / Idle");
     expect(screen.queryByText("90°C / 93°C")).not.toBeInTheDocument();
     expect(screen.getByText("89°C / 93°C")).toBeInTheDocument();
   });
@@ -374,7 +374,9 @@ describe("DashboardPage", () => {
 
     render(<DashboardPage />);
 
-    expect(screen.getByTestId("dashboard-tablet-prep-status")).toHaveTextContent("Heating up");
+    expect(screen.getByTestId("dashboard-tablet-prep-status")).toHaveTextContent(
+      "Heating / Preparing For Shot",
+    );
   });
 
   it("keeps the prep status ready after a flush-style temperature dip once the machine is idle again", () => {
@@ -399,7 +401,7 @@ describe("DashboardPage", () => {
 
     render(<DashboardPage />);
 
-    expect(screen.getByTestId("dashboard-tablet-prep-status")).toHaveTextContent("Ready to brew");
+    expect(screen.getByTestId("dashboard-tablet-prep-status")).toHaveTextContent("Idle / Ready");
     expect(screen.queryByText("90°C / 93°C")).not.toBeInTheDocument();
     expect(screen.getByText("89°C / 93°C")).toBeInTheDocument();
   });
@@ -454,6 +456,18 @@ describe("DashboardPage", () => {
     expect(screen.queryByTestId("dashboard-tablet-prep-board")).not.toBeInTheDocument();
     expect(screen.getByTestId("dashboard-tablet-shot-workspace")).toBeInTheDocument();
     expect(screen.getByTestId("dashboard-shot-summary")).toBeInTheDocument();
+  });
+
+  it("switches tablet focus to telemetry for the espresso preparing-for-shot bridge phase", () => {
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("espresso", "preparingForShot"),
+      error: null,
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.queryByTestId("dashboard-tablet-prep-board")).not.toBeInTheDocument();
+    expect(screen.getByTestId("dashboard-tablet-shot-workspace")).toBeInTheDocument();
   });
 
   it("keeps the desktop workspace mounted separately", () => {

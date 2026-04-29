@@ -4,6 +4,7 @@ import {
   bridgeSettingsSchema,
   displayStateSchema,
   heartbeatResponseSchema,
+  machineStateSchema,
   machineCalibrationSchema,
   machineSnapshotSchema,
   machineWaterLevelsSchema,
@@ -12,6 +13,32 @@ import {
 } from "./types";
 
 describe("bridge realtime schemas", () => {
+  it("accepts bridge machine states", () => {
+    expect(machineStateSchema.options).toEqual([
+      "booting",
+      "busy",
+      "idle",
+      "schedIdle",
+      "sleeping",
+      "heating",
+      "preheating",
+      "espresso",
+      "hotWater",
+      "flush",
+      "steam",
+      "steamRinse",
+      "skipStep",
+      "cleaning",
+      "descaling",
+      "calibration",
+      "selfTest",
+      "airPurge",
+      "needsWater",
+      "error",
+      "fwUpgrade",
+    ]);
+  });
+
   it("accepts heartbeat responses", () => {
     expect(
       heartbeatResponseSchema.parse({

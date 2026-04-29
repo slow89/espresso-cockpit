@@ -3,6 +3,7 @@ import { URL } from "node:url";
 
 import { WebSocketServer, type WebSocket } from "ws";
 
+import { machineStateChangeSchema } from "../../src/rest/types";
 import {
   defaultGatewayScenarioId,
   gatewayScenarios,
@@ -181,7 +182,9 @@ async function handleRequest(request: http.IncomingMessage, response: http.Serve
   }
 
   if (method === "PUT" && path.startsWith("/api/v1/machine/state/")) {
-    const nextState = decodeURIComponent(path.split("/").at(-1) ?? "idle");
+    const nextState = machineStateChangeSchema.parse(
+      decodeURIComponent(path.split("/").at(-1) ?? "idle"),
+    );
     runtime.state.machineSnapshot = {
       ...runtime.state.machineSnapshot,
       flow: nextState === "espresso" ? 2.4 : 0,

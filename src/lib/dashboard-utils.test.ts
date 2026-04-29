@@ -1,8 +1,8 @@
-import { getDashboardPrepStatus } from "@/lib/dashboard-utils";
-import type { MachineSnapshot } from "@/rest/types";
+import { getDashboardPrepStatus, getDashboardPresentationMode } from "@/lib/dashboard-utils";
+import type { MachineSnapshot, MachineState } from "@/rest/types";
 import { describe, expect, it } from "vitest";
 
-function buildSnapshot(state: string, substate = "idle"): MachineSnapshot {
+function buildSnapshot(state: MachineState, substate = "idle"): MachineSnapshot {
   return {
     flow: 0,
     groupTemperature: 93,
@@ -55,7 +55,7 @@ describe("getDashboardPrepStatus", () => {
     expect(status.items.map((item) => item.label)).toEqual(["Water", "Brew head", "Steam"]);
   });
 
-  it("treats an idle machine as ready even if the time-to-ready plugin is still collecting data", () => {
+  it("shows the idle machine phase as ready even if the time-to-ready plugin is still collecting data", () => {
     const status = getDashboardPrepStatus({
       isOffline: false,
       snapshot: buildSnapshot("idle"),
@@ -68,11 +68,11 @@ describe("getDashboardPrepStatus", () => {
       },
     });
 
-    expect(status.title).toBe("Ready to brew");
+    expect(status.title).toBe("Idle / Idle");
     expect(status.tone).toBe("ready");
   });
 
-  it("treats preparing-for-shot as heating even if the time-to-ready plugin has reached target", () => {
+  it("shows the preparing-for-shot machine phase as warming even if time-to-ready has reached target", () => {
     const status = getDashboardPrepStatus({
       isOffline: false,
       snapshot: buildSnapshot("idle", "preparingForShot"),
@@ -85,7 +85,46 @@ describe("getDashboardPrepStatus", () => {
       },
     });
 
-    expect(status.title).toBe("Heating up");
+    expect(status.title).toBe("Idle / Preparing For Shot");
     expect(status.tone).toBe("warming");
+  });
+});
+
+describe("getDashboardPresentationMode", () => {
+  it("switches to the shot workspace for bridge espresso shot phases", () => {
+    expect(
+      getDashboardPresentationMode({
+        snapshot: buildSnapshot("espresso", "preparingForShot"),
+        telemetry: [],
+      }),
+    ).toBe("shot");
+  });
+
+  it("switches to the shot workspace when telemetry carries an espresso shot phase", () => {
+    expect(
+      getDashboardPresentationMode({
+        snapshot: buildSnapshot("idle"),
+        telemetry: [
+          {
+            ...buildSnapshot("espresso", "preinfusion"),
+            elapsedSeconds: 1,
+            shotElapsedSeconds: 0,
+            state: "espresso",
+            substate: "preinfusion",
+            weight: null,
+            weightFlow: null,
+          },
+        ],
+      }),
+    ).toBe("shot");
+  });
+
+  it("does not infer shot mode from shot-like substates under non-espresso states", () => {
+    expect(
+      getDashboardPresentationMode({
+        snapshot: buildSnapshot("busy", "preinfusion"),
+        telemetry: [],
+      }),
+    ).toBe("controls");
   });
 });

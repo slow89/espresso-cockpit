@@ -72,6 +72,31 @@ describe("TelemetryChart", () => {
     expect(screen.getAllByText("93.4 °C").length).toBeGreaterThan(0);
   });
 
+  it("uses shot timing for bridge espresso shot substates", () => {
+    render(
+      <TelemetryChart
+        data={[
+          {
+            ...samples[0]!,
+            state: "espresso",
+            substate: "preparingForShot",
+            shotElapsedSeconds: 0,
+          },
+          {
+            ...samples[1]!,
+            state: "espresso",
+            substate: "preinfusion",
+            shotElapsedSeconds: 1,
+          },
+        ]}
+        layout="desktop"
+      />,
+    );
+
+    expect(screen.getAllByText("Shot time").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("0:01.0").length).toBeGreaterThan(0);
+  });
+
   it("updates readouts when the cursor moves across the chart", () => {
     const { container } = render(<TelemetryChart data={samples} layout="desktop" />);
     const overlay = container.querySelector('rect[fill="transparent"]');

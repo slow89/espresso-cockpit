@@ -1,4 +1,4 @@
-import type { MachineSnapshot, ScaleSnapshot } from "@/rest/types";
+import type { MachinePhase, MachineSnapshot, ScaleSnapshot } from "@/rest/types";
 
 export type TelemetrySeriesFamily = "pressure" | "flow" | "weight" | "temperature" | "progress";
 export type TelemetryStrokeStyle = "solid" | "dashed";
@@ -225,6 +225,10 @@ const telemetrySeriesMap = new Map<TelemetrySeriesId, TelemetrySeriesDefinition>
   telemetrySeriesRegistry.map((series) => [series.id, series]),
 );
 
+export function isShotActiveMachinePhase(phase: MachinePhase | null | undefined) {
+  return phase?.state === "espresso";
+}
+
 export function getTelemetrySeriesDefinition(id: TelemetrySeriesId) {
   return telemetrySeriesMap.get(id);
 }
@@ -289,7 +293,7 @@ export function formatTelemetryTimestampLabel(timestamp: string) {
 export function getTelemetryTimelineSample(samples: TelemetrySample[]) {
   const latest = samples[samples.length - 1];
 
-  if (latest?.state !== "espresso") {
+  if (!isShotActiveMachinePhase(latest)) {
     return samples;
   }
 
@@ -317,13 +321,14 @@ export function appendTelemetryHistory(
     previousSample?.shotElapsedSeconds != null && previousSampleTimestampMs != null
       ? previousSampleTimestampMs - previousSample.shotElapsedSeconds * 1000
       : null;
-  const shotStarted = snapshot.state.state === "espresso" && previousSample?.state !== "espresso";
-  const shotStartTimestampMs =
-    snapshot.state.state !== "espresso"
-      ? null
-      : shotStarted
-        ? currentTimestampMs
-        : previousShotStartTimestamp;
+  const isShotActive = isShotActiveMachinePhase(snapshot.state);
+  const wasShotActive = isShotActiveMachinePhase(previousSample);
+  const shotStarted = isShotActive && !wasShotActive;
+  const shotStartTimestampMs = !isShotActive
+    ? null
+    : shotStarted
+      ? currentTimestampMs
+      : previousShotStartTimestamp;
   const shotElapsedSeconds =
     shotStartTimestampMs == null || currentTimestampMs == null
       ? null

@@ -144,6 +144,52 @@ describe("appendTelemetryHistory", () => {
     expect(trimmed).toHaveLength(maxTelemetrySamples);
     expect(trimmed[0]?.pressure).toBe(8);
   });
+
+  it("starts shot timing from the bridge espresso shot state", () => {
+    let telemetry = appendTelemetryHistory(
+      [],
+      buildSnapshot({
+        timestamp: "2026-03-21T12:00:00.000Z",
+        state: {
+          state: "idle",
+          substate: "ready",
+        },
+      }),
+    );
+
+    telemetry = appendTelemetryHistory(
+      telemetry,
+      buildSnapshot({
+        timestamp: "2026-03-21T12:00:01.000Z",
+        state: {
+          state: "espresso",
+          substate: "preparingForShot",
+        },
+      }),
+    );
+
+    telemetry = appendTelemetryHistory(
+      telemetry,
+      buildSnapshot({
+        timestamp: "2026-03-21T12:00:03.000Z",
+        state: {
+          state: "espresso",
+          substate: "preinfusion",
+        },
+      }),
+    );
+
+    expect(telemetry.at(-2)).toMatchObject({
+      shotElapsedSeconds: 0,
+      state: "espresso",
+      substate: "preparingForShot",
+    });
+    expect(telemetry.at(-1)).toMatchObject({
+      shotElapsedSeconds: 2,
+      state: "espresso",
+      substate: "preinfusion",
+    });
+  });
 });
 
 describe("mergeScaleSnapshotIntoTelemetry", () => {

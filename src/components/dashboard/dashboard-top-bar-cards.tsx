@@ -13,7 +13,9 @@ import {
 } from "@/rest/queries";
 import { useDashboardUiStore } from "@/stores/dashboard-ui-store";
 import { useDevicesStore } from "@/stores/devices-store";
-import { type LiveConnectionState, useMachineStore } from "@/stores/machine-store";
+import { type LiveConnectionState } from "@/stores/live-connection-state";
+import { useMachineStore } from "@/stores/machine-store";
+import { getScaleDeviceStatus, getScaleSnapshot, useScaleStore } from "@/stores/scale-store";
 import { getDashboardActiveRecipe } from "./dashboard-view-model";
 
 export function DashboardRecipeButton() {
@@ -148,10 +150,10 @@ export function ReservoirStatusCard() {
 
 export function ScaleStatusCard() {
   const devicesConnection = useDevicesStore((state) => state.connection);
-  const scaleConnection = useMachineStore((state) => state.scaleConnection);
+  const scaleConnection = useScaleStore((state) => state.scaleConnection);
+  const scaleMessage = useScaleStore((state) => state.scaleMessage);
   const scanDevices = useDevicesStore((state) => state.scan);
   const scanningDevices = useDevicesStore((state) => state.scanning);
-  const scaleSnapshot = useMachineStore((state) => state.scaleSnapshot);
   const devices = useDevicesStore((state) => state.devices);
   const tareScaleMutation = useTareScaleMutation();
   const updateWorkflowMutation = useUpdateWorkflowMutation();
@@ -159,10 +161,14 @@ export function ScaleStatusCard() {
     (device) => device.type === "scale" && device.state === "connected",
   );
   const isPaired = Boolean(connectedScale);
-  const weight = connectedScale ? (scaleSnapshot?.weight ?? null) : null;
-  const batteryLevel = connectedScale ? (scaleSnapshot?.batteryLevel ?? null) : null;
+  const scaleDeviceStatus = getScaleDeviceStatus(scaleMessage);
+  const scaleSnapshot = getScaleSnapshot(scaleMessage);
+  const hasLiveScale =
+    isPaired && scaleConnection === "live" && scaleDeviceStatus !== "disconnected";
+  const weight = hasLiveScale ? (scaleSnapshot?.weight ?? null) : null;
+  const batteryLevel = hasLiveScale ? (scaleSnapshot?.batteryLevel ?? null) : null;
   const canUseScaleWeightForDose =
-    isPaired && weight != null && Number.isFinite(weight) && weight > 0;
+    hasLiveScale && weight != null && Number.isFinite(weight) && weight > 0;
 
   function handleSetDoseFromScale() {
     if (!canUseScaleWeightForDose || weight == null) {
@@ -191,7 +197,7 @@ export function ScaleStatusCard() {
                 Scale
               </p>
               <span className="rounded-sm bg-status-warning-foreground/20 px-1.5 py-0.5 font-mono text-[0.55rem] font-bold uppercase tracking-[0.06em] text-status-warning-foreground">
-                {getScaleStatusLabel(isPaired, scaleConnection)}
+                {getScaleStatusLabel(isPaired, scaleConnection, scaleDeviceStatus)}
               </span>
             </div>
             <p className="mt-0.5 truncate font-mono text-[0.6rem] font-medium uppercase tracking-[0.06em] text-status-warning-foreground/80">
@@ -217,7 +223,10 @@ export function ScaleStatusCard() {
     );
   }
 
-  const isScaleDisconnected = scaleConnection === "error" || scaleConnection === "idle";
+  const isScaleDisconnected =
+    scaleConnection === "error" ||
+    scaleConnection === "idle" ||
+    scaleDeviceStatus === "disconnected";
 
   return (
     <div
@@ -252,13 +261,13 @@ export function ScaleStatusCard() {
             ) : null}
             {isScaleDisconnected ? (
               <span className="rounded-sm bg-destructive/20 px-1.5 py-0.5 font-mono text-[0.55rem] font-bold uppercase tracking-[0.06em] text-destructive">
-                {getScaleStatusLabel(isPaired, scaleConnection)}
+                {getScaleStatusLabel(isPaired, scaleConnection, scaleDeviceStatus)}
               </span>
             ) : null}
           </div>
           {!isScaleDisconnected ? (
             <p className="mt-0.5 truncate font-mono text-[0.6rem] uppercase tracking-[0.06em] text-status-info-foreground">
-              {getScaleStatusLabel(isPaired, scaleConnection)}
+              {getScaleStatusLabel(isPaired, scaleConnection, scaleDeviceStatus)}
             </p>
           ) : (
             <p className="mt-0.5 truncate font-mono text-[0.6rem] font-medium uppercase tracking-[0.06em] text-destructive/80">
@@ -386,7 +395,11 @@ function formatScaleWeight(weight: number | null) {
   return `${weight.toFixed(1)} g`;
 }
 
-function getScaleStatusLabel(isPaired: boolean, scaleConnection: LiveConnectionState) {
+function getScaleStatusLabel(
+  isPaired: boolean,
+  scaleConnection: LiveConnectionState,
+  scaleDeviceStatus: "connected" | "disconnected" | null,
+) {
   if (!isPaired && scaleConnection === "connecting") {
     return "Looking";
   }
@@ -401,6 +414,14 @@ function getScaleStatusLabel(isPaired: boolean, scaleConnection: LiveConnectionS
 
   if (scaleConnection === "error") {
     return "Stream lost";
+  }
+
+  if (scaleConnection === "idle") {
+    return "Offline";
+  }
+
+  if (scaleDeviceStatus === "disconnected") {
+    return "Scale off";
   }
 
   return "Paired";

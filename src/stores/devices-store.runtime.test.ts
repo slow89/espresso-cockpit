@@ -5,6 +5,7 @@ import { bridgeQueryKeys, getGatewayOrigin } from "@/rest/queries";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { initializeDevicesStoreRuntime, useDevicesStore } from "@/stores/devices-store";
 import { useMachineStore } from "@/stores/machine-store";
+import { useScaleStore } from "@/stores/scale-store";
 
 describe("devices store runtime", () => {
   let cleanupRuntime: (() => void) | undefined;
@@ -49,15 +50,18 @@ describe("devices store runtime", () => {
       error: null,
       liveConnection: "idle",
       machineSocket: null,
-      scaleConnection: "idle",
-      scaleSnapshot: null,
-      scaleSocket: null,
       telemetry: [],
       timeToReady: null,
       timeToReadySocket: null,
       waterConnection: "idle",
       waterLevels: null,
       waterSocket: null,
+    });
+    useScaleStore.setState({
+      error: null,
+      scaleConnection: "idle",
+      scaleMessage: null,
+      scaleSocket: null,
     });
   });
 
@@ -238,9 +242,51 @@ describe("devices store runtime", () => {
     expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(2);
   });
 
+  it("requests preferred scale reconnect when the scale stream reports disconnected", () => {
+    const requestPreferredScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+      .mockResolvedValue(undefined);
+
+    cleanupRuntime = initializeDevicesStoreRuntime();
+
+    useScaleStore.setState({
+      scaleConnection: "live",
+      scaleMessage: {
+        status: "connected",
+      },
+    });
+    useDevicesStore.setState({
+      connection: "live",
+      devices: [
+        {
+          id: "machine-1",
+          name: "DE1",
+          state: "connected",
+          type: "machine",
+        },
+        {
+          id: "scale-1",
+          name: "Acaia Lunar",
+          state: "connected",
+          type: "scale",
+        },
+      ],
+    });
+
+    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
+
+    useScaleStore.setState({
+      scaleMessage: {
+        status: "disconnected",
+      },
+    });
+
+    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(1);
+  });
+
   it("connects the scale feed when a connected scale appears", () => {
     const connectScaleSpy = vi
-      .spyOn(useMachineStore.getState(), "connectScale")
+      .spyOn(useScaleStore.getState(), "connectScale")
       .mockResolvedValue(undefined);
 
     cleanupRuntime = initializeDevicesStoreRuntime();
@@ -261,7 +307,7 @@ describe("devices store runtime", () => {
 
   it("disconnects the scale feed when the connected scale disappears", () => {
     const disconnectScaleSpy = vi
-      .spyOn(useMachineStore.getState(), "disconnectScale")
+      .spyOn(useScaleStore.getState(), "disconnectScale")
       .mockImplementation(() => undefined);
 
     useDevicesStore.setState({

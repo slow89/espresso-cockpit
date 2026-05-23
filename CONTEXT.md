@@ -12,6 +12,10 @@ _Avoid_: Client, cockpit-as-role
 The Streamline Bridge runtime that owns machine communication, device connection policy, readiness signals, display behavior, presence behavior, and Skin installation.
 _Avoid_: Gateway, except when naming URLs, environment variables, endpoints, or existing code identifiers
 
+**Bridge Stream**:
+A live WebSocket feed from the **Bridge** that reports machine, device, scale, display, water, or plugin state to the **Skin**.
+_Avoid_: Generic socket
+
 **Preferred Scale**:
 The scale remembered by the Bridge for automatic scale reconnection.
 _Avoid_: Skin-managed saved scale
@@ -39,6 +43,7 @@ _Avoid_: Treating Cockpit as a separate architectural role from Skin
 ## Relationships
 
 - A **Skin** talks to exactly one **Bridge** origin at a time.
+- A **Skin** observes **Bridge Streams** from its current **Bridge**.
 - **Cockpit** is a **Skin**.
 - The **Bridge** owns machine, device, readiness, display, presence, and Skin installation policy.
 - The **Bridge** owns **Preferred Scale Reconnect** for the **Preferred Scale**.

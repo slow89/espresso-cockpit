@@ -5,6 +5,7 @@ import { useDashboardControlPanelModel } from "@/components/dashboard/dashboard-
 import { dashboardUiDefaultState, useDashboardUiStore } from "@/stores/dashboard-ui-store";
 import { useDevicesStore } from "@/stores/devices-store";
 import { useMachineStore } from "@/stores/machine-store";
+import { useScaleStore } from "@/stores/scale-store";
 
 import { DashboardPage } from "./dashboard-page";
 
@@ -53,11 +54,15 @@ describe("DashboardPage", () => {
     useMachineStore.setState({
       error: null,
       liveConnection: "live",
-      scaleConnection: "idle",
-      scaleSnapshot: null,
       telemetry: [],
       timeToReady: null,
       waterLevels: null,
+    });
+    useScaleStore.setState({
+      error: null,
+      scaleConnection: "idle",
+      scaleMessage: null,
+      scaleSocket: null,
     });
     useDevicesStore.setState({
       connection: "live",
@@ -178,9 +183,9 @@ describe("DashboardPage", () => {
   });
 
   it("clears stale scale UI when the bridge no longer reports a connected scale", () => {
-    useMachineStore.setState({
+    useScaleStore.setState({
       scaleConnection: "live",
-      scaleSnapshot: {
+      scaleMessage: {
         timestamp: "2026-03-25T10:00:00.000Z",
         weight: 18.2,
         weightFlow: 0,
@@ -199,6 +204,37 @@ describe("DashboardPage", () => {
     render(<DashboardPage />);
 
     expect(screen.getByText("No scale paired")).toBeInTheDocument();
+    expect(screen.getByText("--.- g")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Refresh" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Tare" })).not.toBeInTheDocument();
+  });
+
+  it("shows the paired scale as offline when the scale stream reports disconnected", () => {
+    useScaleStore.setState({
+      scaleConnection: "live",
+      scaleMessage: {
+        status: "disconnected",
+      },
+    });
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("idle"),
+      error: null,
+    });
+    useDevicesStore.setState({
+      devices: [
+        {
+          id: "scale-1",
+          name: "Acaia Lunar",
+          state: "connected",
+          type: "scale",
+        },
+      ],
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByText("Scale off")).toBeInTheDocument();
+    expect(screen.getByText("Connection lost")).toBeInTheDocument();
     expect(screen.getByText("--.- g")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Refresh" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Tare" })).not.toBeInTheDocument();
@@ -407,9 +443,9 @@ describe("DashboardPage", () => {
   });
 
   it("sets the workflow dose from the live scale weight", async () => {
-    useMachineStore.setState({
+    useScaleStore.setState({
       scaleConnection: "live",
-      scaleSnapshot: {
+      scaleMessage: {
         timestamp: "2026-03-25T10:00:00.000Z",
         weight: 18.2,
         weightFlow: 0,

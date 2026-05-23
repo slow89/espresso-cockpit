@@ -4,6 +4,7 @@ import { queryClient } from "@/rest/query-client";
 import { bridgeQueryKeys, getGatewayOrigin } from "@/rest/queries";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { useMachineStore } from "@/stores/machine-store";
+import { useScaleStore } from "@/stores/scale-store";
 
 import { useDevicesStore } from "./devices-store";
 
@@ -63,15 +64,18 @@ describe("useDevicesStore", () => {
       error: null,
       liveConnection: "live",
       machineSocket: null,
-      scaleConnection: "idle",
-      scaleSnapshot: null,
-      scaleSocket: null,
       telemetry: [],
       timeToReady: null,
       timeToReadySocket: null,
       waterConnection: "idle",
       waterLevels: null,
       waterSocket: null,
+    });
+    useScaleStore.setState({
+      error: null,
+      scaleConnection: "idle",
+      scaleMessage: null,
+      scaleSocket: null,
     });
 
     useDevicesStore.getState().reset();

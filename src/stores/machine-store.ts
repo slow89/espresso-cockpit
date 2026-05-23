@@ -1,17 +1,15 @@
 import { create } from "zustand";
 
+import { createBridgeStream } from "@/bridge/bridge-stream-adapter";
 import { BridgeClientError, createBridgeClient } from "@/rest/client";
 import { queryClient } from "@/rest/query-client";
 import { bridgeQueryKeys } from "@/rest/queries";
 import {
   machineWaterLevelsSchema,
   machineSnapshotSchema,
-  scaleSnapshotSchema,
-  scaleStatusSchema,
   timeToReadySnapshotSchema,
   type MachineWaterLevels,
   type MachineStateChange,
-  type ScaleSnapshot,
   type TimeToReadySnapshot,
 } from "@/rest/types";
 import {
@@ -20,10 +18,10 @@ import {
   type TelemetrySample,
 } from "@/lib/telemetry";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
+import { type LiveConnectionState } from "@/stores/live-connection-state";
+import { getScaleSnapshot, useScaleStore } from "@/stores/scale-store";
 import { visualizerRuntimeStore } from "@/stores/visualizer-runtime-store";
 import { getGatewayOrigin } from "@/rest/queries";
-
-export type LiveConnectionState = "idle" | "connecting" | "live" | "error";
 
 interface MachineState {
   error: string | null;
@@ -31,11 +29,6 @@ interface MachineState {
   machineSocket: WebSocket | null;
   timeToReady: TimeToReadySnapshot | null;
   timeToReadySocket: WebSocket | null;
-  connectScale: () => Promise<void>;
-  disconnectScale: () => void;
-  scaleConnection: LiveConnectionState;
-  scaleSnapshot: ScaleSnapshot | null;
-  scaleSocket: WebSocket | null;
   telemetry: TelemetrySample[];
   waterConnection: LiveConnectionState;
   waterLevels: MachineWaterLevels | null;
@@ -65,76 +58,6 @@ export const useMachineStore = create<MachineState>((set, get) => ({
   error: null,
   liveConnection: "idle",
   machineSocket: null,
-  async connectScale() {
-    get().disconnectScale();
-
-    try {
-      const scaleSocket = getClient().createScaleSnapshotSocket();
-
-      scaleSocket.onopen = () => {
-        set({ scaleConnection: "live" });
-      };
-
-      scaleSocket.onmessage = (event) => {
-        const payload: unknown = JSON.parse(event.data);
-        const parsedStatus = scaleStatusSchema.safeParse(payload);
-
-        if (parsedStatus.success) {
-          set((state) => ({
-            scaleConnection: "live",
-            scaleSnapshot: parsedStatus.data.status === "connected" ? state.scaleSnapshot : null,
-          }));
-          return;
-        }
-
-        const parsedSnapshot = scaleSnapshotSchema.safeParse(payload);
-
-        if (!parsedSnapshot.success) {
-          set({
-            scaleConnection: "error",
-            scaleSnapshot: null,
-          });
-          return;
-        }
-
-        set((state) => ({
-          scaleConnection: "live",
-          scaleSnapshot: parsedSnapshot.data,
-          telemetry: mergeScaleSnapshotIntoTelemetry(state.telemetry, parsedSnapshot.data),
-        }));
-      };
-
-      scaleSocket.onerror = () => {
-        set({
-          scaleConnection: "error",
-          scaleSnapshot: null,
-        });
-      };
-
-      scaleSocket.onclose = () => {
-        set((state) => ({
-          scaleConnection: "idle",
-          scaleSnapshot: state.scaleSocket === scaleSocket ? null : state.scaleSnapshot,
-          scaleSocket: state.scaleSocket === scaleSocket ? null : state.scaleSocket,
-        }));
-      };
-
-      set({
-        scaleConnection: "connecting",
-        scaleSnapshot: null,
-        scaleSocket,
-      });
-    } catch (error) {
-      set({
-        scaleConnection: "error",
-        scaleSnapshot: null,
-        error: getErrorMessage(error),
-      });
-    }
-  },
-  scaleConnection: "idle",
-  scaleSnapshot: null,
-  scaleSocket: null,
   telemetry: [],
   timeToReady: null,
   timeToReadySocket: null,
@@ -146,126 +69,128 @@ export const useMachineStore = create<MachineState>((set, get) => ({
 
     try {
       const client = getClient();
-      const machineSocket = client.createMachineSnapshotSocket();
-      const timeToReadySocket = client.createTimeToReadySocket();
-      const waterSocket = client.createMachineWaterLevelsSocket();
-
-      machineSocket.onopen = () => {
-        set({ liveConnection: "live", error: null });
-      };
-
-      machineSocket.onmessage = (event) => {
-        const parsed = machineSnapshotSchema.safeParse(JSON.parse(event.data));
-
-        if (!parsed.success) {
-          set({
-            liveConnection: "error",
-            error: parsed.error.message,
-          });
-          return;
-        }
-
-        const snapshot = parsed.data;
-        queryClient.setQueryData(bridgeQueryKeys.machineState(getGatewayOrigin()), snapshot);
-        visualizerRuntimeStore.getState().handleSnapshot(snapshot);
-        set((state) => ({
-          error: null,
-          telemetry: appendTelemetryHistory(state.telemetry, snapshot, state.scaleSnapshot),
-        }));
-      };
-
-      machineSocket.onerror = () => {
-        set({
-          liveConnection: "error",
-          error: "Live machine stream failed",
-        });
-      };
-
-      machineSocket.onclose = () => {
-        set((state) => ({
-          machineSocket: state.machineSocket === machineSocket ? null : state.machineSocket,
-          liveConnection: "idle",
-        }));
-      };
-
-      timeToReadySocket.onmessage = (event) => {
-        const parsed = timeToReadySnapshotSchema.safeParse(JSON.parse(event.data));
-
-        if (!parsed.success) {
-          set({
-            timeToReady: null,
-          });
-          return;
-        }
-
-        set({
-          timeToReady: parsed.data,
-        });
-      };
-
-      timeToReadySocket.onerror = () => {
-        set((state) => ({
-          timeToReady: state.timeToReadySocket === timeToReadySocket ? null : state.timeToReady,
-        }));
-      };
-
-      timeToReadySocket.onclose = () => {
-        set((state) => ({
-          timeToReady: state.timeToReadySocket === timeToReadySocket ? null : state.timeToReady,
-          timeToReadySocket:
-            state.timeToReadySocket === timeToReadySocket ? null : state.timeToReadySocket,
-        }));
-      };
-
-      waterSocket.onopen = () => {
-        set({ waterConnection: "live" });
-      };
-
-      waterSocket.onmessage = (event) => {
-        const parsed = machineWaterLevelsSchema.safeParse(JSON.parse(event.data));
-
-        if (!parsed.success) {
-          set({
-            waterConnection: "error",
-            waterLevels: null,
-          });
-          return;
-        }
-
-        set({
-          waterConnection: "live",
-          waterLevels: parsed.data,
-        });
-      };
-
-      waterSocket.onerror = () => {
-        set({
-          waterConnection: "error",
-          waterLevels: null,
-        });
-      };
-
-      waterSocket.onclose = () => {
-        set((state) => ({
-          waterConnection: "idle",
-          waterLevels: state.waterSocket === waterSocket ? null : state.waterLevels,
-          waterSocket: state.waterSocket === waterSocket ? null : state.waterSocket,
-        }));
-      };
+      const machineStream = createBridgeStream({
+        createSocket: () => client.createMachineSnapshotSocket(),
+        handlers: {
+          onClose: () => {
+            set((state) => ({
+              machineSocket:
+                state.machineSocket === machineStream.socket ? null : state.machineSocket,
+              liveConnection: "idle",
+            }));
+          },
+          onError: () => {
+            set({
+              liveConnection: "error",
+              error: "Live machine stream failed",
+            });
+          },
+          onInvalidMessage: (error) => {
+            set({
+              liveConnection: "error",
+              error: error.message,
+            });
+          },
+          onMessage: (snapshot) => {
+            queryClient.setQueryData(bridgeQueryKeys.machineState(getGatewayOrigin()), snapshot);
+            visualizerRuntimeStore.getState().handleSnapshot(snapshot);
+            set((state) => ({
+              error: null,
+              telemetry: appendTelemetryHistory(
+                state.telemetry,
+                snapshot,
+                getScaleSnapshot(useScaleStore.getState().scaleMessage),
+              ),
+            }));
+          },
+          onOpen: () => {
+            set({ liveConnection: "live", error: null });
+          },
+        },
+        schema: machineSnapshotSchema,
+        sendErrorMessage: "Machine stream is not connected",
+      });
+      const timeToReadyStream = createBridgeStream({
+        createSocket: () => client.createTimeToReadySocket(),
+        handlers: {
+          onClose: () => {
+            set((state) => ({
+              timeToReady:
+                state.timeToReadySocket === timeToReadyStream.socket ? null : state.timeToReady,
+              timeToReadySocket:
+                state.timeToReadySocket === timeToReadyStream.socket
+                  ? null
+                  : state.timeToReadySocket,
+            }));
+          },
+          onError: () => {
+            set((state) => ({
+              timeToReady:
+                state.timeToReadySocket === timeToReadyStream.socket ? null : state.timeToReady,
+            }));
+          },
+          onInvalidMessage: () => {
+            set({
+              timeToReady: null,
+            });
+          },
+          onMessage: (timeToReady) => {
+            set({
+              timeToReady,
+            });
+          },
+        },
+        schema: timeToReadySnapshotSchema,
+        sendErrorMessage: "Time-to-ready stream is not connected",
+      });
+      const waterStream = createBridgeStream({
+        createSocket: () => client.createMachineWaterLevelsSocket(),
+        handlers: {
+          onClose: () => {
+            set((state) => ({
+              waterConnection: "idle",
+              waterLevels: state.waterSocket === waterStream.socket ? null : state.waterLevels,
+              waterSocket: state.waterSocket === waterStream.socket ? null : state.waterSocket,
+            }));
+          },
+          onError: () => {
+            set({
+              waterConnection: "error",
+              waterLevels: null,
+            });
+          },
+          onInvalidMessage: () => {
+            set({
+              waterConnection: "error",
+              waterLevels: null,
+            });
+          },
+          onMessage: (waterLevels) => {
+            set({
+              waterConnection: "live",
+              waterLevels,
+            });
+          },
+          onOpen: () => {
+            set({ waterConnection: "live" });
+          },
+        },
+        schema: machineWaterLevelsSchema,
+        sendErrorMessage: "Machine water levels stream is not connected",
+      });
 
       set({
         liveConnection: "connecting",
-        machineSocket,
+        machineSocket: machineStream.socket,
         timeToReady: null,
-        timeToReadySocket,
+        timeToReadySocket: timeToReadyStream.socket,
         waterConnection: "connecting",
-        waterSocket,
+        waterSocket: waterStream.socket,
       });
     } catch (error) {
       set({
         error: getErrorMessage(error),
         liveConnection: "error",
-        scaleConnection: "error",
         waterConnection: "error",
       });
     }
@@ -290,7 +215,7 @@ export const useMachineStore = create<MachineState>((set, get) => ({
       currentTimeToReadySocket.close();
     }
 
-    get().disconnectScale();
+    useScaleStore.getState().disconnectScale();
 
     set({
       liveConnection: "idle",
@@ -303,20 +228,6 @@ export const useMachineStore = create<MachineState>((set, get) => ({
       waterSocket: null,
     });
     visualizerRuntimeStore.getState().reset();
-  },
-  disconnectScale() {
-    const currentScaleSocket = get().scaleSocket;
-
-    if (currentScaleSocket) {
-      currentScaleSocket.onclose = null;
-      currentScaleSocket.close();
-    }
-
-    set({
-      scaleConnection: "idle",
-      scaleSnapshot: null,
-      scaleSocket: null,
-    });
   },
   async requestState(nextState) {
     set({ error: null });
@@ -333,3 +244,16 @@ export const useMachineStore = create<MachineState>((set, get) => ({
     }
   },
 }));
+
+useScaleStore.subscribe((state, previousState) => {
+  const scaleSnapshot = getScaleSnapshot(state.scaleMessage);
+  const previousScaleSnapshot = getScaleSnapshot(previousState.scaleMessage);
+
+  if (scaleSnapshot === previousScaleSnapshot || scaleSnapshot == null) {
+    return;
+  }
+
+  useMachineStore.setState((machineState) => ({
+    telemetry: mergeScaleSnapshotIntoTelemetry(machineState.telemetry, scaleSnapshot),
+  }));
+});

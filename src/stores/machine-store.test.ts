@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
+import { useScaleStore } from "@/stores/scale-store";
 
 import { useMachineStore } from "./machine-store";
 
@@ -27,6 +28,12 @@ class MockWebSocket {
   emitMessage(data: unknown) {
     this.onmessage?.({
       data: JSON.stringify(data),
+    } as MessageEvent);
+  }
+
+  emitRawMessage(data: string) {
+    this.onmessage?.({
+      data,
     } as MessageEvent);
   }
 
@@ -57,9 +64,6 @@ describe("useMachineStore", () => {
       error: null,
       liveConnection: "idle",
       machineSocket: null,
-      scaleConnection: "idle",
-      scaleSnapshot: null,
-      scaleSocket: null,
       telemetry: [],
       timeToReady: null,
       timeToReadySocket: null,
@@ -67,11 +71,17 @@ describe("useMachineStore", () => {
       waterLevels: null,
       waterSocket: null,
     });
+    useScaleStore.setState({
+      error: null,
+      scaleConnection: "idle",
+      scaleMessage: null,
+      scaleSocket: null,
+    });
   });
 
   it("connects the machine, water, and scale streams and stores incoming telemetry", async () => {
     await useMachineStore.getState().connectLive();
-    await useMachineStore.getState().connectScale();
+    await useScaleStore.getState().connectScale();
 
     expect(MockWebSocket.instances.map((socket) => socket.url)).toEqual([
       "ws://bridge.local:8080/ws/v1/machine/snapshot",
@@ -124,7 +134,6 @@ describe("useMachineStore", () => {
 
     expect(useMachineStore.getState()).toMatchObject({
       liveConnection: "live",
-      scaleConnection: "live",
       waterConnection: "live",
       waterLevels: {
         currentLevel: 48,
@@ -138,34 +147,9 @@ describe("useMachineStore", () => {
         timestamp: 1_743_194_400_000,
       },
     });
-    expect(useMachineStore.getState().telemetry.at(-1)).toMatchObject({
-      pressure: 8.8,
-      state: "espresso",
-      substate: "pouring",
-      weight: 15.4,
-      weightFlow: 1.2,
-    });
-  });
-
-  it("keeps the scale stream open when the bridge emits scale status frames", async () => {
-    await useMachineStore.getState().connectScale();
-
-    const scaleSocket = MockWebSocket.instances[0];
-
-    scaleSocket?.emitOpen();
-    scaleSocket?.emitMessage({
-      status: "connected",
-    });
-
-    expect(useMachineStore.getState()).toMatchObject({
+    expect(useScaleStore.getState()).toMatchObject({
       scaleConnection: "live",
-      scaleSnapshot: null,
-      scaleSocket,
-    });
-    expect(MockWebSocket.instances).toHaveLength(1);
-
-    useMachineStore.setState({
-      scaleSnapshot: {
+      scaleMessage: {
         batteryLevel: 82,
         timerValue: 8,
         timestamp: "2026-03-28T20:00:08.000Z",
@@ -173,17 +157,13 @@ describe("useMachineStore", () => {
         weightFlow: 1.2,
       },
     });
-
-    scaleSocket?.emitMessage({
-      status: "disconnected",
+    expect(useMachineStore.getState().telemetry.at(-1)).toMatchObject({
+      pressure: 8.8,
+      state: "espresso",
+      substate: "pouring",
+      weight: 15.4,
+      weightFlow: 1.2,
     });
-
-    expect(useMachineStore.getState()).toMatchObject({
-      scaleConnection: "live",
-      scaleSnapshot: null,
-      scaleSocket,
-    });
-    expect(MockWebSocket.instances).toHaveLength(1);
   });
 
   it("marks the live machine stream as errored when it receives malformed payloads", async () => {
@@ -197,5 +177,68 @@ describe("useMachineStore", () => {
 
     expect(useMachineStore.getState().liveConnection).toBe("error");
     expect(useMachineStore.getState().error).toContain("state");
+  });
+
+  it("clears time-to-ready without changing the live machine connection when the plugin stream is malformed", async () => {
+    await useMachineStore.getState().connectLive();
+
+    useMachineStore.setState({
+      timeToReady: {
+        currentTemp: 90,
+        remainingTimeMs: null,
+        status: "insufficient_data",
+        targetTemp: 93,
+        timestamp: 1_743_194_400_000,
+      },
+    });
+
+    MockWebSocket.instances[0]?.emitOpen();
+    MockWebSocket.instances[1]?.emitMessage({
+      status: "not-a-real-status",
+    });
+
+    expect(useMachineStore.getState()).toMatchObject({
+      liveConnection: "live",
+      timeToReady: null,
+    });
+  });
+
+  it("marks the water stream as errored when it receives malformed payloads", async () => {
+    await useMachineStore.getState().connectLive();
+
+    MockWebSocket.instances[2]?.emitOpen();
+    MockWebSocket.instances[2]?.emitMessage({
+      currentLevel: "full",
+    });
+
+    expect(useMachineStore.getState()).toMatchObject({
+      waterConnection: "error",
+      waterLevels: null,
+    });
+  });
+
+  it("does not run close handlers when disconnecting live streams explicitly", async () => {
+    await useMachineStore.getState().connectLive();
+
+    const machineSocket = MockWebSocket.instances[0];
+    const timeToReadySocket = MockWebSocket.instances[1];
+    const waterSocket = MockWebSocket.instances[2];
+
+    const machineCloseSpy = vi.spyOn(machineSocket!, "close");
+    const timeToReadyCloseSpy = vi.spyOn(timeToReadySocket!, "close");
+    const waterCloseSpy = vi.spyOn(waterSocket!, "close");
+
+    useMachineStore.getState().disconnectLive();
+
+    expect(machineCloseSpy).toHaveBeenCalled();
+    expect(timeToReadyCloseSpy).toHaveBeenCalled();
+    expect(waterCloseSpy).toHaveBeenCalled();
+    expect(useMachineStore.getState()).toMatchObject({
+      liveConnection: "idle",
+      machineSocket: null,
+      timeToReadySocket: null,
+      waterConnection: "idle",
+      waterSocket: null,
+    });
   });
 });

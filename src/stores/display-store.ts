@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+import { createBridgeStream, sendBridgeStreamJson } from "@/bridge/bridge-stream-adapter";
 import { BridgeClientError, createBridgeClient } from "@/rest/client";
 import { displayStateSchema, type DisplayState } from "@/rest/types";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
@@ -46,11 +47,7 @@ function getErrorMessage(error: unknown) {
 }
 
 function sendDisplayCommand(socket: WebSocket | null, command: DisplayCommand) {
-  if (socket == null || socket.readyState !== 1) {
-    throw new BridgeClientError("Display stream is not connected");
-  }
-
-  socket.send(JSON.stringify(command));
+  sendBridgeStreamJson(socket, command, "Display stream is not connected");
 }
 
 export const useDisplayStore = create<DisplayStoreState>((set, get) => ({
@@ -63,53 +60,51 @@ export const useDisplayStore = create<DisplayStoreState>((set, get) => ({
 
     try {
       const client = getClient();
-      const socket = client.createDisplaySocket();
-
-      socket.onopen = () => {
-        set({
-          connection: "live",
-          error: null,
-        });
-      };
-
-      socket.onmessage = (event) => {
-        const parsed = displayStateSchema.safeParse(JSON.parse(event.data));
-
-        if (!parsed.success) {
-          set({
-            connection: "error",
-            error: parsed.error.message,
-          });
-          return;
-        }
-
-        set({
-          connection: "live",
-          displayState: parsed.data,
-          error: null,
-        });
-      };
-
-      socket.onerror = () => {
-        set({
-          connection: "error",
-          error: "Live display stream failed",
-        });
-      };
-
-      socket.onclose = () => {
-        set((state) => ({
-          connection: "idle",
-          displayState: state.socket === socket ? null : state.displayState,
-          socket: state.socket === socket ? null : state.socket,
-        }));
-      };
+      const stream = createBridgeStream({
+        createSocket: () => client.createDisplaySocket(),
+        handlers: {
+          onClose: () => {
+            set((state) => ({
+              connection: "idle",
+              displayState: state.socket === stream.socket ? null : state.displayState,
+              socket: state.socket === stream.socket ? null : state.socket,
+            }));
+          },
+          onError: () => {
+            set({
+              connection: "error",
+              error: "Live display stream failed",
+            });
+          },
+          onInvalidMessage: (error) => {
+            set({
+              connection: "error",
+              error: error.message,
+            });
+          },
+          onMessage: (displayState) => {
+            set({
+              connection: "live",
+              displayState,
+              error: null,
+            });
+          },
+          onOpen: () => {
+            set({
+              connection: "live",
+              error: null,
+            });
+          },
+        },
+        schema: displayStateSchema,
+        sendErrorMessage: "Display stream is not connected",
+      });
 
       set({
         connection: "connecting",
         displayState: null,
         error: null,
-        socket,
+        socket: stream.socket,
       });
     } catch (error) {
       set({

@@ -6,6 +6,7 @@ import { useDevicesStore } from "@/stores/devices-store";
 import { useDisplayStore } from "@/stores/display-store";
 import { useMachineStore } from "@/stores/machine-store";
 import { usePresenceStore } from "@/stores/presence-store";
+import { useScaleStore } from "@/stores/scale-store";
 import { useThemeStore } from "@/stores/theme-store";
 
 import { SettingsPage } from "./settings-page";
@@ -157,9 +158,6 @@ describe("SettingsPage", () => {
       error: null,
       liveConnection: "live",
       machineSocket: null,
-      scaleConnection: "idle",
-      scaleSnapshot: null,
-      scaleSocket: null,
       telemetry: [],
       timeToReady: null,
       timeToReadySocket: null,
@@ -169,6 +167,12 @@ describe("SettingsPage", () => {
         refillLevel: 25,
       },
       waterSocket: null,
+    });
+    useScaleStore.setState({
+      error: null,
+      scaleConnection: "idle",
+      scaleMessage: null,
+      scaleSocket: null,
     });
     usePresenceStore.setState({
       error: null,

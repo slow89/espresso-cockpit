@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+import { createBridgeStream, sendBridgeStreamJson } from "@/bridge/bridge-stream-adapter";
 import { BridgeClientError, createBridgeClient } from "@/rest/client";
 import { queryClient } from "@/rest/query-client";
 import { bridgeQueryKeys, bridgeSettingsQueryOptions, getGatewayOrigin } from "@/rest/queries";
@@ -10,7 +11,7 @@ import {
   type DevicesConnectionStatus,
 } from "@/rest/types";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
-import { useMachineStore } from "@/stores/machine-store";
+import { getScaleDeviceStatus, useScaleStore } from "@/stores/scale-store";
 
 type DevicesConnectionState = "idle" | "connecting" | "live" | "error";
 
@@ -66,11 +67,7 @@ function getErrorMessage(error: unknown) {
 }
 
 function sendDevicesCommand(socket: WebSocket | null, command: DevicesCommand) {
-  if (socket == null || socket.readyState !== 1) {
-    throw new BridgeClientError("Devices stream is not connected");
-  }
-
-  socket.send(JSON.stringify(command));
+  sendBridgeStreamJson(socket, command, "Devices stream is not connected");
 }
 
 function getConnectedScaleId() {
@@ -78,6 +75,13 @@ function getConnectedScaleId() {
     useDevicesStore
       .getState()
       .devices.find((device) => device.type === "scale" && device.state === "connected")?.id ?? null
+  );
+}
+
+function hasAvailableConnectedScale() {
+  return (
+    Boolean(getConnectedScaleId()) &&
+    getScaleDeviceStatus(useScaleStore.getState().scaleMessage) !== "disconnected"
   );
 }
 
@@ -90,7 +94,7 @@ function hasConnectedMachine() {
 function shouldRequestPreferredScaleReconnect() {
   const devicesState = useDevicesStore.getState();
 
-  if (getConnectedScaleId()) {
+  if (hasAvailableConnectedScale()) {
     return false;
   }
 
@@ -139,19 +143,19 @@ async function getPreferredScaleId() {
 }
 
 function syncScaleFeed() {
-  const machineState = useMachineStore.getState();
+  const scaleState = useScaleStore.getState();
   const connectedScaleId = getConnectedScaleId();
 
   if (!connectedScaleId) {
-    machineState.disconnectScale();
+    scaleState.disconnectScale();
     return;
   }
 
-  if (machineState.scaleConnection === "connecting" || machineState.scaleConnection === "live") {
+  if (scaleState.scaleConnection === "connecting" || scaleState.scaleConnection === "live") {
     return;
   }
 
-  void machineState.connectScale();
+  void scaleState.connectScale();
 }
 
 function evaluateDevicesRuntime() {
@@ -175,60 +179,54 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
     get().disconnect();
 
     try {
-      const socket = getClient().createDevicesSocket();
+      const stream = createBridgeStream({
+        createSocket: () => getClient().createDevicesSocket(),
+        handlers: {
+          onClose: () => {
+            set((state) => ({
+              connection: "idle",
+              connectionStatus: state.socket === stream.socket ? null : state.connectionStatus,
+              devices: state.socket === stream.socket ? [] : state.devices,
+              scanning: state.socket === stream.socket ? false : state.scanning,
+              socket: state.socket === stream.socket ? null : state.socket,
+            }));
+          },
+          onError: () => {
+            set({
+              connection: "error",
+              error: "Live devices stream failed",
+            });
+          },
+          onInvalidMessage: (error) => {
+            set({
+              connection: "error",
+              error: error.message,
+            });
+          },
+          onMessage: (devicesState) => {
+            set({
+              connection: "live",
+              connectionStatus: devicesState.connectionStatus ?? null,
+              devices: devicesState.devices,
+              error: null,
+              scanning: devicesState.scanning,
+            });
 
-      socket.onopen = () => {
-        lastPreferredScaleReconnectRequestAt = 0;
-        set({
-          connection: "live",
-          error: null,
-        });
-      };
-
-      socket.onmessage = (event) => {
-        const parsed = devicesStateSchema.safeParse(JSON.parse(event.data));
-
-        if (!parsed.success) {
-          set({
-            connection: "error",
-            error: parsed.error.message,
-          });
-          return;
-        }
-
-        set({
-          connection: "live",
-          connectionStatus: parsed.data.connectionStatus ?? null,
-          devices: parsed.data.devices,
-          error: null,
-          scanning: parsed.data.scanning,
-        });
-
-        if (
-          parsed.data.devices.some(
-            (device) => device.type === "scale" && device.state === "connected",
-          )
-        ) {
-          lastPreferredScaleReconnectRequestAt = 0;
-        }
-      };
-
-      socket.onerror = () => {
-        set({
-          connection: "error",
-          error: "Live devices stream failed",
-        });
-      };
-
-      socket.onclose = () => {
-        set((state) => ({
-          connection: "idle",
-          connectionStatus: state.socket === socket ? null : state.connectionStatus,
-          devices: state.socket === socket ? [] : state.devices,
-          scanning: state.socket === socket ? false : state.scanning,
-          socket: state.socket === socket ? null : state.socket,
-        }));
-      };
+            if (hasAvailableConnectedScale()) {
+              lastPreferredScaleReconnectRequestAt = 0;
+            }
+          },
+          onOpen: () => {
+            lastPreferredScaleReconnectRequestAt = 0;
+            set({
+              connection: "live",
+              error: null,
+            });
+          },
+        },
+        schema: devicesStateSchema,
+        sendErrorMessage: "Devices stream is not connected",
+      });
 
       set({
         connection: "connecting",
@@ -236,7 +234,7 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
         devices: [],
         error: null,
         scanning: false,
-        socket,
+        socket: stream.socket,
       });
     } catch (error) {
       set({
@@ -371,10 +369,10 @@ export function initializeDevicesStoreRuntime() {
     evaluateDevicesRuntime();
   });
 
-  const unsubscribeMachine = useMachineStore.subscribe((state, previousState) => {
+  const unsubscribeScale = useScaleStore.subscribe((state, previousState) => {
     if (
-      state.liveConnection === previousState.liveConnection &&
-      state.scaleConnection === previousState.scaleConnection
+      state.scaleConnection === previousState.scaleConnection &&
+      getScaleDeviceStatus(state.scaleMessage) === getScaleDeviceStatus(previousState.scaleMessage)
     ) {
       return;
     }
@@ -390,7 +388,7 @@ export function initializeDevicesStoreRuntime() {
 
   cleanupDevicesRuntime = () => {
     unsubscribeDevices();
-    unsubscribeMachine();
+    unsubscribeScale();
     window.clearInterval(intervalId);
     cleanupDevicesRuntime = null;
   };

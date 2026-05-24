@@ -81,7 +81,7 @@ function getConnectedScaleId() {
 function hasAvailableConnectedScale() {
   return (
     Boolean(getConnectedScaleId()) &&
-    getScaleDeviceStatus(useScaleStore.getState().scaleMessage) !== "disconnected"
+    getScaleDeviceStatus(useScaleStore.getState().scaleMessage) === "connected"
   );
 }
 

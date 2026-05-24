@@ -236,25 +236,33 @@ describe("devices store runtime", () => {
         },
       ],
     });
-
-    vi.advanceTimersByTime(10000);
-
-    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(2);
-  });
-
-  it("requests preferred scale reconnect when the scale stream reports disconnected", () => {
-    const requestPreferredScaleReconnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
-      .mockResolvedValue(undefined);
-
-    cleanupRuntime = initializeDevicesStoreRuntime();
-
     useScaleStore.setState({
       scaleConnection: "live",
       scaleMessage: {
         status: "connected",
       },
     });
+
+    const callsAfterScaleConnect = requestPreferredScaleReconnectSpy.mock.calls.length;
+
+    vi.advanceTimersByTime(10000);
+
+    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(callsAfterScaleConnect);
+  });
+
+  it("keeps retrying when the devices list has a stale connected scale without scale stream proof", () => {
+    vi.useFakeTimers();
+    const requestPreferredScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+      .mockResolvedValue(undefined);
+
+    useScaleStore.setState({
+      scaleConnection: "live",
+      scaleMessage: null,
+    });
+
+    cleanupRuntime = initializeDevicesStoreRuntime();
+
     useDevicesStore.setState({
       connection: "live",
       devices: [
@@ -272,8 +280,48 @@ describe("devices store runtime", () => {
         },
       ],
     });
+    const callsAfterStaleScaleRow = requestPreferredScaleReconnectSpy.mock.calls.length;
+    expect(callsAfterStaleScaleRow).toBeGreaterThan(0);
 
-    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(5000);
+
+    expect(requestPreferredScaleReconnectSpy.mock.calls.length).toBeGreaterThan(
+      callsAfterStaleScaleRow,
+    );
+  });
+
+  it("requests preferred scale reconnect when the scale stream reports disconnected", () => {
+    const requestPreferredScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+      .mockResolvedValue(undefined);
+
+    cleanupRuntime = initializeDevicesStoreRuntime();
+
+    useDevicesStore.setState({
+      connection: "live",
+      devices: [
+        {
+          id: "machine-1",
+          name: "DE1",
+          state: "connected",
+          type: "machine",
+        },
+        {
+          id: "scale-1",
+          name: "Acaia Lunar",
+          state: "connected",
+          type: "scale",
+        },
+      ],
+    });
+    useScaleStore.setState({
+      scaleConnection: "live",
+      scaleMessage: {
+        status: "connected",
+      },
+    });
+
+    const callsAfterConnectedProof = requestPreferredScaleReconnectSpy.mock.calls.length;
 
     useScaleStore.setState({
       scaleMessage: {
@@ -281,7 +329,9 @@ describe("devices store runtime", () => {
       },
     });
 
-    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(1);
+    expect(requestPreferredScaleReconnectSpy.mock.calls.length).toBeGreaterThan(
+      callsAfterConnectedProof,
+    );
   });
 
   it("connects the scale feed when a connected scale appears", () => {

@@ -240,6 +240,36 @@ describe("DashboardPage", () => {
     expect(screen.queryByRole("button", { name: "Tare" })).not.toBeInTheDocument();
   });
 
+  it("does not show a stale connected scale row as paired without scale stream proof", () => {
+    useScaleStore.setState({
+      scaleConnection: "live",
+      scaleMessage: null,
+    });
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("idle"),
+      error: null,
+    });
+    useDevicesStore.setState({
+      devices: [
+        {
+          id: "scale-1",
+          name: "Acaia Lunar",
+          state: "connected",
+          type: "scale",
+        },
+      ],
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByText("No signal")).toBeInTheDocument();
+    expect(screen.getByText("Connection lost")).toBeInTheDocument();
+    expect(screen.getByText("--.- g")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Refresh" })).toBeInTheDocument();
+    expect(screen.queryByText("Paired")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Tare" })).not.toBeInTheDocument();
+  });
+
   it("refreshes scale discovery from the dashboard status card", async () => {
     const scanSpy = vi.fn(async () => undefined);
     queryMocks.useMachineStateQuery.mockReturnValue({

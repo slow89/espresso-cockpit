@@ -23,6 +23,9 @@ const deployPort = Number(process.env.SKIN_DEPLOY_PORT ?? "9000");
 async function main() {
   await access(distDir);
 
+  console.log(`Checking Streamline Gateway at ${tabletGatewayOrigin}...`);
+  await expectGatewayReachable(tabletGatewayOrigin);
+
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
   const stampedManifest = {
     ...manifest,
@@ -134,23 +137,48 @@ function createZipServer(filePath, servedName) {
 }
 
 async function expectReachable(url) {
-  const response = await fetch(url, {
-    method: "HEAD",
-    signal: AbortSignal.timeout(5_000),
-  });
+  const response = await fetchWithContext(url, { method: "HEAD" }, 5_000);
 
   if (!response.ok) {
     throw new Error(`Archive check failed for ${url}: ${response.status}`);
   }
 }
 
-async function getJson(url) {
-  const response = await fetch(url, {
-    signal: AbortSignal.timeout(10_000),
-  });
+async function expectGatewayReachable(origin) {
+  const url = `${origin}/api/v1/webui/skins`;
+  let response;
+
+  try {
+    response = await fetchWithContext(url, {}, 10_000);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      [
+        message,
+        "Check TABLET_GATEWAY_ORIGIN points to a running Streamline Gateway on port 8080.",
+      ].join("\n"),
+    );
+  }
 
   if (!response.ok) {
-    throw new Error(`GET ${url} failed: ${response.status}`);
+    const text = await readResponseText(response);
+    throw new Error(
+      [
+        `Gateway check failed for ${url}: ${response.status}${text ? ` ${text}` : ""}`,
+        "Check TABLET_GATEWAY_ORIGIN points to a running Streamline Gateway on port 8080.",
+      ].join("\n"),
+    );
+  }
+
+  await response.arrayBuffer();
+}
+
+async function getJson(url) {
+  const response = await fetchWithContext(url, {}, 10_000);
+
+  if (!response.ok) {
+    const text = await readResponseText(response);
+    throw new Error(`GET ${url} failed: ${response.status}${text ? ` ${text}` : ""}`);
   }
 
   return response.json();
@@ -165,14 +193,17 @@ async function putJson(url, body) {
 }
 
 async function sendJson(method, url, body) {
-  const response = await fetch(url, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetchWithContext(
+    url,
+    {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
     },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(20_000),
-  });
+    20_000,
+  );
 
   const text = await response.text();
   const data = text ? safeJsonParse(text) : {};
@@ -182,6 +213,28 @@ async function sendJson(method, url, body) {
   }
 
   return data;
+}
+
+async function fetchWithContext(url, options, timeoutMs) {
+  const method = options.method ?? "GET";
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const cause =
+      error instanceof Error && error.cause instanceof Error ? ` (${error.cause.message})` : "";
+
+    throw new Error(`${method} ${url} failed: ${message}${cause}`);
+  }
+}
+
+async function readResponseText(response) {
+  const text = await response.text();
+  return text.length > 500 ? `${text.slice(0, 500)}...` : text;
 }
 
 function safeJsonParse(value) {

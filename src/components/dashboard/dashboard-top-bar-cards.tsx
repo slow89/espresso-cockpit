@@ -163,8 +163,7 @@ export function ScaleStatusCard() {
   const isPaired = Boolean(connectedScale);
   const scaleDeviceStatus = getScaleDeviceStatus(scaleMessage);
   const scaleSnapshot = getScaleSnapshot(scaleMessage);
-  const hasLiveScale =
-    isPaired && scaleConnection === "live" && scaleDeviceStatus !== "disconnected";
+  const hasLiveScale = isPaired && scaleConnection === "live" && scaleDeviceStatus === "connected";
   const weight = hasLiveScale ? (scaleSnapshot?.weight ?? null) : null;
   const batteryLevel = hasLiveScale ? (scaleSnapshot?.batteryLevel ?? null) : null;
   const canUseScaleWeightForDose =
@@ -224,9 +223,7 @@ export function ScaleStatusCard() {
   }
 
   const isScaleDisconnected =
-    scaleConnection === "error" ||
-    scaleConnection === "idle" ||
-    scaleDeviceStatus === "disconnected";
+    scaleConnection === "error" || scaleConnection === "idle" || scaleDeviceStatus !== "connected";
 
   return (
     <div
@@ -422,6 +419,10 @@ function getScaleStatusLabel(
 
   if (scaleDeviceStatus === "disconnected") {
     return "Scale off";
+  }
+
+  if (scaleDeviceStatus == null) {
+    return "No signal";
   }
 
   return "Paired";

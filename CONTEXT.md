@@ -16,6 +16,14 @@ _Avoid_: Gateway, except when naming URLs, environment variables, endpoints, or 
 A live WebSocket feed from the **Bridge** that reports machine, device, scale, display, water, or plugin state to the **Skin**.
 _Avoid_: Generic socket
 
+**Shot**:
+A single espresso extraction captured by the **Bridge** with machine measurements, scale measurements when available, and workflow context.
+_Avoid_: Generic run
+
+**Post-Shot Summary**:
+An in-place Brew dashboard state for reviewing the just-finished **Shot** before returning to prep controls or opening shot history.
+_Avoid_: Separate summary route, history detail page
+
 **Preferred Scale**:
 The scale remembered by the Bridge for automatic scale reconnection.
 _Avoid_: Skin-managed saved scale
@@ -45,6 +53,10 @@ _Avoid_: Treating Cockpit as a separate architectural role from Skin
 - A **Skin** talks to exactly one **Bridge** origin at a time.
 - A **Skin** observes **Bridge Streams** from its current **Bridge**.
 - **Cockpit** is a **Skin**.
+- A **Shot** is recorded by the **Bridge**.
+- A **Post-Shot Summary** presents exactly one just-finished **Shot** in the **Skin**.
+- A **Post-Shot Summary** appears immediately when a **Shot** finishes.
+- A **Post-Shot Summary** remains visible until the operator dismisses it, starts another **Shot**, or navigates away.
 - The **Bridge** owns machine, device, readiness, display, presence, and Skin installation policy.
 - The **Bridge** owns **Preferred Scale Reconnect** for the **Preferred Scale**.
 - The **Compatibility Reconnect Adapter** may exist only while **Preferred Scale Reconnect** is missing from the **Bridge**.

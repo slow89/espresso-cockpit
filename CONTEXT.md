@@ -24,6 +24,10 @@ _Avoid_: Generic run
 An in-place Brew dashboard state for reviewing the just-finished **Shot** before returning to prep controls or opening shot history.
 _Avoid_: Separate summary route, history detail page
 
+**Meaningful Extraction**:
+A **Shot** with enough extraction activity to be worth reviewing after it finishes.
+_Avoid_: Accidental shot prep, aborted warmup blip
+
 **Preferred Scale**:
 The scale remembered by the Bridge for automatic scale reconnection.
 _Avoid_: Skin-managed saved scale
@@ -56,6 +60,7 @@ _Avoid_: Treating Cockpit as a separate architectural role from Skin
 - A **Shot** is recorded by the **Bridge**.
 - A **Post-Shot Summary** presents exactly one just-finished **Shot** in the **Skin**.
 - A **Post-Shot Summary** appears immediately when a **Shot** finishes.
+- A **Post-Shot Summary** appears only for a **Meaningful Extraction**.
 - A **Post-Shot Summary** remains visible until the operator dismisses it, starts another **Shot**, or navigates away.
 - The **Bridge** owns machine, device, readiness, display, presence, and Skin installation policy.
 - The **Bridge** owns **Preferred Scale Reconnect** for the **Preferred Scale**.
@@ -75,6 +80,7 @@ _Avoid_: Treating Cockpit as a separate architectural role from Skin
 - Missing **Preferred Scale Reconnect** behavior should be implemented in the **Bridge**, not permanently recreated as a **Skin** auto-scan loop.
 - Temporary off/sleep/disconnect cases should preserve the **Preferred Scale**; only **Forget Scale** clears it.
 - **Preferred Scale Reconnect** covers machine-first startup, scale-first startup, and scale-off-then-on-again scenarios.
+- The exact cutoff for a **Meaningful Extraction** is unresolved.
 - The **Compatibility Reconnect Adapter** should be throttled, should only run when a **Preferred Scale** exists, a machine is connected, and no scale is connected, and should only ask the **Bridge** to scan with connect enabled.
 - The **Compatibility Reconnect Adapter** is not for first-time pairing or guessing which scale to use.
 - **Disconnect Scale** is the normal temporary row action and preserves the **Preferred Scale**.

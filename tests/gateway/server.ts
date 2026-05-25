@@ -347,6 +347,11 @@ async function handleRequest(request: http.IncomingMessage, response: http.Serve
     return;
   }
 
+  if (method === "GET" && path === "/api/v1/shots/latest") {
+    sendJson(response, 200, runtime.state.shots.items[0] ?? null);
+    return;
+  }
+
   if (method === "GET" && path.startsWith("/api/v1/shots/")) {
     const shotId = decodeURIComponent(path.split("/").at(-1) ?? "");
     const shotDetail = runtime.state.shotDetails[shotId];

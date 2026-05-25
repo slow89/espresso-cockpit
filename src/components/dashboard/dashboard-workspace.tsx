@@ -1,12 +1,13 @@
 import { DashboardControlRail } from "@/components/dashboard/dashboard-control-rail";
+import { DashboardTabletPostShotSummary } from "@/components/dashboard/dashboard-tablet-post-shot-summary";
 import { DashboardTabletPrepBoard } from "@/components/dashboard/dashboard-tablet-prep-board";
 import { DashboardTabletShotSummary } from "@/components/dashboard/dashboard-tablet-shot-summary";
 import { TelemetryChart } from "@/components/telemetry-chart";
 import { useMachineStore } from "@/stores/machine-store";
-import { useDashboardShotActive } from "./dashboard-view-model";
+import { useDashboardPresentationMode } from "./dashboard-view-model";
 
 export function DashboardWorkspace() {
-  const isShotActive = useDashboardShotActive();
+  const presentationMode = useDashboardPresentationMode();
 
   return (
     <section className="min-h-0 flex flex-1 flex-col">
@@ -23,7 +24,13 @@ export function DashboardWorkspace() {
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col xl:hidden">
-        {isShotActive ? <DashboardTabletShotWorkspace /> : <DashboardTabletPrepBoard />}
+        {presentationMode === "shot" ? (
+          <DashboardTabletShotWorkspace />
+        ) : presentationMode === "post-shot" ? (
+          <DashboardTabletPostShotSummary />
+        ) : (
+          <DashboardTabletPrepBoard />
+        )}
       </div>
     </section>
   );

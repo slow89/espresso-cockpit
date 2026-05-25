@@ -1,7 +1,8 @@
 import type { MachineSnapshot, TimeToReadySnapshot } from "@/rest/types";
 import { isShotActiveMachinePhase, type TelemetrySample } from "@/lib/telemetry";
+import type { DashboardPostShotSummary } from "@/lib/dashboard-post-shot-summary";
 
-export type DashboardPresentationMode = "controls" | "shot";
+export type DashboardPresentationMode = "controls" | "post-shot" | "shot";
 export type DashboardPrepStatusTone = "warming" | "ready" | "offline" | "sleeping";
 export type DashboardPrepStatus = {
   items: ReadonlyArray<{
@@ -34,10 +35,12 @@ export function getDashboardDevEnabled() {
 }
 
 export function getDashboardPresentationMode({
+  postShotSummary,
   simulatedShotActive,
   snapshot,
   telemetry,
 }: {
+  postShotSummary?: DashboardPostShotSummary | null;
   simulatedShotActive?: boolean;
   snapshot?: MachineSnapshot | null;
   telemetry: TelemetrySample[];
@@ -52,7 +55,11 @@ export function getDashboardPresentationMode({
 
   const latestTelemetry = telemetry[telemetry.length - 1];
 
-  return isShotActiveMachinePhase(latestTelemetry) ? "shot" : "controls";
+  if (isShotActiveMachinePhase(latestTelemetry)) {
+    return "shot";
+  }
+
+  return postShotSummary == null ? "controls" : "post-shot";
 }
 
 export function getDashboardPrepStatus({

@@ -566,6 +566,86 @@ export const gatewayScenarios = {
     }),
     steps: [],
   }),
+  "dashboard-post-shot-summary": buildScenario({
+    defaultRoute: "/",
+    expectedCheckpoints: ["prep-board", "shot-workspace", "post-shot-summary"],
+    faults: [],
+    scenarioId: "dashboard-post-shot-summary",
+    state: buildBaseState(),
+    steps: [
+      {
+        checkpoint: "shot-workspace",
+        label: "start-shot",
+        state: {
+          machineSnapshot: buildMachineSnapshot({
+            flow: 0,
+            pressure: 0,
+            profileFrame: 0,
+            state: {
+              state: "espresso",
+              substate: "preparingForShot",
+            },
+            timestamp: "2026-03-28T20:00:00.000Z",
+          }),
+          scaleSnapshot: buildScaleSnapshot({
+            timerValue: 0,
+            timestamp: "2026-03-28T20:00:00.000Z",
+            weight: 0,
+            weightFlow: 0,
+          }),
+        },
+      },
+      {
+        label: "update-scale",
+        state: {
+          scaleSnapshot: buildScaleSnapshot({
+            timerValue: 6_000,
+            timestamp: "2026-03-28T20:00:06.000Z",
+            weight: 18.6,
+            weightFlow: 1.3,
+          }),
+        },
+      },
+      {
+        checkpoint: "shot-workspace",
+        label: "continue-shot",
+        state: {
+          machineSnapshot: buildMachineSnapshot({
+            flow: 2.3,
+            pressure: 8.8,
+            profileFrame: 2,
+            state: {
+              state: "espresso",
+              substate: "pouring",
+            },
+            timestamp: "2026-03-28T20:00:06.000Z",
+          }),
+        },
+      },
+      {
+        checkpoint: "post-shot-summary",
+        label: "finish-shot",
+        state: {
+          machineSnapshot: buildMachineSnapshot({
+            flow: 0,
+            pressure: 0,
+            profileFrame: 0,
+            state: {
+              state: "idle",
+              substate: "ready",
+            },
+            timestamp: "2026-03-28T20:00:07.000Z",
+          }),
+          scaleSnapshot: buildScaleSnapshot({
+            timerValue: 7_000,
+            timestamp: "2026-03-28T20:00:07.000Z",
+            weight: 18.6,
+            weightFlow: 0,
+          }),
+        },
+      },
+    ],
+  }),
   "dashboard-sleeping": buildScenario({
     defaultRoute: "/",
     expectedCheckpoints: ["sleep-screen"],

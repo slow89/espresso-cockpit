@@ -1,7 +1,16 @@
-import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useDashboardControlPanelModel } from "@/components/dashboard/dashboard-view-model";
+import type { TelemetrySample } from "@/lib/telemetry";
 import { dashboardUiDefaultState, useDashboardUiStore } from "@/stores/dashboard-ui-store";
 import { useDevicesStore } from "@/stores/devices-store";
 import { useMachineStore } from "@/stores/machine-store";
@@ -10,6 +19,7 @@ import { useScaleStore } from "@/stores/scale-store";
 import { DashboardPage } from "./dashboard-page";
 
 const queryMocks = vi.hoisted(() => ({
+  useLatestShotQuery: vi.fn(),
   useMachineStateQuery: vi.fn(),
   useRequestMachineStateMutation: vi.fn(),
   useTareScaleMutation: vi.fn(),
@@ -18,7 +28,19 @@ const queryMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children }: { children: React.ReactNode }) => <a href="/workflows">{children}</a>,
+  Link: ({
+    children,
+    search,
+    to,
+  }: {
+    children: React.ReactNode;
+    search?: { shotId?: string };
+    to?: string;
+  }) => (
+    <a href={`${to ?? "/workflows"}${search?.shotId ? `?shotId=${search.shotId}` : ""}`}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("@/rest/queries", async () => {
@@ -26,6 +48,7 @@ vi.mock("@/rest/queries", async () => {
 
   return {
     ...actual,
+    useLatestShotQuery: queryMocks.useLatestShotQuery,
     useMachineStateQuery: queryMocks.useMachineStateQuery,
     useRequestMachineStateMutation: queryMocks.useRequestMachineStateMutation,
     useTareScaleMutation: queryMocks.useTareScaleMutation,
@@ -92,6 +115,11 @@ describe("DashboardPage", () => {
     queryMocks.useUpdateWorkflowMutation.mockReturnValue({
       isPending: false,
       mutate: updateWorkflowMutate,
+    });
+    queryMocks.useLatestShotQuery.mockReturnValue({
+      data: null,
+      error: null,
+      isPending: false,
     });
     queryMocks.useWorkflowQuery.mockReturnValue({
       data: {
@@ -536,6 +564,106 @@ describe("DashboardPage", () => {
     expect(screen.getByTestId("dashboard-tablet-shot-workspace")).toBeInTheDocument();
   });
 
+  it("shows a frozen post-shot summary until it is dismissed", () => {
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("idle"),
+      error: null,
+    });
+    useDashboardUiStore.getState().capturePostShotSummary(
+      [
+        buildTelemetrySample("espresso", "preparingForShot", {
+          shotElapsedSeconds: 0,
+          timestamp: "2026-03-25T10:00:00.000Z",
+          weight: 0,
+        }),
+        buildTelemetrySample("espresso", "pouring", {
+          shotElapsedSeconds: 6,
+          timestamp: "2026-03-25T10:00:06.000Z",
+          weight: 37.2,
+        }),
+      ],
+      queryMocks.useWorkflowQuery().data,
+    );
+
+    render(<DashboardPage />);
+
+    const summary = screen.getByTestId("dashboard-tablet-post-shot-summary");
+
+    expect(summary).toBeInTheDocument();
+    expect(within(summary).getByText("Shot complete")).toBeInTheDocument();
+    expect(within(summary).getByText("House")).toBeInTheDocument();
+    expect(within(summary).getByText("6.0s")).toBeInTheDocument();
+    expect(within(summary).getByText("37.2 g")).toBeInTheDocument();
+    expect(within(summary).getByText("1:2.1")).toBeInTheDocument();
+    expect(within(summary).getByText("samples:2")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+
+    expect(screen.queryByTestId("dashboard-tablet-post-shot-summary")).not.toBeInTheDocument();
+    expect(screen.getByTestId("dashboard-tablet-prep-board")).toBeInTheDocument();
+  });
+
+  it("does not show a post-shot summary for a short espresso blip", () => {
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("idle"),
+      error: null,
+    });
+    useDashboardUiStore.getState().capturePostShotSummary(
+      [
+        buildTelemetrySample("espresso", "preparingForShot", {
+          shotElapsedSeconds: 0,
+          timestamp: "2026-03-25T10:00:00.000Z",
+        }),
+        buildTelemetrySample("espresso", "pouring", {
+          shotElapsedSeconds: 4,
+          timestamp: "2026-03-25T10:00:04.000Z",
+        }),
+      ],
+      queryMocks.useWorkflowQuery().data,
+    );
+
+    render(<DashboardPage />);
+
+    expect(screen.queryByTestId("dashboard-tablet-post-shot-summary")).not.toBeInTheDocument();
+    expect(screen.getByTestId("dashboard-tablet-prep-board")).toBeInTheDocument();
+  });
+
+  it("enables the shot history link once the bridge exposes the persisted shot", () => {
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("idle"),
+      error: null,
+    });
+    queryMocks.useLatestShotQuery.mockReturnValue({
+      data: {
+        id: "shot-42",
+        timestamp: "2026-03-25T10:00:01.000Z",
+        workflow: queryMocks.useWorkflowQuery().data,
+      },
+      error: null,
+      isPending: false,
+    });
+    useDashboardUiStore.getState().capturePostShotSummary(
+      [
+        buildTelemetrySample("espresso", "preparingForShot", {
+          shotElapsedSeconds: 0,
+          timestamp: "2026-03-25T10:00:00.000Z",
+        }),
+        buildTelemetrySample("espresso", "pouring", {
+          shotElapsedSeconds: 6,
+          timestamp: "2026-03-25T10:00:06.000Z",
+        }),
+      ],
+      queryMocks.useWorkflowQuery().data,
+    );
+
+    render(<DashboardPage />);
+
+    expect(screen.getByRole("link", { name: "Shots" })).toHaveAttribute(
+      "href",
+      "/history?shotId=shot-42",
+    );
+  });
+
   it("keeps the desktop workspace mounted separately", () => {
     queryMocks.useMachineStateQuery.mockReturnValue({
       data: buildSnapshot("idle"),
@@ -692,6 +820,23 @@ function buildSnapshot(state: string, substate = state, overrides: Record<string
     targetGroupTemperature: 93,
     profileFrame: 0,
     steamTemperature: 135,
+    ...overrides,
+  };
+}
+
+function buildTelemetrySample(
+  state: TelemetrySample["state"],
+  substate: TelemetrySample["substate"] = state,
+  overrides: Partial<TelemetrySample> = {},
+): TelemetrySample {
+  return {
+    ...buildSnapshot(state, substate),
+    elapsedSeconds: 0,
+    shotElapsedSeconds: null,
+    state,
+    substate,
+    weight: null,
+    weightFlow: null,
     ...overrides,
   };
 }

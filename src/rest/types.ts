@@ -244,6 +244,8 @@ export const shotSummarySchema = z
   })
   .catchall(z.unknown());
 
+export const latestShotResponseSchema = shotSummarySchema.nullable();
+
 export const shotScaleMeasurementSchema = z.looseObject({
   timestamp: z.string(),
   weight: optionalNumber,
@@ -335,6 +337,7 @@ export type VisualizerPluginSettings = z.infer<typeof visualizerPluginSettingsSc
 export type VisualizerCredentialCheck = z.infer<typeof visualizerCredentialCheckSchema>;
 export type VisualizerImportResult = z.infer<typeof visualizerImportResultSchema>;
 export type ShotRecord = z.infer<typeof shotSummarySchema>;
+export type LatestShotResponse = z.infer<typeof latestShotResponseSchema>;
 export type ShotMeasurement = z.infer<typeof shotMeasurementSchema>;
 export type ShotDetailRecord = z.infer<typeof shotDetailSchema>;
 export type ShotListResponse = z.infer<typeof shotListResponseSchema>;

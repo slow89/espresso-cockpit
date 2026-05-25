@@ -4,6 +4,7 @@ import {
   bridgeSettingsSchema,
   displayStateSchema,
   heartbeatResponseSchema,
+  latestShotResponseSchema,
   machineCalibrationSchema,
   machineSnapshotSchema,
   machineStateChangeSchema,
@@ -152,6 +153,9 @@ export function createBridgeClient(baseUrl: string) {
     },
     async listShots() {
       return request("/api/v1/shots", shotListResponseSchema);
+    },
+    async getLatestShot() {
+      return request("/api/v1/shots/latest", latestShotResponseSchema);
     },
     async getShot(id: string) {
       return request(`/api/v1/shots/${encodeURIComponent(id)}`, shotDetailSchema);

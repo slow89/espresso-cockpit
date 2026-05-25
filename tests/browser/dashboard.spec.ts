@@ -93,6 +93,41 @@ test.describe("dashboard", () => {
     });
   });
 
+  test("shows the post-shot summary after a meaningful shot ends", async ({
+    app,
+    browserSignals,
+    page,
+  }, testInfo) => {
+    test.skip(!usesTabletDashboardLayout(testInfo.project.name));
+
+    await app.gotoScenario({
+      route: "/",
+      scenarioId: "dashboard-post-shot-summary",
+    });
+
+    await app.advanceStep();
+    await expect(page.getByTestId("dashboard-tablet-shot-workspace")).toBeVisible();
+    await app.advanceStep();
+    await expect(page.getByText("18.6 g").first()).toBeVisible();
+    await app.advanceStep();
+    await app.advanceStep();
+
+    const summary = page.getByTestId("dashboard-tablet-post-shot-summary");
+
+    await expect(summary).toBeVisible();
+    await expect(summary.getByText("Shot complete")).toBeVisible();
+    await expect(summary.getByText("House")).toBeVisible();
+    await expect(summary.getByText("6.0s")).toBeVisible();
+    await expect(summary.getByText("18.6 g")).toBeVisible();
+    await expect(summary.getByRole("button", { name: "Saving" })).toBeVisible();
+    await assertBottomNavReachable(page);
+    await assertNoCriticalOverflow(page);
+    assertNoAppErrors(browserSignals);
+
+    await summary.getByRole("button", { name: "Done" }).click();
+    await expect(page.getByTestId("dashboard-tablet-prep-board")).toBeVisible();
+  });
+
   test("surfaces unpaired-scale guidance on tablet", async ({ app, browserSignals, page }) => {
     await app.gotoScenario({
       route: "/",

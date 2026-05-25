@@ -127,4 +127,46 @@ describe("getDashboardPresentationMode", () => {
       }),
     ).toBe("controls");
   });
+
+  it("shows the post-shot mode only after active shot checks", () => {
+    expect(
+      getDashboardPresentationMode({
+        postShotSummary: {
+          endedAt: "2026-04-05T12:00:05.000Z",
+          localId: "summary-1",
+          startedAt: "2026-04-05T12:00:00.000Z",
+          telemetry: [],
+          workflow: {
+            coffeeName: null,
+            name: null,
+            profileTitle: null,
+            targetDoseWeight: null,
+            targetYield: null,
+          },
+        },
+        snapshot: buildSnapshot("idle"),
+        telemetry: [],
+      }),
+    ).toBe("post-shot");
+
+    expect(
+      getDashboardPresentationMode({
+        postShotSummary: {
+          endedAt: "2026-04-05T12:00:05.000Z",
+          localId: "summary-1",
+          startedAt: "2026-04-05T12:00:00.000Z",
+          telemetry: [],
+          workflow: {
+            coffeeName: null,
+            name: null,
+            profileTitle: null,
+            targetDoseWeight: null,
+            targetYield: null,
+          },
+        },
+        snapshot: buildSnapshot("espresso", "pouring"),
+        telemetry: [],
+      }),
+    ).toBe("shot");
+  });
 });

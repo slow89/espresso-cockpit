@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { createBridgeStream } from "@/bridge/bridge-stream-adapter";
 import { BridgeClientError, createBridgeClient } from "@/rest/client";
 import { queryClient } from "@/rest/query-client";
-import { bridgeQueryKeys } from "@/rest/queries";
+import { bridgeQueryKeys, getGatewayOrigin } from "@/rest/queries";
 import {
   machineWaterLevelsSchema,
   machineSnapshotSchema,
@@ -11,17 +11,19 @@ import {
   type MachineWaterLevels,
   type MachineStateChange,
   type TimeToReadySnapshot,
+  type WorkflowRecord,
 } from "@/rest/types";
 import {
   appendTelemetryHistory,
+  isShotActiveMachinePhase,
   mergeScaleSnapshotIntoTelemetry,
   type TelemetrySample,
 } from "@/lib/telemetry";
+import { useDashboardUiStore } from "@/stores/dashboard-ui-store";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { type LiveConnectionState } from "@/stores/live-connection-state";
 import { getScaleSnapshot, useScaleStore } from "@/stores/scale-store";
 import { visualizerRuntimeStore } from "@/stores/visualizer-runtime-store";
-import { getGatewayOrigin } from "@/rest/queries";
 
 interface MachineState {
   error: string | null;
@@ -92,16 +94,31 @@ export const useMachineStore = create<MachineState>((set, get) => ({
             });
           },
           onMessage: (snapshot) => {
-            queryClient.setQueryData(bridgeQueryKeys.machineState(getGatewayOrigin()), snapshot);
+            const gatewayOrigin = getGatewayOrigin();
+            const previousTelemetry = get().telemetry;
+            const nextTelemetry = appendTelemetryHistory(
+              previousTelemetry,
+              snapshot,
+              getScaleSnapshot(useScaleStore.getState().scaleMessage),
+            );
+            const dashboardUiStore = useDashboardUiStore.getState();
+
+            queryClient.setQueryData(bridgeQueryKeys.machineState(gatewayOrigin), snapshot);
             visualizerRuntimeStore.getState().handleSnapshot(snapshot);
-            set((state) => ({
+
+            if (isShotActiveMachinePhase(snapshot.state)) {
+              dashboardUiStore.clearPostShotSummary();
+            } else if (isShotActiveMachinePhase(previousTelemetry[previousTelemetry.length - 1])) {
+              dashboardUiStore.capturePostShotSummary(
+                previousTelemetry,
+                queryClient.getQueryData<WorkflowRecord>(bridgeQueryKeys.workflow(gatewayOrigin)),
+              );
+            }
+
+            set({
               error: null,
-              telemetry: appendTelemetryHistory(
-                state.telemetry,
-                snapshot,
-                getScaleSnapshot(useScaleStore.getState().scaleMessage),
-              ),
-            }));
+              telemetry: nextTelemetry,
+            });
           },
           onOpen: () => {
             set({ liveConnection: "live", error: null });
@@ -227,6 +244,7 @@ export const useMachineStore = create<MachineState>((set, get) => ({
       waterLevels: null,
       waterSocket: null,
     });
+    useDashboardUiStore.getState().clearPostShotSummary();
     visualizerRuntimeStore.getState().reset();
   },
   async requestState(nextState) {

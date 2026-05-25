@@ -25,7 +25,7 @@ An in-place Brew dashboard state for reviewing the just-finished **Shot** before
 _Avoid_: Separate summary route, history detail page
 
 **Meaningful Extraction**:
-A **Shot** with enough extraction activity to be worth reviewing after it finishes.
+A **Shot** with at least five seconds of espresso telemetry, making it worth reviewing after it finishes.
 _Avoid_: Accidental shot prep, aborted warmup blip
 
 **Preferred Scale**:
@@ -62,6 +62,13 @@ _Avoid_: Treating Cockpit as a separate architectural role from Skin
 - A **Post-Shot Summary** appears immediately when a **Shot** finishes.
 - A **Post-Shot Summary** appears only for a **Meaningful Extraction**.
 - A **Post-Shot Summary** remains visible until the operator dismisses it, starts another **Shot**, or navigates away.
+- A v1 **Post-Shot Summary** shows only local shot facts: recipe/profile, duration, final yield, actual ratio, target dose/yield, and telemetry.
+- A v1 **Post-Shot Summary** is read-only and does not write annotations or derived analysis back to the **Bridge**.
+- A v1 **Post-Shot Summary** is a tablet Brew dashboard behavior.
+- A v1 **Post-Shot Summary** can open shot history only after the **Bridge** exposes the persisted **Shot** identifier.
+- A v1 **Post-Shot Summary** freezes the completed **Shot** telemetry instead of following the live telemetry buffer after the machine returns to idle.
+- A v1 **Post-Shot Summary** may be shown before its **Bridge**-persisted **Shot** identifier is known.
+- A v1 **Post-Shot Summary** does not show placeholder analysis or recommendation content.
 - The **Bridge** owns machine, device, readiness, display, presence, and Skin installation policy.
 - The **Bridge** owns **Preferred Scale Reconnect** for the **Preferred Scale**.
 - The **Compatibility Reconnect Adapter** may exist only while **Preferred Scale Reconnect** is missing from the **Bridge**.
@@ -80,7 +87,7 @@ _Avoid_: Treating Cockpit as a separate architectural role from Skin
 - Missing **Preferred Scale Reconnect** behavior should be implemented in the **Bridge**, not permanently recreated as a **Skin** auto-scan loop.
 - Temporary off/sleep/disconnect cases should preserve the **Preferred Scale**; only **Forget Scale** clears it.
 - **Preferred Scale Reconnect** covers machine-first startup, scale-first startup, and scale-off-then-on-again scenarios.
-- The exact cutoff for a **Meaningful Extraction** is unresolved.
+- A **Meaningful Extraction** is intentionally simple in the Skin: five or more seconds of espresso telemetry.
 - The **Compatibility Reconnect Adapter** should be throttled, should only run when a **Preferred Scale** exists, a machine is connected, and no scale is connected, and should only ask the **Bridge** to scan with connect enabled.
 - The **Compatibility Reconnect Adapter** is not for first-time pairing or guessing which scale to use.
 - **Disconnect Scale** is the normal temporary row action and preserves the **Preferred Scale**.

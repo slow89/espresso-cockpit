@@ -1,0 +1,33 @@
+[  453713ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[  453890ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337
+[ 6926776ms] [WARNING] WebSocket connection to 'ws://127.0.0.1:18080/ws/v1/scale/snapshot' failed: WebSocket is closed before the connection is established. @ http://127.0.0.1:4174/src/stores/scale-store.ts:89
+[ 6926780ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[ 6926892ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337
+[16521051ms] [WARNING] WebSocket connection to 'ws://127.0.0.1:18080/ws/v1/scale/snapshot' failed: WebSocket is closed before the connection is established. @ http://127.0.0.1:4174/src/stores/scale-store.ts:89
+[16521051ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[16521155ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337
+[18021434ms] [WARNING] WebSocket connection to 'ws://127.0.0.1:18080/ws/v1/scale/snapshot' failed: WebSocket is closed before the connection is established. @ http://127.0.0.1:4174/src/stores/scale-store.ts:89
+[18021441ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[18021656ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337
+[21432568ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[21432776ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337
+[68045913ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[68045936ms] [WARNING] WebSocket connection to 'ws://127.0.0.1:18080/ws/v1/scale/snapshot' failed: WebSocket is closed before the connection is established. @ http://127.0.0.1:4174/src/stores/scale-store.ts:89
+[68046193ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337
+[82023414ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[82023551ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337
+[82441503ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[82441507ms] [WARNING] WebSocket connection to 'ws://127.0.0.1:18080/ws/v1/scale/snapshot' failed: WebSocket is closed before the connection is established. @ http://127.0.0.1:4174/src/stores/scale-store.ts:89
+[82441584ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337
+[82502376ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[82502399ms] [WARNING] WebSocket connection to 'ws://127.0.0.1:18080/ws/v1/scale/snapshot' failed: WebSocket is closed before the connection is established. @ http://127.0.0.1:4174/src/stores/scale-store.ts:89
+[82502589ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337
+[88486052ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[88486055ms] [WARNING] WebSocket connection to 'ws://127.0.0.1:18080/ws/v1/scale/snapshot' failed: WebSocket is closed before the connection is established. @ http://127.0.0.1:4174/src/stores/scale-store.ts:89
+[88486168ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337
+[90132726ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[90132747ms] [WARNING] WebSocket connection to 'ws://127.0.0.1:18080/ws/v1/scale/snapshot' failed: WebSocket is closed before the connection is established. @ http://127.0.0.1:4174/src/stores/scale-store.ts:89
+[90132938ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337
+[90685183ms] [WARNING] WebSocket connection to 'ws://127.0.0.1:18080/ws/v1/scale/snapshot' failed: WebSocket is closed before the connection is established. @ http://127.0.0.1:4174/src/stores/scale-store.ts:89
+[90685206ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:4174/@vite/client:968
+[90685438ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:4174/node_modules/.vite/deps/react-dom_client.js?v=feda16b1:14337

@@ -1,8 +1,15 @@
 import type { DashboardPrepStatus } from "@/lib/dashboard-utils";
 import {
+  getPostShotActualRatio,
+  getPostShotDurationSeconds,
+  getPostShotFinalWeight,
+  getPostShotHistoryShotId,
+} from "@/lib/dashboard-post-shot-summary";
+import {
   formatSecondaryNumber,
   getDashboardPrepStatus,
   getDashboardPresentationMode,
+  type DashboardPresentationMode,
 } from "@/lib/dashboard-utils";
 import {
   formatBrewRatio,
@@ -10,12 +17,22 @@ import {
   roundValue,
   type RecipePreset,
 } from "@/lib/recipe-utils";
-import { useMachineStateQuery, useUpdateWorkflowMutation, useWorkflowQuery } from "@/rest/queries";
+import {
+  useLatestShotQuery,
+  useMachineStateQuery,
+  useUpdateWorkflowMutation,
+  useWorkflowQuery,
+} from "@/rest/queries";
 import type { WorkflowRecord } from "@/rest/types";
 import { useDashboardUiStore } from "@/stores/dashboard-ui-store";
 import { useMachineStore } from "@/stores/machine-store";
 
 export type DashboardShotSummaryItem = {
+  label: string;
+  value: string;
+};
+
+export type DashboardPostShotSummaryMetric = {
   label: string;
   value: string;
 };
@@ -359,20 +376,91 @@ export function useDashboardPrepStatusModel(): DashboardPrepStatus {
   });
 }
 
-export function useDashboardShotActive(): boolean {
+export function useDashboardPresentationMode(): DashboardPresentationMode {
   const isSimulatedShotActive = useDashboardUiStore((state) => state.isSimulatedShotActive);
+  const postShotSummary = useDashboardUiStore((state) => state.postShotSummary);
   const telemetry = useMachineStore((state) => state.telemetry);
   const { data: snapshot } = useMachineStateQuery();
 
-  return (
-    getDashboardPresentationMode({
-      simulatedShotActive: isSimulatedShotActive,
-      snapshot,
-      telemetry,
-    }) === "shot"
-  );
+  return getDashboardPresentationMode({
+    postShotSummary,
+    simulatedShotActive: isSimulatedShotActive,
+    snapshot,
+    telemetry,
+  });
+}
+
+export function useDashboardShotActive(): boolean {
+  return useDashboardPresentationMode() === "shot";
 }
 
 export function getDashboardActiveRecipe(workflow: WorkflowRecord | null | undefined) {
   return workflow?.profile?.title ?? workflow?.name ?? "PSPH";
+}
+
+export function useDashboardPostShotSummaryModel() {
+  const summary = useDashboardUiStore((state) => state.postShotSummary);
+  const dismissPostShotSummary = useDashboardUiStore((state) => state.dismissPostShotSummary);
+  const latestShotQuery = useLatestShotQuery({
+    enabled: summary != null,
+    refetchInterval: summary == null ? false : 1_000,
+  });
+
+  if (summary == null) {
+    return null;
+  }
+
+  const durationSeconds = getPostShotDurationSeconds(summary.telemetry);
+  const finalWeight = getPostShotFinalWeight(summary.telemetry);
+  const actualRatio = getPostShotActualRatio(summary);
+  const targetDose = summary.workflow.targetDoseWeight;
+  const targetYield = summary.workflow.targetYield;
+  const historyShotId = getPostShotHistoryShotId(summary, latestShotQuery.data);
+  const title = summary.workflow.profileTitle ?? summary.workflow.name ?? "Shot complete";
+
+  return {
+    historyShotId,
+    metrics: [
+      {
+        label: "Time",
+        value: durationSeconds == null ? "--.-s" : formatShotDuration(durationSeconds),
+      },
+      {
+        label: "Yield",
+        value: finalWeight == null ? "--.- g" : `${finalWeight.toFixed(1)} g`,
+      },
+      {
+        label: "Ratio",
+        value: actualRatio == null ? "--" : `1:${actualRatio.toFixed(1)}`,
+      },
+      {
+        label: "Dose",
+        value: formatSummaryNumber(targetDose, "g"),
+      },
+      {
+        label: "Target",
+        value: formatSummaryNumber(targetYield, "g"),
+      },
+    ] satisfies ReadonlyArray<DashboardPostShotSummaryMetric>,
+    onDismiss: dismissPostShotSummary,
+    subtitle: summary.workflow.coffeeName ?? "No coffee saved",
+    telemetry: summary.telemetry,
+    title,
+  };
+}
+
+function formatSummaryNumber(value: number | null | undefined, suffix: string) {
+  if (value == null || Number.isNaN(value)) {
+    return "--";
+  }
+
+  return `${value.toFixed(1)} ${suffix}`;
+}
+
+function formatShotDuration(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds < 0) {
+    return "0.0s";
+  }
+
+  return `${seconds.toFixed(1)}s`;
 }

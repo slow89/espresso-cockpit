@@ -32,6 +32,8 @@ export const bridgeQueryKeys = {
   presenceSettings: (gatewayOrigin: string) =>
     [...bridgeQueryKeys.all(gatewayOrigin), "presence-settings"] as const,
   shots: (gatewayOrigin: string) => [...bridgeQueryKeys.all(gatewayOrigin), "shots"] as const,
+  latestShot: (gatewayOrigin: string) =>
+    [...bridgeQueryKeys.all(gatewayOrigin), "shots", "latest"] as const,
   shot: (gatewayOrigin: string, id: string) =>
     [...bridgeQueryKeys.all(gatewayOrigin), "shots", id] as const,
   visualizerSettings: (gatewayOrigin: string) =>
@@ -78,6 +80,12 @@ export const shotsQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
   queryOptions({
     queryKey: bridgeQueryKeys.shots(gatewayOrigin),
     queryFn: () => getClient(gatewayOrigin).listShots(),
+  });
+
+export const latestShotQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
+  queryOptions({
+    queryKey: bridgeQueryKeys.latestShot(gatewayOrigin),
+    queryFn: () => getClient(gatewayOrigin).getLatestShot(),
   });
 
 export const visualizerSettingsQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
@@ -130,6 +138,19 @@ export function usePresenceSettingsQuery() {
 export function useShotsQuery() {
   const gatewayOrigin = useGatewayOrigin();
   return useQuery(shotsQueryOptions(gatewayOrigin));
+}
+
+export function useLatestShotQuery(options?: {
+  enabled?: boolean;
+  refetchInterval?: number | false;
+}) {
+  const gatewayOrigin = useGatewayOrigin();
+
+  return useQuery({
+    ...latestShotQueryOptions(gatewayOrigin),
+    enabled: options?.enabled ?? true,
+    refetchInterval: options?.refetchInterval ?? false,
+  });
 }
 
 export function useShotQuery(id: string | null | undefined) {

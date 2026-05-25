@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
+import { dashboardUiDefaultState, useDashboardUiStore } from "@/stores/dashboard-ui-store";
 import { useScaleStore } from "@/stores/scale-store";
 
 import { useMachineStore } from "./machine-store";
@@ -70,6 +71,9 @@ describe("useMachineStore", () => {
       waterConnection: "idle",
       waterLevels: null,
       waterSocket: null,
+    });
+    useDashboardUiStore.setState({
+      ...dashboardUiDefaultState,
     });
     useScaleStore.setState({
       error: null,
@@ -163,6 +167,72 @@ describe("useMachineStore", () => {
       substate: "pouring",
       weight: 15.4,
       weightFlow: 1.2,
+    });
+  });
+
+  it("captures a frozen post-shot summary when a meaningful shot ends", async () => {
+    await useMachineStore.getState().connectLive();
+
+    MockWebSocket.instances[0]?.emitOpen();
+    MockWebSocket.instances[0]?.emitMessage({
+      flow: 0,
+      groupTemperature: 93,
+      mixTemperature: 93,
+      pressure: 0,
+      profileFrame: 0,
+      state: {
+        state: "espresso",
+        substate: "preparingForShot",
+      },
+      steamTemperature: 135,
+      targetFlow: 0,
+      targetGroupTemperature: 93,
+      targetMixTemperature: 93,
+      targetPressure: 0,
+      timestamp: "2026-03-28T20:00:00.000Z",
+    });
+    MockWebSocket.instances[0]?.emitMessage({
+      flow: 2.4,
+      groupTemperature: 93,
+      mixTemperature: 93,
+      pressure: 8.8,
+      profileFrame: 2,
+      state: {
+        state: "espresso",
+        substate: "pouring",
+      },
+      steamTemperature: 135,
+      targetFlow: 0,
+      targetGroupTemperature: 93,
+      targetMixTemperature: 93,
+      targetPressure: 0,
+      timestamp: "2026-03-28T20:00:06.000Z",
+    });
+    MockWebSocket.instances[0]?.emitMessage({
+      flow: 0,
+      groupTemperature: 93,
+      mixTemperature: 93,
+      pressure: 0,
+      profileFrame: 0,
+      state: {
+        state: "idle",
+        substate: "idle",
+      },
+      steamTemperature: 135,
+      targetFlow: 0,
+      targetGroupTemperature: 93,
+      targetMixTemperature: 93,
+      targetPressure: 0,
+      timestamp: "2026-03-28T20:00:07.000Z",
+    });
+
+    expect(useDashboardUiStore.getState().postShotSummary).toMatchObject({
+      endedAt: "2026-03-28T20:00:06.000Z",
+      startedAt: "2026-03-28T20:00:00.000Z",
+      telemetry: [
+        expect.objectContaining({ state: "espresso", substate: "preparingForShot" }),
+        expect.objectContaining({ state: "espresso", substate: "pouring" }),
+      ],
     });
   });
 

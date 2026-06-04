@@ -11,6 +11,7 @@ import {
   type DevicesConnectionStatus,
 } from "@/rest/types";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
+import { useMachineStore } from "@/stores/machine-store";
 import { getScaleDeviceStatus, useScaleStore } from "@/stores/scale-store";
 
 type DevicesConnectionState = "idle" | "connecting" | "live" | "error";
@@ -86,6 +87,10 @@ function hasAvailableConnectedScale() {
 }
 
 function hasConnectedMachine() {
+  if (useMachineStore.getState().liveConnection === "live") {
+    return true;
+  }
+
   return useDevicesStore
     .getState()
     .devices.some((device) => device.type === "machine" && device.state === "connected");
@@ -380,6 +385,14 @@ export function initializeDevicesStoreRuntime() {
     evaluateDevicesRuntime();
   });
 
+  const unsubscribeMachine = useMachineStore.subscribe((state, previousState) => {
+    if (state.liveConnection === previousState.liveConnection) {
+      return;
+    }
+
+    evaluateDevicesRuntime();
+  });
+
   const intervalId = window.setInterval(() => {
     evaluateDevicesRuntime();
   }, PREFERRED_SCALE_RECONNECT_INTERVAL_MS);
@@ -389,6 +402,7 @@ export function initializeDevicesStoreRuntime() {
   cleanupDevicesRuntime = () => {
     unsubscribeDevices();
     unsubscribeScale();
+    unsubscribeMachine();
     window.clearInterval(intervalId);
     cleanupDevicesRuntime = null;
   };

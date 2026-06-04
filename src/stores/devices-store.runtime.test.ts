@@ -114,6 +114,27 @@ describe("devices store runtime", () => {
     expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(1);
   });
 
+  it("requests preferred scale reconnect when the machine stream is live before the devices row updates", () => {
+    const requestPreferredScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+      .mockResolvedValue(undefined);
+
+    useDevicesStore.setState({
+      connection: "live",
+      devices: [],
+    });
+
+    cleanupRuntime = initializeDevicesStoreRuntime();
+
+    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
+
+    useMachineStore.setState({
+      liveConnection: "live",
+    });
+
+    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(1);
+  });
+
   it("does not retry while the bridge reports an active connection phase", () => {
     vi.useFakeTimers();
     const requestPreferredScaleReconnectSpy = vi

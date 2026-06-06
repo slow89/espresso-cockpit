@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { queryClient } from "@/rest/query-client";
-import { bridgeQueryKeys, getGatewayOrigin } from "@/rest/queries";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { useMachineStore } from "@/stores/machine-store";
 import { useScaleStore } from "@/stores/scale-store";
@@ -55,7 +53,6 @@ describe("useDevicesStore", () => {
     vi.restoreAllMocks();
     MockWebSocket.instances = [];
     vi.stubGlobal("WebSocket", MockWebSocket);
-    queryClient.clear();
 
     useBridgeConfigStore.setState({
       gatewayUrl: "http://bridge.local:8080",
@@ -147,11 +144,7 @@ describe("useDevicesStore", () => {
     ]);
   });
 
-  it("requests one immediate preferred scale reconnect scan through the devices socket", async () => {
-    queryClient.setQueryData(bridgeQueryKeys.settings(getGatewayOrigin()), {
-      preferredScaleId: "scale-1",
-    });
-
+  it("requests one immediate bridge-managed scale reconnect scan through the devices socket", async () => {
     await useDevicesStore.getState().connect();
     MockWebSocket.instances[0]?.emitOpen();
     MockWebSocket.instances[0]?.emitMessage({

@@ -2,14 +2,7 @@ import { create } from "zustand";
 
 import { createBridgeStream, sendBridgeStreamJson } from "@/bridge/bridge-stream-adapter";
 import { BridgeClientError, createBridgeClient } from "@/rest/client";
-import { queryClient } from "@/rest/query-client";
-import { bridgeQueryKeys, bridgeSettingsQueryOptions, getGatewayOrigin } from "@/rest/queries";
-import {
-  devicesStateSchema,
-  type BridgeSettings,
-  type DeviceSummary,
-  type DevicesConnectionStatus,
-} from "@/rest/types";
+import { devicesStateSchema, type DeviceSummary, type DevicesConnectionStatus } from "@/rest/types";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { useMachineStore } from "@/stores/machine-store";
 import { getScaleDeviceStatus, useScaleStore } from "@/stores/scale-store";
@@ -127,24 +120,6 @@ function shouldRequestPreferredScaleReconnect() {
   }
 
   return true;
-}
-
-async function getPreferredScaleId() {
-  const gatewayOrigin = getGatewayOrigin();
-  const cachedSettings = queryClient.getQueryData<BridgeSettings>(
-    bridgeQueryKeys.settings(gatewayOrigin),
-  );
-
-  if (cachedSettings) {
-    return cachedSettings.preferredScaleId ?? null;
-  }
-
-  try {
-    const settings = await queryClient.fetchQuery(bridgeSettingsQueryOptions(gatewayOrigin));
-    return settings.preferredScaleId ?? null;
-  } catch {
-    return null;
-  }
 }
 
 function syncScaleFeed() {
@@ -288,12 +263,6 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
   },
   async requestPreferredScaleReconnect() {
     if (!shouldRequestPreferredScaleReconnect()) {
-      return;
-    }
-
-    const preferredScaleId = await getPreferredScaleId();
-
-    if (!preferredScaleId || !shouldRequestPreferredScaleReconnect()) {
       return;
     }
 

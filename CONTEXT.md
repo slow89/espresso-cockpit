@@ -37,7 +37,7 @@ A Bridge-owned behavior that reconnects the **Preferred Scale** whenever the mac
 _Avoid_: Skin auto-scan loop
 
 **Compatibility Reconnect Adapter**:
-A temporary Skin adapter that asks the Bridge to scan with connect enabled for the **Preferred Scale** while **Preferred Scale Reconnect** is not fully Bridge-owned.
+A temporary Skin adapter that asks the Bridge to scan with connect enabled while **Preferred Scale Reconnect** is not fully Bridge-owned.
 _Avoid_: Reimplementing device selection or preferred-device policy
 
 **Disconnect Scale**:
@@ -88,7 +88,7 @@ _Avoid_: Treating Cockpit as a separate architectural role from Skin
 - Temporary off/sleep/disconnect cases should preserve the **Preferred Scale**; only **Forget Scale** clears it.
 - **Preferred Scale Reconnect** covers machine-first startup, scale-first startup, and scale-off-then-on-again scenarios.
 - A **Meaningful Extraction** is intentionally simple in the Skin: five or more seconds of espresso telemetry.
-- The **Compatibility Reconnect Adapter** should be throttled, should only run when a **Preferred Scale** exists, a machine is connected, and no scale is connected, and should only ask the **Bridge** to scan with connect enabled.
+- The **Compatibility Reconnect Adapter** should be throttled, should only run when a machine is connected and no scale is connected, and should only ask the **Bridge** to scan with connect enabled so the **Bridge** can apply its device policy.
 - The **Compatibility Reconnect Adapter** is not for first-time pairing or guessing which scale to use.
 - **Disconnect Scale** is the normal temporary row action and preserves the **Preferred Scale**.
 - **Forget Scale** belongs in settings, clears the **Preferred Scale**, and may also disconnect the scale if it is currently connected.

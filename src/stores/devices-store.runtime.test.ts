@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { queryClient } from "@/rest/query-client";
-import { bridgeQueryKeys, getGatewayOrigin } from "@/rest/queries";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { initializeDevicesStoreRuntime, useDevicesStore } from "@/stores/devices-store";
 import { useMachineStore } from "@/stores/machine-store";
@@ -18,12 +16,8 @@ describe("devices store runtime", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    queryClient.clear();
     useBridgeConfigStore.setState({
       gatewayUrl: "http://bridge.local:8080",
-    });
-    queryClient.setQueryData(bridgeQueryKeys.settings(getGatewayOrigin()), {
-      preferredScaleId: "scale-1",
     });
     useDevicesStore.setState({
       connection: "idle",
@@ -92,7 +86,7 @@ describe("devices store runtime", () => {
     expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(2);
   });
 
-  it("requests a bridge-managed preferred scale reconnect scan when the machine is connected without a connected scale", () => {
+  it("requests a bridge-managed scale reconnect scan when the machine is connected without a connected scale", () => {
     const requestPreferredScaleReconnectSpy = vi
       .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
       .mockResolvedValue(undefined);

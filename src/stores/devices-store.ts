@@ -9,19 +9,15 @@ import { getScaleDeviceStatus, useScaleStore } from "@/stores/scale-store";
 
 type DevicesConnectionState = "idle" | "connecting" | "live" | "error";
 
-const PREFERRED_SCALE_RECONNECT_INTERVAL_MS = 5000;
-const reconnectBlockedPhases = new Set<DevicesConnectionStatus["phase"]>([
-  "scanning",
-  "connectingMachine",
-  "connectingScale",
-]);
-let lastPreferredScaleReconnectRequestAt = 0;
+const SCALE_RECONNECT_INTERVAL_MS = 20_000;
+let lastScaleReconnectRequestAt: number | null = null;
 
 type DevicesCommand =
   | {
       command: "scan";
       connect?: boolean;
       quick?: boolean;
+      scaleOnly?: boolean;
     }
   | {
       command: "connect" | "disconnect";
@@ -34,14 +30,14 @@ interface DevicesStoreState {
   devices: DeviceSummary[];
   error: string | null;
   scanning: boolean;
-  requestPreferredScaleReconnect: () => Promise<void>;
+  requestScaleReconnect: (options?: { force?: boolean }) => Promise<void>;
   socket: WebSocket | null;
   connect: () => Promise<void>;
   connectDevice: (deviceId: string) => Promise<void>;
   disconnect: () => void;
   disconnectDevice: (deviceId: string) => Promise<void>;
   reset: () => void;
-  scan: (options?: { connect?: boolean; quick?: boolean }) => Promise<void>;
+  scan: (options?: { connect?: boolean; quick?: boolean; scaleOnly?: boolean }) => Promise<void>;
 }
 
 function getClient() {
@@ -64,19 +60,8 @@ function sendDevicesCommand(socket: WebSocket | null, command: DevicesCommand) {
   sendBridgeStreamJson(socket, command, "Devices stream is not connected");
 }
 
-function getConnectedScaleId() {
-  return (
-    useDevicesStore
-      .getState()
-      .devices.find((device) => device.type === "scale" && device.state === "connected")?.id ?? null
-  );
-}
-
-function hasAvailableConnectedScale() {
-  return (
-    Boolean(getConnectedScaleId()) &&
-    getScaleDeviceStatus(useScaleStore.getState().scaleMessage) === "connected"
-  );
+function hasConnectedScale() {
+  return getScaleDeviceStatus(useScaleStore.getState().scaleMessage) === "connected";
 }
 
 function hasConnectedMachine() {
@@ -89,10 +74,11 @@ function hasConnectedMachine() {
     .devices.some((device) => device.type === "machine" && device.state === "connected");
 }
 
-function shouldRequestPreferredScaleReconnect() {
+function shouldRequestScaleReconnect(options?: { force?: boolean }) {
   const devicesState = useDevicesStore.getState();
 
-  if (hasAvailableConnectedScale()) {
+  if (hasConnectedScale()) {
+    lastScaleReconnectRequestAt = null;
     return false;
   }
 
@@ -109,43 +95,22 @@ function shouldRequestPreferredScaleReconnect() {
   }
 
   if (
-    devicesState.connectionStatus?.phase &&
-    reconnectBlockedPhases.has(devicesState.connectionStatus.phase)
+    !options?.force &&
+    lastScaleReconnectRequestAt !== null &&
+    Date.now() - lastScaleReconnectRequestAt < SCALE_RECONNECT_INTERVAL_MS
   ) {
-    return false;
-  }
-
-  if (Date.now() - lastPreferredScaleReconnectRequestAt < PREFERRED_SCALE_RECONNECT_INTERVAL_MS) {
     return false;
   }
 
   return true;
 }
 
-function syncScaleFeed() {
-  const scaleState = useScaleStore.getState();
-  const connectedScaleId = getConnectedScaleId();
-
-  if (!connectedScaleId) {
-    scaleState.disconnectScale();
-    return;
-  }
-
-  if (scaleState.scaleConnection === "connecting" || scaleState.scaleConnection === "live") {
-    return;
-  }
-
-  void scaleState.connectScale();
-}
-
 function evaluateDevicesRuntime() {
-  syncScaleFeed();
-
-  if (!shouldRequestPreferredScaleReconnect()) {
+  if (!shouldRequestScaleReconnect()) {
     return;
   }
 
-  void useDevicesStore.getState().requestPreferredScaleReconnect();
+  void useDevicesStore.getState().requestScaleReconnect();
 }
 
 export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
@@ -192,12 +157,12 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
               scanning: devicesState.scanning,
             });
 
-            if (hasAvailableConnectedScale()) {
-              lastPreferredScaleReconnectRequestAt = 0;
+            if (hasConnectedScale()) {
+              lastScaleReconnectRequestAt = null;
             }
           },
           onOpen: () => {
-            lastPreferredScaleReconnectRequestAt = 0;
+            lastScaleReconnectRequestAt = null;
             set({
               connection: "live",
               error: null,
@@ -250,7 +215,7 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
       socket.close();
     }
 
-    lastPreferredScaleReconnectRequestAt = 0;
+    lastScaleReconnectRequestAt = null;
 
     set({
       connection: "idle",
@@ -261,8 +226,8 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
       socket: null,
     });
   },
-  async requestPreferredScaleReconnect() {
-    if (!shouldRequestPreferredScaleReconnect()) {
+  async requestScaleReconnect(options) {
+    if (!shouldRequestScaleReconnect(options)) {
       return;
     }
 
@@ -270,9 +235,10 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
       sendDevicesCommand(get().socket, {
         command: "scan",
         connect: true,
+        scaleOnly: true,
       });
 
-      lastPreferredScaleReconnectRequestAt = Date.now();
+      lastScaleReconnectRequestAt = Date.now();
 
       set({
         error: null,
@@ -308,6 +274,7 @@ export const useDevicesStore = create<DevicesStoreState>((set, get) => ({
         command: "scan",
         connect: options?.connect,
         quick: options?.quick,
+        scaleOnly: options?.scaleOnly,
       });
 
       set({
@@ -333,7 +300,6 @@ export function initializeDevicesStoreRuntime() {
   const unsubscribeDevices = useDevicesStore.subscribe((state, previousState) => {
     if (
       state.connection === previousState.connection &&
-      state.connectionStatus?.phase === previousState.connectionStatus?.phase &&
       state.scanning === previousState.scanning &&
       state.devices === previousState.devices
     ) {
@@ -364,7 +330,7 @@ export function initializeDevicesStoreRuntime() {
 
   const intervalId = window.setInterval(() => {
     evaluateDevicesRuntime();
-  }, PREFERRED_SCALE_RECONNECT_INTERVAL_MS);
+  }, SCALE_RECONNECT_INTERVAL_MS);
 
   evaluateDevicesRuntime();
 

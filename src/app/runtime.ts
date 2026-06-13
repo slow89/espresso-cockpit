@@ -3,11 +3,13 @@ import { devicesStore, initializeDevicesStoreRuntime } from "@/stores/devices-st
 import { displayStore } from "@/stores/display-store";
 import { useMachineStore } from "@/stores/machine-store";
 import { presenceStore } from "@/stores/presence-store";
+import { useScaleStore } from "@/stores/scale-store";
 
 let cleanupRuntime: (() => void) | null = null;
 
 function resetGatewayStreams() {
   void useMachineStore.getState().connectLive();
+  void useScaleStore.getState().connectScale();
   devicesStore.getState().reset();
   displayStore.getState().reset();
   presenceStore.getState().reset();
@@ -38,6 +40,7 @@ export function initializeAppRuntime() {
     unsubscribeConfig();
     cleanupDevicesRuntime();
     useMachineStore.getState().disconnectLive();
+    useScaleStore.getState().disconnectScale();
     devicesStore.getState().disconnect();
     displayStore.getState().disconnect();
     presenceStore.getState().reset();

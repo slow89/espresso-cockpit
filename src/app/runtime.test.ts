@@ -6,6 +6,7 @@ import { useDevicesStore } from "@/stores/devices-store";
 import { useDisplayStore } from "@/stores/display-store";
 import { useMachineStore } from "@/stores/machine-store";
 import { usePresenceStore } from "@/stores/presence-store";
+import { useScaleStore } from "@/stores/scale-store";
 
 describe("app runtime", () => {
   let cleanupRuntime: (() => void) | undefined;
@@ -32,6 +33,9 @@ describe("app runtime", () => {
     const connectDevicesSpy = vi
       .spyOn(useDevicesStore.getState(), "connect")
       .mockResolvedValue(undefined);
+    const connectScaleSpy = vi
+      .spyOn(useScaleStore.getState(), "connectScale")
+      .mockResolvedValue(undefined);
     const resetDisplaySpy = vi
       .spyOn(useDisplayStore.getState(), "reset")
       .mockImplementation(() => undefined);
@@ -45,6 +49,7 @@ describe("app runtime", () => {
     cleanupRuntime = initializeAppRuntime();
 
     expect(connectLiveSpy).toHaveBeenCalledTimes(1);
+    expect(connectScaleSpy).toHaveBeenCalledTimes(1);
     expect(resetDevicesSpy).toHaveBeenCalledTimes(1);
     expect(connectDevicesSpy).toHaveBeenCalledTimes(1);
     expect(resetDisplaySpy).toHaveBeenCalledTimes(1);
@@ -59,6 +64,9 @@ describe("app runtime", () => {
     const connectDevicesSpy = vi
       .spyOn(useDevicesStore.getState(), "connect")
       .mockResolvedValue(undefined);
+    const connectScaleSpy = vi
+      .spyOn(useScaleStore.getState(), "connectScale")
+      .mockResolvedValue(undefined);
     const connectDisplaySpy = vi
       .spyOn(useDisplayStore.getState(), "connect")
       .mockResolvedValue(undefined);
@@ -68,6 +76,7 @@ describe("app runtime", () => {
     useBridgeConfigStore.getState().setGatewayUrl("http://bridge-backup.local:8080");
 
     expect(connectLiveSpy).toHaveBeenCalledTimes(2);
+    expect(connectScaleSpy).toHaveBeenCalledTimes(2);
     expect(connectDevicesSpy).toHaveBeenCalledTimes(2);
     expect(connectDisplaySpy).toHaveBeenCalledTimes(2);
   });

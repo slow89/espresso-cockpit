@@ -144,7 +144,7 @@ describe("useDevicesStore", () => {
     ]);
   });
 
-  it("requests one immediate bridge-managed scale reconnect scan through the devices socket", async () => {
+  it("requests one immediate bridge-managed scale-only reconnect scan through the devices socket", async () => {
     await useDevicesStore.getState().connect();
     MockWebSocket.instances[0]?.emitOpen();
     MockWebSocket.instances[0]?.emitMessage({
@@ -167,13 +167,14 @@ describe("useDevicesStore", () => {
       timestamp: "2026-04-04T00:00:00.000Z",
     });
 
-    await useDevicesStore.getState().requestPreferredScaleReconnect();
-    await useDevicesStore.getState().requestPreferredScaleReconnect();
+    await useDevicesStore.getState().requestScaleReconnect();
+    await useDevicesStore.getState().requestScaleReconnect();
 
     expect(MockWebSocket.instances[0]?.sent).toEqual([
       JSON.stringify({
         command: "scan",
         connect: true,
+        scaleOnly: true,
       }),
     ]);
 

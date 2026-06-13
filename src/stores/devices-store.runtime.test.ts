@@ -34,7 +34,7 @@ describe("devices store runtime", () => {
       disconnect: vi.fn(() => undefined),
       disconnectDevice: vi.fn(async () => undefined),
       error: null,
-      requestPreferredScaleReconnect: vi.fn(async () => undefined),
+      requestScaleReconnect: vi.fn(async () => undefined),
       reset: vi.fn(() => undefined),
       scan: vi.fn(async () => undefined),
       scanning: false,
@@ -59,10 +59,10 @@ describe("devices store runtime", () => {
     });
   });
 
-  it("retries preferred scale reconnect every 5 seconds while the scale stays unpaired", () => {
+  it("retries scale-only reconnect every 20 seconds while the scale stays disconnected", () => {
     vi.useFakeTimers();
-    const requestPreferredScaleReconnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+    const requestScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestScaleReconnect")
       .mockResolvedValue(undefined);
 
     cleanupRuntime = initializeDevicesStoreRuntime();
@@ -79,16 +79,16 @@ describe("devices store runtime", () => {
       ],
     });
 
-    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(1);
+    expect(requestScaleReconnectSpy).toHaveBeenCalledTimes(1);
 
-    vi.advanceTimersByTime(5000);
+    vi.advanceTimersByTime(20_000);
 
-    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(2);
+    expect(requestScaleReconnectSpy).toHaveBeenCalledTimes(2);
   });
 
-  it("requests a bridge-managed scale reconnect scan when the machine is connected without a connected scale", () => {
-    const requestPreferredScaleReconnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+  it("requests a bridge-managed scale-only reconnect scan when the machine is connected without a connected scale", () => {
+    const requestScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestScaleReconnect")
       .mockResolvedValue(undefined);
 
     cleanupRuntime = initializeDevicesStoreRuntime();
@@ -105,12 +105,12 @@ describe("devices store runtime", () => {
       ],
     });
 
-    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(1);
+    expect(requestScaleReconnectSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("requests preferred scale reconnect when the machine stream is live before the devices row updates", () => {
-    const requestPreferredScaleReconnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+  it("requests scale reconnect when the machine stream is live before the devices row updates", () => {
+    const requestScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestScaleReconnect")
       .mockResolvedValue(undefined);
 
     useDevicesStore.setState({
@@ -120,19 +120,18 @@ describe("devices store runtime", () => {
 
     cleanupRuntime = initializeDevicesStoreRuntime();
 
-    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
+    expect(requestScaleReconnectSpy).not.toHaveBeenCalled();
 
     useMachineStore.setState({
       liveConnection: "live",
     });
 
-    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(1);
+    expect(requestScaleReconnectSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("does not retry while the bridge reports an active connection phase", () => {
-    vi.useFakeTimers();
-    const requestPreferredScaleReconnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+  it("does not let connection status phase block scale reconnect", () => {
+    const requestScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestScaleReconnect")
       .mockResolvedValue(undefined);
 
     useDevicesStore.setState({
@@ -157,16 +156,12 @@ describe("devices store runtime", () => {
 
     cleanupRuntime = initializeDevicesStoreRuntime();
 
-    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
-
-    vi.advanceTimersByTime(5000);
-
-    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
+    expect(requestScaleReconnectSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("does not request preferred scale reconnect while the devices stream is scanning", () => {
-    const requestPreferredScaleReconnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+  it("does not request scale reconnect while the devices stream is scanning", () => {
+    const requestScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestScaleReconnect")
       .mockResolvedValue(undefined);
 
     useDevicesStore.setState({
@@ -191,12 +186,48 @@ describe("devices store runtime", () => {
 
     cleanupRuntime = initializeDevicesStoreRuntime();
 
-    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
+    expect(requestScaleReconnectSpy).not.toHaveBeenCalled();
   });
 
-  it("does not request preferred scale reconnect without a connected machine", () => {
-    const requestPreferredScaleReconnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+  it("requests scale reconnect after the scan flag clears even if the phase is stale", () => {
+    const requestScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestScaleReconnect")
+      .mockResolvedValue(undefined);
+
+    useDevicesStore.setState({
+      connection: "live",
+      connectionStatus: {
+        error: null,
+        foundMachines: [],
+        foundScales: [],
+        pendingAmbiguity: null,
+        phase: "scanning",
+      },
+      devices: [
+        {
+          id: "machine-1",
+          name: "DE1",
+          state: "connected",
+          type: "machine",
+        },
+      ],
+      scanning: true,
+    });
+
+    cleanupRuntime = initializeDevicesStoreRuntime();
+
+    expect(requestScaleReconnectSpy).not.toHaveBeenCalled();
+
+    useDevicesStore.setState({
+      scanning: false,
+    });
+
+    expect(requestScaleReconnectSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not request scale reconnect without a connected machine", () => {
+    const requestScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestScaleReconnect")
       .mockResolvedValue(undefined);
 
     cleanupRuntime = initializeDevicesStoreRuntime();
@@ -206,13 +237,13 @@ describe("devices store runtime", () => {
       devices: [],
     });
 
-    expect(requestPreferredScaleReconnectSpy).not.toHaveBeenCalled();
+    expect(requestScaleReconnectSpy).not.toHaveBeenCalled();
   });
 
   it("stops retrying once a scale connects", () => {
     vi.useFakeTimers();
-    const requestPreferredScaleReconnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+    const requestScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestScaleReconnect")
       .mockResolvedValue(undefined);
 
     cleanupRuntime = initializeDevicesStoreRuntime();
@@ -229,11 +260,11 @@ describe("devices store runtime", () => {
       ],
     });
 
-    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(1);
+    expect(requestScaleReconnectSpy).toHaveBeenCalledTimes(1);
 
-    vi.advanceTimersByTime(5000);
+    vi.advanceTimersByTime(20_000);
 
-    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(2);
+    expect(requestScaleReconnectSpy).toHaveBeenCalledTimes(2);
 
     useDevicesStore.setState({
       devices: [
@@ -258,17 +289,17 @@ describe("devices store runtime", () => {
       },
     });
 
-    const callsAfterScaleConnect = requestPreferredScaleReconnectSpy.mock.calls.length;
+    const callsAfterScaleConnect = requestScaleReconnectSpy.mock.calls.length;
 
-    vi.advanceTimersByTime(10000);
+    vi.advanceTimersByTime(40_000);
 
-    expect(requestPreferredScaleReconnectSpy).toHaveBeenCalledTimes(callsAfterScaleConnect);
+    expect(requestScaleReconnectSpy).toHaveBeenCalledTimes(callsAfterScaleConnect);
   });
 
   it("keeps retrying when the devices list has a stale connected scale without scale stream proof", () => {
     vi.useFakeTimers();
-    const requestPreferredScaleReconnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+    const requestScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestScaleReconnect")
       .mockResolvedValue(undefined);
 
     useScaleStore.setState({
@@ -295,19 +326,17 @@ describe("devices store runtime", () => {
         },
       ],
     });
-    const callsAfterStaleScaleRow = requestPreferredScaleReconnectSpy.mock.calls.length;
+    const callsAfterStaleScaleRow = requestScaleReconnectSpy.mock.calls.length;
     expect(callsAfterStaleScaleRow).toBeGreaterThan(0);
 
-    vi.advanceTimersByTime(5000);
+    vi.advanceTimersByTime(20_000);
 
-    expect(requestPreferredScaleReconnectSpy.mock.calls.length).toBeGreaterThan(
-      callsAfterStaleScaleRow,
-    );
+    expect(requestScaleReconnectSpy.mock.calls.length).toBeGreaterThan(callsAfterStaleScaleRow);
   });
 
-  it("requests preferred scale reconnect when the scale stream reports disconnected", () => {
-    const requestPreferredScaleReconnectSpy = vi
-      .spyOn(useDevicesStore.getState(), "requestPreferredScaleReconnect")
+  it("requests scale reconnect when the scale stream reports disconnected", () => {
+    const requestScaleReconnectSpy = vi
+      .spyOn(useDevicesStore.getState(), "requestScaleReconnect")
       .mockResolvedValue(undefined);
 
     cleanupRuntime = initializeDevicesStoreRuntime();
@@ -336,7 +365,7 @@ describe("devices store runtime", () => {
       },
     });
 
-    const callsAfterConnectedProof = requestPreferredScaleReconnectSpy.mock.calls.length;
+    const callsAfterConnectedProof = requestScaleReconnectSpy.mock.calls.length;
 
     useScaleStore.setState({
       scaleMessage: {
@@ -344,37 +373,19 @@ describe("devices store runtime", () => {
       },
     });
 
-    expect(requestPreferredScaleReconnectSpy.mock.calls.length).toBeGreaterThan(
-      callsAfterConnectedProof,
-    );
+    expect(requestScaleReconnectSpy.mock.calls.length).toBeGreaterThan(callsAfterConnectedProof);
   });
 
-  it("connects the scale feed when a connected scale appears", () => {
+  it("does not connect or disconnect the scale feed when scale device rows change", () => {
     const connectScaleSpy = vi
       .spyOn(useScaleStore.getState(), "connectScale")
       .mockResolvedValue(undefined);
-
-    cleanupRuntime = initializeDevicesStoreRuntime();
-
-    useDevicesStore.setState({
-      devices: [
-        {
-          id: "scale-1",
-          name: "Acaia Lunar",
-          state: "connected",
-          type: "scale",
-        },
-      ],
-    });
-
-    expect(connectScaleSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it("disconnects the scale feed when the connected scale disappears", () => {
     const disconnectScaleSpy = vi
       .spyOn(useScaleStore.getState(), "disconnectScale")
       .mockImplementation(() => undefined);
 
+    cleanupRuntime = initializeDevicesStoreRuntime();
+
     useDevicesStore.setState({
       devices: [
         {
@@ -385,13 +396,12 @@ describe("devices store runtime", () => {
         },
       ],
     });
-
-    cleanupRuntime = initializeDevicesStoreRuntime();
 
     useDevicesStore.setState({
       devices: [],
     });
 
-    expect(disconnectScaleSpy).toHaveBeenCalled();
+    expect(connectScaleSpy).not.toHaveBeenCalled();
+    expect(disconnectScaleSpy).not.toHaveBeenCalled();
   });
 });

@@ -102,7 +102,7 @@ describe("DashboardPage", () => {
       disconnect: vi.fn(() => undefined),
       disconnectDevice: vi.fn(async () => undefined),
       error: null,
-      requestPreferredScaleReconnect: vi.fn(async () => undefined),
+      requestScaleReconnect: vi.fn(async () => undefined),
       reset: vi.fn(() => undefined),
       scan: vi.fn(async () => undefined),
       scanning: false,
@@ -210,7 +210,7 @@ describe("DashboardPage", () => {
     });
   });
 
-  it("clears stale scale UI when the bridge no longer reports a connected scale", () => {
+  it("uses the scale stream as the connected scale source of truth", () => {
     useScaleStore.setState({
       scaleConnection: "live",
       scaleMessage: {
@@ -231,10 +231,10 @@ describe("DashboardPage", () => {
 
     render(<DashboardPage />);
 
-    expect(screen.getByText("No scale paired")).toBeInTheDocument();
-    expect(screen.getByText("--.- g")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Refresh" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Tare" })).not.toBeInTheDocument();
+    expect(screen.getByText("Paired")).toBeInTheDocument();
+    expect(screen.getByText("18.2 g")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tare" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Refresh" })).not.toBeInTheDocument();
   });
 
   it("shows the paired scale as offline when the scale stream reports disconnected", () => {
@@ -298,14 +298,14 @@ describe("DashboardPage", () => {
     expect(screen.queryByRole("button", { name: "Tare" })).not.toBeInTheDocument();
   });
 
-  it("refreshes scale discovery from the dashboard status card", async () => {
-    const scanSpy = vi.fn(async () => undefined);
+  it("requests scale-only reconnect from the dashboard status card", async () => {
+    const requestScaleReconnectSpy = vi.fn(async () => undefined);
     queryMocks.useMachineStateQuery.mockReturnValue({
       data: buildSnapshot("idle"),
       error: null,
     });
     useDevicesStore.setState({
-      scan: scanSpy,
+      requestScaleReconnect: requestScaleReconnectSpy,
     });
 
     render(<DashboardPage />);
@@ -313,7 +313,7 @@ describe("DashboardPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
 
     await waitFor(() => {
-      expect(scanSpy).toHaveBeenCalledWith();
+      expect(requestScaleReconnectSpy).toHaveBeenCalledWith({ force: true });
     });
   });
 

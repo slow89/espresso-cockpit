@@ -152,18 +152,14 @@ export function ScaleStatusCard() {
   const devicesConnection = useDevicesStore((state) => state.connection);
   const scaleConnection = useScaleStore((state) => state.scaleConnection);
   const scaleMessage = useScaleStore((state) => state.scaleMessage);
-  const scanDevices = useDevicesStore((state) => state.scan);
+  const requestScaleReconnect = useDevicesStore((state) => state.requestScaleReconnect);
   const scanningDevices = useDevicesStore((state) => state.scanning);
-  const devices = useDevicesStore((state) => state.devices);
   const tareScaleMutation = useTareScaleMutation();
   const updateWorkflowMutation = useUpdateWorkflowMutation();
-  const connectedScale = devices?.find(
-    (device) => device.type === "scale" && device.state === "connected",
-  );
-  const isPaired = Boolean(connectedScale);
   const scaleDeviceStatus = getScaleDeviceStatus(scaleMessage);
   const scaleSnapshot = getScaleSnapshot(scaleMessage);
-  const hasLiveScale = isPaired && scaleConnection === "live" && scaleDeviceStatus === "connected";
+  const hasLiveScale = scaleConnection === "live" && scaleDeviceStatus === "connected";
+  const isScaleDisconnected = !hasLiveScale;
   const weight = hasLiveScale ? (scaleSnapshot?.weight ?? null) : null;
   const batteryLevel = hasLiveScale ? (scaleSnapshot?.batteryLevel ?? null) : null;
   const canUseScaleWeightForDose =
@@ -182,48 +178,8 @@ export function ScaleStatusCard() {
   }
 
   function handleRefreshScale() {
-    void scanDevices();
+    void requestScaleReconnect({ force: true });
   }
-
-  if (!isPaired) {
-    return (
-      <div className="min-w-[200px] flex-[1.1] animate-pulse rounded-[4px] border-2 border-status-warning-foreground/70 bg-status-warning-surface px-3 py-1.5 shadow-[0_0_8px_0_rgba(var(--color-status-warning-foreground)/0.15)] md:flex-none md:max-w-[380px]">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-1 md:grid-cols-[minmax(0,1fr)_8ch_auto] md:items-center">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <p className="flex items-center gap-1 font-mono text-[0.65rem] font-bold uppercase tracking-[0.08em] text-status-warning-foreground">
-                <Scale className="size-3.5" />
-                Scale
-              </p>
-              <span className="rounded-sm bg-status-warning-foreground/20 px-1.5 py-0.5 font-mono text-[0.55rem] font-bold uppercase tracking-[0.06em] text-status-warning-foreground">
-                {getScaleStatusLabel(isPaired, scaleConnection, scaleDeviceStatus)}
-              </span>
-            </div>
-            <p className="mt-0.5 truncate font-mono text-[0.6rem] font-medium uppercase tracking-[0.06em] text-status-warning-foreground/80">
-              No scale paired
-            </p>
-          </div>
-
-          <p className="col-start-1 row-start-2 whitespace-nowrap font-mono text-[1rem] font-semibold tabular-nums text-muted-foreground md:col-start-2 md:row-start-1 md:justify-self-end md:text-[1.05rem] md:max-xl:text-[1.2rem]">
-            {formatScaleWeight(weight)}
-          </p>
-
-          <Button
-            className="col-start-2 row-span-2 row-start-1 h-full min-h-0 rounded-[4px] border-status-warning-foreground/50 bg-status-warning-foreground/15 px-4 font-mono text-[0.75rem] font-semibold text-status-warning-foreground hover:bg-status-warning-foreground/25 md:col-start-3 md:row-span-1"
-            disabled={devicesConnection !== "live" || scanningDevices}
-            onClick={handleRefreshScale}
-            size="sm"
-            variant="outline"
-          >
-            {scanningDevices ? "Scanning" : "Refresh"}
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const isScaleDisconnected =
-    scaleConnection === "error" || scaleConnection === "idle" || scaleDeviceStatus !== "connected";
 
   return (
     <div
@@ -258,13 +214,13 @@ export function ScaleStatusCard() {
             ) : null}
             {isScaleDisconnected ? (
               <span className="rounded-sm bg-destructive/20 px-1.5 py-0.5 font-mono text-[0.55rem] font-bold uppercase tracking-[0.06em] text-destructive">
-                {getScaleStatusLabel(isPaired, scaleConnection, scaleDeviceStatus)}
+                {getScaleStatusLabel(scaleConnection, scaleDeviceStatus)}
               </span>
             ) : null}
           </div>
           {!isScaleDisconnected ? (
             <p className="mt-0.5 truncate font-mono text-[0.6rem] uppercase tracking-[0.06em] text-status-info-foreground">
-              {getScaleStatusLabel(isPaired, scaleConnection, scaleDeviceStatus)}
+              {getScaleStatusLabel(scaleConnection, scaleDeviceStatus)}
             </p>
           ) : (
             <p className="mt-0.5 truncate font-mono text-[0.6rem] font-medium uppercase tracking-[0.06em] text-destructive/80">
@@ -291,7 +247,7 @@ export function ScaleStatusCard() {
           <div className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-stretch gap-1 self-stretch justify-self-end md:col-start-3 md:row-span-1">
             <Button
               className="h-full min-h-0 min-w-[70px] rounded-[4px] border-status-info-border bg-status-info-surface px-4 font-mono text-[0.75rem] font-semibold text-status-info-foreground hover:brightness-110"
-              disabled={scaleConnection !== "live" || tareScaleMutation.isPending}
+              disabled={!hasLiveScale || tareScaleMutation.isPending}
               onClick={() => tareScaleMutation.mutate()}
               size="sm"
               variant="outline"
@@ -393,20 +349,11 @@ function formatScaleWeight(weight: number | null) {
 }
 
 function getScaleStatusLabel(
-  isPaired: boolean,
   scaleConnection: LiveConnectionState,
   scaleDeviceStatus: "connected" | "disconnected" | null,
 ) {
-  if (!isPaired && scaleConnection === "connecting") {
-    return "Looking";
-  }
-
-  if (!isPaired) {
-    return "Unpaired";
-  }
-
   if (scaleConnection === "connecting") {
-    return "Pairing";
+    return "Looking";
   }
 
   if (scaleConnection === "error") {

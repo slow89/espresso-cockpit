@@ -231,9 +231,6 @@ export const useMachineStore = create<MachineState>((set, get) => ({
       currentTimeToReadySocket.onclose = null;
       currentTimeToReadySocket.close();
     }
-
-    useScaleStore.getState().disconnectScale();
-
     set({
       liveConnection: "idle",
       machineSocket: null,

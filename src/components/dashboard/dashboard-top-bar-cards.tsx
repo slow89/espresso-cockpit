@@ -23,13 +23,13 @@ export function DashboardRecipeButton() {
   return (
     <Button
       asChild
-      className="h-auto min-h-8 min-w-[160px] flex-1 justify-between rounded-[4px] border-border bg-panel-strong/80 px-2.5 py-1 font-mono text-[0.68rem] font-medium text-foreground hover:bg-panel-strong md:flex-none md:max-w-[280px]"
+      className="h-auto min-h-10 min-w-[160px] flex-1 justify-between rounded-[4px] border-border bg-panel-strong/80 px-3 py-1.5 font-mono text-[0.78rem] font-medium text-foreground hover:bg-panel-strong md:flex-none md:max-w-[280px]"
       size="sm"
       variant="outline"
     >
       <Link to="/workflows">
         <span className="min-w-0 truncate">{getDashboardActiveRecipe(workflow)}</span>
-        <span className="font-mono text-[0.5rem] uppercase tracking-[0.08em] text-muted-foreground">
+        <span className="font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted-foreground">
           Profiles
         </span>
       </Link>
@@ -96,7 +96,7 @@ export function ReservoirStatusCard() {
       <div className="flex items-center justify-between gap-2">
         <p
           className={cn(
-            "flex items-center gap-1 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.08em]",
+            "flex items-center gap-1 font-mono text-[0.74rem] font-semibold uppercase tracking-[0.08em]",
             isLow ? "text-status-warning-foreground" : "text-muted-foreground",
           )}
         >
@@ -140,11 +140,11 @@ export function ReservoirStatusCard() {
         </div>
         {/* Bar legend */}
         <div className="mt-0.5 flex items-center justify-between">
-          <p className="font-mono text-[0.5rem] uppercase tracking-[0.06em] text-muted-foreground/70">
+          <p className="font-mono text-[0.7rem] uppercase tracking-[0.06em] text-muted-foreground/70">
             {hasThreshold ? `Refill @ ${formatMillimeters(reservoirRefillLevel)}` : "No threshold"}
           </p>
           {isLow && (
-            <p className="font-mono text-[0.5rem] font-bold uppercase tracking-[0.06em] text-status-warning-foreground">
+            <p className="font-mono text-[0.7rem] font-bold uppercase tracking-[0.06em] text-status-warning-foreground">
               Low
             </p>
           )}
@@ -214,7 +214,7 @@ export function ScaleStatusCard() {
           <div className="flex items-center gap-1.5">
             <p
               className={cn(
-                "flex items-center gap-1 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.08em]",
+                "flex items-center gap-1 font-mono text-[0.74rem] font-semibold uppercase tracking-[0.08em]",
                 isScaleDisconnected ? "text-destructive" : "text-muted-foreground",
               )}
             >
@@ -227,22 +227,22 @@ export function ScaleStatusCard() {
               Scale
             </p>
             {batteryLevel != null && !isScaleDisconnected ? (
-              <p className="shrink-0 font-mono text-[0.55rem] tabular-nums uppercase tracking-[0.06em] text-muted-foreground/90">
+              <p className="shrink-0 font-mono text-[0.72rem] tabular-nums uppercase tracking-[0.06em] text-muted-foreground/90">
                 {batteryLevel.toFixed(0)}%
               </p>
             ) : null}
             {isScaleDisconnected ? (
-              <span className="rounded-sm bg-destructive/20 px-1.5 py-0.5 font-mono text-[0.55rem] font-bold uppercase tracking-[0.06em] text-destructive">
+              <span className="rounded-sm bg-destructive/20 px-1.5 py-0.5 font-mono text-[0.72rem] font-bold uppercase tracking-[0.06em] text-destructive">
                 {statusLabel}
               </span>
             ) : null}
           </div>
           {!isScaleDisconnected ? (
-            <p className="mt-0.5 truncate font-mono text-[0.6rem] uppercase tracking-[0.06em] text-status-info-foreground">
+            <p className="mt-0.5 truncate font-mono text-[0.74rem] uppercase tracking-[0.06em] text-status-info-foreground">
               {statusLabel}
             </p>
           ) : (
-            <p className="mt-0.5 truncate font-mono text-[0.6rem] font-medium uppercase tracking-[0.06em] text-destructive/80">
+            <p className="mt-0.5 truncate font-mono text-[0.74rem] font-medium uppercase tracking-[0.06em] text-destructive/80">
               {disconnectedDetail}
             </p>
           )}
@@ -254,7 +254,7 @@ export function ScaleStatusCard() {
 
         {isScaleDisconnected ? (
           <Button
-            className="col-start-2 row-span-2 row-start-1 h-full min-h-0 rounded-[4px] border-destructive/40 bg-destructive/10 px-4 font-mono text-[0.75rem] font-semibold text-destructive hover:bg-destructive/15 md:col-start-3 md:row-span-1"
+            className="col-start-2 row-span-2 row-start-1 h-full min-h-0 rounded-[4px] border-destructive/40 bg-destructive/10 px-4 font-mono text-[0.81rem] font-semibold text-destructive hover:bg-destructive/15 md:col-start-3 md:row-span-1"
             disabled={devicesConnection !== "live" || scanningDevices}
             onClick={handleRefreshScale}
             size="sm"
@@ -265,7 +265,7 @@ export function ScaleStatusCard() {
         ) : (
           <div className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-stretch gap-1 self-stretch justify-self-end md:col-start-3 md:row-span-1">
             <Button
-              className="h-full min-h-0 min-w-[70px] rounded-[4px] border-status-info-border bg-status-info-surface px-4 font-mono text-[0.75rem] font-semibold text-status-info-foreground hover:brightness-110"
+              className="h-full min-h-0 min-w-[70px] rounded-[4px] border-status-info-border bg-status-info-surface px-4 font-mono text-[0.81rem] font-semibold text-status-info-foreground hover:brightness-110"
               disabled={!hasLiveScale || tareScaleMutation.isPending}
               onClick={() => tareScaleMutation.mutate()}
               size="sm"
@@ -274,7 +274,7 @@ export function ScaleStatusCard() {
               {tareScaleMutation.isPending ? "Taring" : "Tare"}
             </Button>
             <Button
-              className="h-full min-h-0 min-w-[88px] rounded-[4px] border-status-success-border bg-status-success-surface px-4 font-mono text-[0.75rem] font-semibold text-status-success-foreground hover:brightness-110"
+              className="h-full min-h-0 min-w-[88px] rounded-[4px] border-status-success-border bg-status-success-surface px-4 font-mono text-[0.81rem] font-semibold text-status-success-foreground hover:brightness-110"
               disabled={!canUseScaleWeightForDose || updateWorkflowMutation.isPending}
               onClick={handleSetDoseFromScale}
               size="sm"
@@ -311,11 +311,11 @@ export function MachineStatusCard() {
   return (
     <div className="flex min-h-8 min-w-[136px] shrink-0 items-stretch justify-between gap-2 rounded-[4px] border border-border bg-panel-strong/80 px-2.5">
       <div className="flex min-w-0 items-center gap-1.5 self-center">
-        <p className="shrink-0 font-mono text-[0.46rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+        <p className="shrink-0 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           Machine
         </p>
         {connectionLabel ? (
-          <p className="truncate font-mono text-[0.44rem] font-semibold uppercase tracking-[0.06em] text-status-warning-foreground">
+          <p className="truncate font-mono text-[0.67rem] font-semibold uppercase tracking-[0.06em] text-status-warning-foreground">
             {connectionLabel}
           </p>
         ) : null}
@@ -342,7 +342,7 @@ export function MachineStatusCard() {
           type="button"
         >
           <Power className="size-4 shrink-0" />
-          <span className="font-mono text-[0.5rem] font-semibold uppercase tracking-[0.06em]">
+          <span className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.06em]">
             {isMachinePoweredOn ? "Sleep" : "Wake"}
           </span>
         </button>

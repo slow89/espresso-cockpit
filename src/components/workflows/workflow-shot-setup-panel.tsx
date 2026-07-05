@@ -87,10 +87,10 @@ export function WorkflowShotSetupPanel() {
       >
         <section className="border-b border-border/40 px-3 py-2.5 md:px-4 md:py-3">
           <div className="flex items-center gap-2.5">
-            <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted md:text-[0.64rem]">
+            <p className="font-mono text-[0.74rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted md:text-[0.76rem]">
               Recipe
             </p>
-            <span className="inline-flex items-center gap-[0.3em] rounded-full border border-highlight-muted/20 bg-highlight-muted/[0.06] px-2 py-[0.15rem] font-mono text-[0.58rem] font-semibold tabular-nums text-highlight-muted/80 md:text-[0.62rem]">
+            <span className="inline-flex items-center gap-[0.3em] rounded-full border border-highlight-muted/20 bg-highlight-muted/[0.06] px-2 py-[0.15rem] font-mono text-[0.73rem] font-semibold tabular-nums text-highlight-muted/80 md:text-[0.75rem]">
               {ratio}
             </span>
           </div>
@@ -120,20 +120,20 @@ export function WorkflowShotSetupPanel() {
         </section>
 
         <section className="border-b border-border/40 px-3 py-2.5 md:px-4 md:py-3">
-          <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
+          <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
             Shot details
           </p>
           <div className="mt-2 grid gap-2 md:grid-cols-2">
             <Field label="Name">
               <Input
-                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
+                className="h-10 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.78rem]"
                 defaultValue={workflow?.name ?? ""}
                 name="name"
               />
             </Field>
             <Field label="Description">
               <Input
-                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
+                className="h-10 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.78rem]"
                 defaultValue={workflow?.description ?? ""}
                 name="description"
               />
@@ -142,20 +142,20 @@ export function WorkflowShotSetupPanel() {
         </section>
 
         <section className="border-b border-border/40 px-3 py-2.5 md:px-4 md:py-3">
-          <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
+          <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
             Grinder
           </p>
           <div className="mt-2 grid gap-2 md:grid-cols-2">
             <Field label="Model">
               <Input
-                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
+                className="h-10 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.78rem]"
                 defaultValue={workflow?.context?.grinderModel ?? ""}
                 name="grinderModel"
               />
             </Field>
             <Field label="Setting">
               <Input
-                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
+                className="h-10 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.78rem]"
                 defaultValue={workflow?.context?.grinderSetting ?? ""}
                 name="grinderSetting"
               />
@@ -164,20 +164,20 @@ export function WorkflowShotSetupPanel() {
         </section>
 
         <section className="border-b border-border/40 px-3 py-2.5 md:px-4 md:py-3">
-          <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
+          <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
             Coffee
           </p>
           <div className="mt-2 grid gap-2 md:grid-cols-2">
             <Field label="Name">
               <Input
-                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
+                className="h-10 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.78rem]"
                 defaultValue={workflow?.context?.coffeeName ?? ""}
                 name="coffeeName"
               />
             </Field>
             <Field label="Roaster">
               <Input
-                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem]"
+                className="h-10 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.78rem]"
                 defaultValue={workflow?.context?.coffeeRoaster ?? ""}
                 name="coffeeRoaster"
               />
@@ -187,7 +187,7 @@ export function WorkflowShotSetupPanel() {
 
         <div className="px-3 py-2.5 md:px-4 md:py-3">
           <Button
-            className="h-9 w-full rounded-[3px] font-mono text-[0.6rem] uppercase tracking-[0.12em]"
+            className="h-11 w-full rounded-[3px] font-mono text-[0.74rem] uppercase tracking-[0.12em]"
             disabled={updateWorkflowMutation.isPending}
             type="submit"
           >
@@ -220,7 +220,7 @@ function WorkflowAdjustSection({
 }) {
   return (
     <div>
-      <p className="font-mono text-[0.56rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground md:text-[0.6rem]">
+      <p className="font-mono text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground md:text-[0.74rem]">
         {label}
       </p>
 
@@ -238,7 +238,7 @@ function WorkflowAdjustSection({
 
       <RecipePresetRow
         activePresetValue={activePresetValue}
-        className="mt-1.5 gap-1 text-[0.68rem] md:text-[0.72rem]"
+        className="mt-1.5 gap-1 text-[0.78rem] md:text-[0.79rem]"
         disabled={disabled}
         itemClassName="rounded-[3px] px-1.5 py-1"
         onPresetClick={onPresetClick}
@@ -251,7 +251,7 @@ function WorkflowAdjustSection({
 function Field({ children, label }: { children: ReactNode; label: string }) {
   return (
     <label className="grid gap-0.5">
-      <span className="font-mono text-[0.48rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
+      <span className="font-mono text-[0.69rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
         {label}
       </span>
       {children}

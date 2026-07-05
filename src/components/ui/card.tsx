@@ -30,7 +30,7 @@ export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingEle
 export function CardDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn("max-w-3xl text-[0.82rem] leading-6 text-muted-foreground", className)}
+      className={cn("max-w-3xl text-[0.84rem] leading-6 text-muted-foreground", className)}
       {...props}
     />
   );

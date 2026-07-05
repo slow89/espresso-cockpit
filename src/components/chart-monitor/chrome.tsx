@@ -46,10 +46,10 @@ export function CompactMonitorBar({
           key={`${item.label}-${index}`}
           title={item.detail}
         >
-          <p className="truncate font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground md:max-xl:text-[0.5rem]">
+          <p className="truncate font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] text-muted-foreground md:max-xl:text-[0.7rem]">
             {item.label}
           </p>
-          <p className="mt-0.5 truncate font-mono text-[0.68rem] font-semibold uppercase tabular-nums tracking-[0.02em] text-foreground md:max-xl:text-[0.72rem]">
+          <p className="mt-0.5 truncate font-mono text-[0.78rem] font-semibold uppercase tabular-nums tracking-[0.02em] text-foreground md:max-xl:text-[0.79rem]">
             {item.value}
           </p>
         </div>
@@ -89,10 +89,10 @@ export function DesktopMonitorBar<TPreset extends string, TActivePreset extends 
           key={`${item.label}-${index}`}
           title={item.detail}
         >
-          <p className="truncate font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+          <p className="truncate font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">
             {item.label}
           </p>
-          <p className="mt-0.5 truncate font-mono text-[0.72rem] font-semibold uppercase tabular-nums tracking-[0.02em] text-foreground">
+          <p className="mt-0.5 truncate font-mono text-[0.79rem] font-semibold uppercase tabular-nums tracking-[0.02em] text-foreground">
             {item.value}
           </p>
         </div>
@@ -108,7 +108,7 @@ export function DesktopMonitorBar<TPreset extends string, TActivePreset extends 
           />
         ))}
         <button
-          className="rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 font-mono text-[0.54rem] uppercase tracking-[0.08em] text-muted-foreground transition hover:border-highlight/50 hover:text-foreground"
+          className="rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 font-mono text-[0.71rem] uppercase tracking-[0.08em] text-muted-foreground transition hover:border-highlight/50 hover:text-foreground"
           onClick={onReset}
           type="button"
         >
@@ -163,10 +163,10 @@ export function MonitorConfigOverlay<
       >
         <div className="flex items-start justify-between gap-3 border-b border-border/70 pb-3">
           <div className="min-w-0">
-            <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-highlight">
+            <p className="font-mono text-[0.73rem] font-medium uppercase tracking-[0.18em] text-highlight">
               {title}
             </p>
-            <p className="mt-1 text-[0.72rem] leading-5 text-muted-foreground">
+            <p className="mt-1 text-[0.79rem] leading-5 text-muted-foreground">
               Presets, lanes, and visible signals.
             </p>
           </div>
@@ -224,11 +224,11 @@ export function MonitorConfigPanel<
   return (
     <div className="rounded-[3px] border border-border/50 bg-panel-strong/60 p-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="font-mono text-[0.54rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+        <p className="font-mono text-[0.71rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
           Configuration
         </p>
         <button
-          className="rounded-[3px] border border-border/50 bg-panel-strong px-2.5 py-1 font-mono text-[0.52rem] uppercase tracking-[0.08em] text-muted-foreground transition hover:border-highlight/50 hover:text-foreground"
+          className="rounded-[3px] border border-border/50 bg-panel-strong px-3 py-2 font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted-foreground transition hover:border-highlight/50 hover:text-foreground"
           onClick={onReset}
           type="button"
         >
@@ -238,7 +238,7 @@ export function MonitorConfigPanel<
 
       <div className="mt-3 grid gap-3">
         <div>
-          <p className="font-mono text-[0.52rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
+          <p className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
             Presets
           </p>
           <div className="mt-2 flex flex-wrap gap-1">
@@ -254,14 +254,14 @@ export function MonitorConfigPanel<
         </div>
 
         <div>
-          <p className="font-mono text-[0.52rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
+          <p className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
             Lanes
           </p>
           <div className="mt-2 grid grid-cols-2 gap-1">
             {laneOptions.map((lane) => (
               <button
                 className={cn(
-                  "flex items-center justify-between rounded-[3px] border px-2.5 py-1.5 text-left transition",
+                  "flex items-center justify-between rounded-[3px] border px-2.5 py-2 text-left transition",
                   lane.enabled
                     ? "border-highlight/35 bg-primary/12 text-foreground"
                     : "border-border/50 bg-panel-strong text-muted-foreground hover:bg-panel-subtle hover:text-foreground",
@@ -270,10 +270,10 @@ export function MonitorConfigPanel<
                 onClick={() => onToggleLane(lane.id)}
                 type="button"
               >
-                <span className="font-mono text-[0.56rem] uppercase tracking-[0.08em]">
+                <span className="font-mono text-[0.72rem] uppercase tracking-[0.08em]">
                   {lane.label}
                 </span>
-                <span className="font-mono text-[0.48rem] uppercase tracking-[0.06em]">
+                <span className="font-mono text-[0.69rem] uppercase tracking-[0.06em]">
                   {lane.enabled ? "On" : "Off"}
                 </span>
               </button>
@@ -284,14 +284,14 @@ export function MonitorConfigPanel<
         <div className="grid gap-2">
           {seriesGroups.map((group) => (
             <div key={group.label}>
-              <p className="font-mono text-[0.52rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
+              <p className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
                 {group.label}
               </p>
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {group.series.map((series) => (
                   <button
                     className={cn(
-                      "rounded-[3px] border px-2 py-1 font-mono text-[0.52rem] uppercase tracking-[0.06em] transition",
+                      "rounded-[3px] border px-2.5 py-2 font-mono text-[0.7rem] uppercase tracking-[0.06em] transition",
                       series.active
                         ? "text-primary-foreground"
                         : "border-border/50 bg-panel-strong text-muted-foreground hover:bg-panel-subtle hover:text-foreground",
@@ -325,7 +325,7 @@ function PresetButton({
   return (
     <button
       className={cn(
-        "rounded-[3px] border px-2.5 py-1 font-mono text-[0.56rem] uppercase tracking-[0.08em] whitespace-nowrap transition",
+        "rounded-[3px] border px-3 py-2 font-mono text-[0.72rem] uppercase tracking-[0.08em] whitespace-nowrap transition",
         active
           ? "border-primary/40 bg-primary text-primary-foreground"
           : "border-border/50 bg-panel-strong text-muted-foreground hover:border-highlight/35 hover:bg-panel-subtle hover:text-foreground",

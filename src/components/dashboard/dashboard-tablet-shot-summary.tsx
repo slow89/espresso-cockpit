@@ -17,10 +17,10 @@ export function DashboardTabletShotSummary() {
           )}
           key={item.label}
         >
-          <p className="truncate font-mono text-[0.44rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          <p className="truncate font-mono text-[0.67rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             {item.label}
           </p>
-          <p className="mt-0.5 truncate font-mono text-[0.74rem] font-semibold tabular-nums text-foreground">
+          <p className="mt-0.5 truncate font-mono text-[0.8rem] font-semibold tabular-nums text-foreground">
             {item.value}
           </p>
         </div>

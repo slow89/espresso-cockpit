@@ -312,6 +312,8 @@
 
   html {
     height: 100%;
+    /* 17px root: the shipped 7" tablet (1024x600) needs everything rem-based a step larger */
+    font-size: 106.25%;
     font-family: var(--font-sans);
     color: var(--foreground);
     background: var(--canvas);

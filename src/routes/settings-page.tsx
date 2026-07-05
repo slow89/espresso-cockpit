@@ -11,10 +11,10 @@ export function SettingsPage() {
       {/* Top bar — mirrors dashboard top bar styling */}
       <header className="shrink-0 border-b border-border/40 bg-panel-strong/30 px-2.5 py-1.5 pt-[calc(env(safe-area-inset-top,0px)+0.375rem)]">
         <div className="flex items-center justify-between gap-3">
-          <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
+          <p className="font-mono text-[0.74rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
             System Configuration
           </p>
-          <p className="font-mono text-[0.42rem] uppercase tracking-[0.06em] text-muted-foreground/70">
+          <p className="font-mono text-[0.66rem] uppercase tracking-[0.06em] text-muted-foreground/70">
             Setup
           </p>
         </div>

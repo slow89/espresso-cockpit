@@ -45,7 +45,7 @@ export function SettingsDevicePairingPanel() {
           <MetricTile label="Unpaired" value={`${disconnectedDevices.length}`} />
 
           <Button
-            className="col-span-2 min-h-[38px] rounded-[3px] px-3 text-[0.54rem] uppercase tracking-[0.14em] sm:col-span-1"
+            className="col-span-2 min-h-[38px] rounded-[3px] px-3 text-[0.71rem] uppercase tracking-[0.14em] sm:col-span-1"
             disabled={connection !== "live" || isScanning}
             onClick={() => void scanDevices()}
             size="sm"
@@ -53,7 +53,7 @@ export function SettingsDevicePairingPanel() {
             {isScanning ? "Scanning" : "Find & pair"}
           </Button>
           <Button
-            className="col-span-1 min-h-[38px] rounded-[3px] px-3 text-[0.54rem] uppercase tracking-[0.14em] sm:col-span-1"
+            className="col-span-1 min-h-[38px] rounded-[3px] px-3 text-[0.71rem] uppercase tracking-[0.14em] sm:col-span-1"
             disabled={connection !== "live" || isScanning}
             onClick={() => void scanDevices({ connect: false })}
             size="sm"
@@ -214,7 +214,7 @@ function DeviceGroup({
 
     return (
       <div className="grid gap-1">
-        <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+        <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
           {title}
         </p>
         <StateCallout tone="neutral">{emptyMessage}</StateCallout>
@@ -225,10 +225,10 @@ function DeviceGroup({
   return (
     <div className="grid gap-1.5">
       <div className="flex items-center gap-2">
-        <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+        <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
           {title}
         </p>
-        <p className="font-mono text-[0.42rem] uppercase tracking-[0.06em] text-muted-foreground/50">
+        <p className="font-mono text-[0.66rem] uppercase tracking-[0.06em] text-muted-foreground/50">
           {description}
         </p>
       </div>
@@ -292,10 +292,10 @@ function DeviceList({
   return (
     <div className="overflow-hidden rounded-[3px] border border-border/50 bg-panel-strong/60">
       <div className="flex items-center justify-between gap-2 border-b border-border/40 px-2.5 py-1">
-        <p className="font-mono text-[0.42rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+        <p className="font-mono text-[0.66rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
           {title}
         </p>
-        <p className="font-mono text-[0.52rem] font-semibold tabular-nums text-muted-foreground">
+        <p className="font-mono text-[0.7rem] font-semibold tabular-nums text-muted-foreground">
           {devices.length}
         </p>
       </div>
@@ -350,7 +350,7 @@ function DeviceRow({
     <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
-          <p className="truncate font-mono text-[0.72rem] font-semibold tracking-[0.02em] text-foreground">
+          <p className="truncate font-mono text-[0.79rem] font-semibold tracking-[0.02em] text-foreground">
             {device.name}
           </p>
           <Badge variant={device.state === "connected" ? "default" : "secondary"}>
@@ -358,10 +358,10 @@ function DeviceRow({
           </Badge>
         </div>
         <div className="mt-0.5 flex items-center gap-2">
-          <p className="font-mono text-[0.42rem] uppercase tracking-[0.08em] text-muted-foreground/70">
+          <p className="font-mono text-[0.66rem] uppercase tracking-[0.08em] text-muted-foreground/70">
             {device.type}
           </p>
-          <p className="break-all font-mono text-[0.5rem] font-semibold tracking-[0.02em] text-muted-foreground/50">
+          <p className="break-all font-mono text-[0.7rem] font-semibold tracking-[0.02em] text-muted-foreground/50">
             {device.id}
           </p>
         </div>
@@ -369,7 +369,7 @@ function DeviceRow({
 
       <div className="flex shrink-0 items-center gap-1">
         <Button
-          className="min-h-[34px] rounded-[3px] px-2.5 text-[0.52rem] uppercase tracking-[0.12em]"
+          className="min-h-[34px] rounded-[3px] px-2.5 text-[0.7rem] uppercase tracking-[0.12em]"
           disabled={disabled}
           onClick={onAction}
           size="sm"
@@ -379,7 +379,7 @@ function DeviceRow({
         </Button>
         {onForget ? (
           <Button
-            className="min-h-[34px] rounded-[3px] px-2.5 text-[0.52rem] uppercase tracking-[0.12em]"
+            className="min-h-[34px] rounded-[3px] px-2.5 text-[0.7rem] uppercase tracking-[0.12em]"
             disabled={disabled}
             onClick={onForget}
             size="sm"

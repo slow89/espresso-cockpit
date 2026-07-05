@@ -31,7 +31,7 @@ const rootRoute = createRootRoute({
   component: RootLayout,
   notFoundComponent: () => (
     <div className="panel rounded-[28px] p-8">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+      <p className="text-[13px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
         Off recipe
       </p>
       <h1 className="mt-3 font-display text-3xl text-foreground">This screen does not exist.</h1>
@@ -135,7 +135,7 @@ function RootLayout() {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-[18px] border border-transparent bg-transparent px-2 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition hover:bg-background hover:text-foreground",
+                    "flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-[18px] border border-transparent bg-transparent px-2 py-1 text-[0.73rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition hover:bg-background hover:text-foreground",
                   )}
                   activeProps={{
                     className: "border-primary/25 bg-primary/18 text-foreground shadow-soft",

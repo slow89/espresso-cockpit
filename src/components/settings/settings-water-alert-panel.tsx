@@ -71,7 +71,7 @@ export function SettingsWaterAlertPanel() {
           value={refillLevel == null ? "Waiting" : formatMillimeters(refillLevel)}
         >
           <div className="mt-2 flex items-center gap-2">
-            <span className="font-mono text-[0.46rem] uppercase tracking-[0.08em] text-muted-foreground/70">
+            <span className="font-mono text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground/70">
               0 mm
             </span>
             <input
@@ -88,7 +88,7 @@ export function SettingsWaterAlertPanel() {
               type="range"
               value={resolvedValue}
             />
-            <span className="font-mono text-[0.46rem] uppercase tracking-[0.08em] text-muted-foreground/70">
+            <span className="font-mono text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground/70">
               30 mm
             </span>
           </div>

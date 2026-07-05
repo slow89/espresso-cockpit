@@ -34,7 +34,7 @@ export function DashboardTabletPostShotSummary() {
             <MetricBlock detail={model.targetRatioLabel} label="Ratio" value={model.ratioValue} />
           </div>
 
-          <p className="mt-1 min-w-0 truncate font-mono text-[0.56rem] uppercase tracking-[0.1em] text-muted-foreground md:text-[0.66rem]">
+          <p className="mt-1 min-w-0 truncate font-mono text-[0.72rem] uppercase tracking-[0.1em] text-muted-foreground md:text-[0.77rem]">
             {model.title} · {model.subtitle}
           </p>
         </div>
@@ -43,7 +43,7 @@ export function DashboardTabletPostShotSummary() {
           {model.historyShotId ? (
             <Button
               asChild
-              className="h-8 rounded-[4px] px-2 font-mono text-[0.6rem] font-semibold md:h-9 md:px-3 md:text-[0.7rem]"
+              className="h-10 rounded-[4px] px-3 font-mono text-[0.74rem] font-semibold md:h-11 md:px-4 md:text-[0.78rem]"
               size="sm"
               variant="secondary"
             >
@@ -54,7 +54,7 @@ export function DashboardTabletPostShotSummary() {
             </Button>
           ) : (
             <Button
-              className="h-8 rounded-[4px] px-2 font-mono text-[0.6rem] font-semibold md:h-9 md:px-3 md:text-[0.7rem]"
+              className="h-10 rounded-[4px] px-3 font-mono text-[0.74rem] font-semibold md:h-11 md:px-4 md:text-[0.78rem]"
               disabled
               size="sm"
               variant="secondary"
@@ -66,7 +66,7 @@ export function DashboardTabletPostShotSummary() {
 
           <Button
             aria-label="Dismiss shot summary"
-            className="size-8 rounded-[4px] text-muted-foreground hover:text-foreground md:size-9"
+            className="size-10 rounded-[4px] text-muted-foreground hover:text-foreground md:size-11"
             onClick={model.onDismiss}
             size="icon"
             variant="ghost"
@@ -113,7 +113,7 @@ function MetricBlock({
         {deltaLabel ? (
           <span
             className={cn(
-              "font-mono text-[0.58rem] font-semibold uppercase tracking-[0.08em] md:text-[0.66rem]",
+              "font-mono text-[0.73rem] font-semibold uppercase tracking-[0.08em] md:text-[0.77rem]",
               deltaTone === "on-target" && "text-status-success-foreground",
               deltaTone === "over" && "text-status-warning-foreground",
               deltaTone === "under" && "text-status-warning-foreground",
@@ -123,7 +123,7 @@ function MetricBlock({
           </span>
         ) : null}
       </div>
-      <span className="mt-0.5 font-mono text-[0.5rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground md:text-[0.58rem]">
+      <span className="mt-0.5 font-mono text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground md:text-[0.73rem]">
         {label}
         {detail ? (
           <span className="ml-1 font-normal normal-case text-muted-foreground/70">· {detail}</span>

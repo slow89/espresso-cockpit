@@ -33,7 +33,7 @@ export function DashboardSleepScreen({
       <div className="pointer-events-none relative flex w-full flex-1 flex-col justify-end px-6 pb-12 pt-[calc(env(safe-area-inset-top,0px)+2rem)]">
         <div className="mx-auto w-full max-w-[760px] text-center">
           <div className="mx-auto max-w-[520px] rounded-[24px] bg-[linear-gradient(180deg,rgba(15,12,10,0.1)_0%,rgba(15,12,10,0.42)_100%)] px-5 py-6 backdrop-blur-[2px]">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[rgb(217,152,38)]">
+            <p className="text-[0.79rem] font-semibold uppercase tracking-[0.24em] text-[rgb(217,152,38)]">
               Coffee break
             </p>
             <h1 className="mt-3 font-mono text-[1.8rem] font-semibold tracking-[0.04em] text-[rgb(241,242,244)] md:text-[2.4rem]">
@@ -44,11 +44,11 @@ export function DashboardSleepScreen({
       </div>
 
       <div className="pointer-events-none relative w-full px-6 pb-4 text-center">
-        <p className="font-mono text-[0.78rem] uppercase tracking-[0.18em] text-[rgb(143,151,163)] md:text-[0.84rem]">
+        <p className="font-mono text-[0.82rem] uppercase tracking-[0.18em] text-[rgb(143,151,163)] md:text-[0.85rem]">
           {isPending ? "Turning on..." : "Tap anywhere to turn on machine"}
         </p>
         {hasError && !isPending ? (
-          <p className="mt-2 font-mono text-[0.66rem] uppercase tracking-[0.12em] text-[rgb(240,179,122)]">
+          <p className="mt-2 font-mono text-[0.77rem] uppercase tracking-[0.12em] text-[rgb(240,179,122)]">
             Reconnecting to bridge. Wake retry stays available.
           </p>
         ) : null}

@@ -102,7 +102,7 @@ export function HistoryPage({
         <aside className="flex min-h-0 min-w-0 flex-col border-b border-border/40 bg-panel-muted md:border-b-0 md:border-r md:border-border/40">
           {shotsQuery.error ? (
             <div className="border-b border-border/40 px-3 py-1.5">
-              <span className="font-mono text-[0.64rem] text-destructive">
+              <span className="font-mono text-[0.76rem] text-destructive">
                 {shotsQuery.error.message}
               </span>
             </div>
@@ -112,10 +112,10 @@ export function HistoryPage({
             {shotList.items.length === 0 ? (
               <div className="flex h-full items-center justify-center p-4">
                 <div className="text-center">
-                  <p className="font-mono text-[0.56rem] uppercase tracking-[0.1em] text-muted-foreground">
+                  <p className="font-mono text-[0.72rem] uppercase tracking-[0.1em] text-muted-foreground">
                     Queue empty
                   </p>
-                  <p className="mt-1.5 text-[0.78rem] text-muted-foreground">
+                  <p className="mt-1.5 text-[0.82rem] text-muted-foreground">
                     No shots synced yet.
                   </p>
                 </div>
@@ -158,7 +158,7 @@ export function HistoryPage({
             <HistoryStatePanel
               action={
                 <Button
-                  className="h-7 rounded-[3px] px-3 font-mono text-[0.6rem]"
+                  className="h-10 rounded-[3px] px-3 font-mono text-[0.74rem]"
                   onClick={() => void handleRefresh()}
                   size="sm"
                   variant="secondary"
@@ -174,7 +174,7 @@ export function HistoryPage({
               action={
                 onSelectShotId ? (
                   <Button
-                    className="h-7 rounded-[3px] px-3 font-mono text-[0.6rem]"
+                    className="h-10 rounded-[3px] px-3 font-mono text-[0.74rem]"
                     onClick={() => onSelectShotId(null)}
                     size="sm"
                     variant="secondary"
@@ -224,33 +224,33 @@ function HistoryTopBar({
         {/* Archive label + count */}
         <div className="flex min-w-[140px] flex-1 items-center gap-2 rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1 md:flex-none md:max-w-[220px] md:max-xl:min-w-[160px]">
           <div className="min-w-0 flex-1">
-            <p className="flex items-center gap-1.5 font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground md:max-xl:text-[0.5rem]">
+            <p className="flex items-center gap-1.5 font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] text-muted-foreground md:max-xl:text-[0.7rem]">
               Shot archive
             </p>
-            <p className="mt-0.5 font-mono text-[0.72rem] font-semibold tabular-nums text-foreground md:max-xl:text-[0.76rem]">
+            <p className="mt-0.5 font-mono text-[0.79rem] font-semibold tabular-nums text-foreground md:max-xl:text-[0.81rem]">
               {total} shots
             </p>
           </div>
           <button
             aria-label="Refresh shot history"
             className={cn(
-              "flex size-6 items-center justify-center rounded-[3px] border border-border/50 bg-panel-strong text-muted-foreground transition hover:text-foreground md:max-xl:size-7",
+              "flex size-9 items-center justify-center rounded-[3px] border border-border/50 bg-panel-strong text-muted-foreground transition hover:text-foreground md:max-xl:size-10",
               isRefreshing && "animate-spin text-highlight",
             )}
             onClick={onRefresh}
             type="button"
           >
-            <RefreshCw className="size-3 md:max-xl:size-3.5" />
+            <RefreshCw className="size-4 md:max-xl:size-4" />
           </button>
         </div>
 
         {/* Selected shot name */}
         <div className="flex min-w-[160px] flex-[1.5] items-center rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1 md:flex-1 md:max-xl:min-w-[200px]">
           <div className="min-w-0">
-            <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-highlight-muted md:max-xl:text-[0.5rem]">
+            <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] text-highlight-muted md:max-xl:text-[0.7rem]">
               Selected
             </p>
-            <p className="mt-0.5 truncate font-mono text-[0.72rem] font-semibold text-foreground md:max-xl:text-[0.76rem]">
+            <p className="mt-0.5 truncate font-mono text-[0.79rem] font-semibold text-foreground md:max-xl:text-[0.81rem]">
               {displayShot ? getShotDisplayTitle(displayShot) : "None"}
             </p>
           </div>
@@ -281,10 +281,10 @@ function HistoryTopBar({
 function HistoryTopBarMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-[72px] flex-1 rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1 md:flex-none md:min-w-[84px] md:max-xl:px-2.5 md:max-xl:py-1">
-      <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground md:max-xl:text-[0.5rem]">
+      <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] text-muted-foreground md:max-xl:text-[0.7rem]">
         {label}
       </p>
-      <p className="mt-0.5 font-mono text-[0.72rem] font-semibold tabular-nums text-foreground md:max-xl:text-[0.76rem]">
+      <p className="mt-0.5 font-mono text-[0.79rem] font-semibold tabular-nums text-foreground md:max-xl:text-[0.81rem]">
         {value}
       </p>
     </div>
@@ -310,7 +310,7 @@ function HistoryShotRow({
   return (
     <button
       className={cn(
-        "w-full px-3 py-1.5 text-left transition md:px-3",
+        "w-full px-3 py-2 text-left transition md:px-3",
         isSelected
           ? "bg-primary/12 shadow-[inset_3px_0_0_var(--highlight)]"
           : "hover:bg-panel-strong/60",
@@ -320,24 +320,24 @@ function HistoryShotRow({
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="shrink-0 font-mono text-[0.48rem] tabular-nums uppercase tracking-[0.06em] text-muted-foreground/60 md:text-[0.5rem]">
+          <span className="shrink-0 font-mono text-[0.69rem] tabular-nums uppercase tracking-[0.06em] text-muted-foreground/60 md:text-[0.7rem]">
             {String(index + 1).padStart(2, "0")}
           </span>
-          <p className="truncate font-mono text-[0.72rem] font-semibold tracking-[0.02em] text-foreground md:text-[0.76rem]">
+          <p className="truncate font-mono text-[0.79rem] font-semibold tracking-[0.02em] text-foreground md:text-[0.81rem]">
             {getShotDisplayTitle(shot)}
           </p>
         </div>
-        <span className="shrink-0 font-mono text-[0.52rem] tabular-nums text-muted-foreground md:text-[0.56rem]">
+        <span className="shrink-0 font-mono text-[0.7rem] tabular-nums text-muted-foreground md:text-[0.72rem]">
           {formatRelativeTimestamp(shot.timestamp)}
         </span>
       </div>
 
       <div className="mt-0.5 flex items-center gap-3 pl-6 md:pl-7">
-        <span className="truncate font-mono text-[0.56rem] text-muted-foreground/70 md:text-[0.6rem]">
+        <span className="truncate font-mono text-[0.72rem] text-muted-foreground/70 md:text-[0.74rem]">
           {shot.workflow?.context?.coffeeName ?? "No coffee"}
         </span>
         {dose != null ? (
-          <span className="shrink-0 font-mono text-[0.56rem] tabular-nums text-muted-foreground/50 md:text-[0.6rem]">
+          <span className="shrink-0 font-mono text-[0.72rem] tabular-nums text-muted-foreground/50 md:text-[0.74rem]">
             {dose.toFixed(1)}g{yield_ != null ? ` / ${yield_.toFixed(1)}g` : ""}
           </span>
         ) : null}
@@ -426,7 +426,7 @@ function HistoryDetailContent({
           </HistoryInfoCell>
 
           <HistoryInfoCell border="left" title="Notes">
-            <p className="max-h-20 overflow-y-auto whitespace-pre-line pr-1 font-mono text-[0.64rem] leading-5 text-foreground/80 md:text-[0.68rem]">
+            <p className="max-h-20 overflow-y-auto whitespace-pre-line pr-1 font-mono text-[0.76rem] leading-5 text-foreground/80 md:text-[0.78rem]">
               {selectedShot.workflow?.profile?.notes?.trim() || "No profile notes saved."}
             </p>
           </HistoryInfoCell>
@@ -454,7 +454,7 @@ function HistoryInfoCell({
         border === "left" && "md:border-l md:border-border/40",
       )}
     >
-      <p className="font-mono text-[0.56rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted md:text-[0.6rem]">
+      <p className="font-mono text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted md:text-[0.74rem]">
         {title}
       </p>
       <div className="mt-1.5 grid gap-1">{children}</div>
@@ -467,10 +467,10 @@ function HistoryInfoCell({
 function HistoryDataRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <p className="font-mono text-[0.5rem] uppercase tracking-[0.06em] text-muted-foreground md:text-[0.54rem]">
+      <p className="font-mono text-[0.7rem] uppercase tracking-[0.06em] text-muted-foreground md:text-[0.71rem]">
         {label}
       </p>
-      <p className="truncate text-right font-mono text-[0.68rem] font-semibold tabular-nums text-foreground md:text-[0.72rem]">
+      <p className="truncate text-right font-mono text-[0.78rem] font-semibold tabular-nums text-foreground md:text-[0.79rem]">
         {value}
       </p>
     </div>
@@ -529,11 +529,11 @@ function HistoryStatePanel({
   return (
     <div className="flex h-full items-center justify-center p-4">
       <section className="w-full max-w-[340px] rounded-[3px] border border-dashed border-border/50 bg-panel-strong/60 p-4 text-center">
-        <p className="font-mono text-[0.52rem] uppercase tracking-[0.1em] text-highlight-muted">
+        <p className="font-mono text-[0.7rem] uppercase tracking-[0.1em] text-highlight-muted">
           History
         </p>
         <h2 className="mt-1.5 font-mono text-[0.86rem] font-semibold text-foreground">{title}</h2>
-        <p className="mt-1 font-mono text-[0.64rem] leading-5 text-muted-foreground">{body}</p>
+        <p className="mt-1 font-mono text-[0.76rem] leading-5 text-muted-foreground">{body}</p>
         {action ? <div className="mt-3 flex justify-center">{action}</div> : null}
       </section>
     </div>

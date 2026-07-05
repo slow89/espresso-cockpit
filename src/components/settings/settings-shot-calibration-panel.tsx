@@ -107,10 +107,10 @@ export function SettingsShotCalibrationPanel() {
       <div className="grid gap-2">
         <section className="overflow-hidden rounded-[3px] border border-border/50 bg-panel-strong/60">
           <div className="flex items-center justify-between gap-2 border-b border-border/40 px-2.5 py-1.5">
-            <p className="font-mono text-[0.5rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+            <p className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
               Stop conditions
             </p>
-            <p className="font-mono text-[0.42rem] uppercase tracking-[0.08em] text-muted-foreground/55">
+            <p className="font-mono text-[0.66rem] uppercase tracking-[0.08em] text-muted-foreground/55">
               Weight primary &middot; volume fallback
             </p>
           </div>
@@ -161,7 +161,7 @@ export function SettingsShotCalibrationPanel() {
             {scalePowerModes.map((mode) => (
               <Button
                 aria-pressed={scalePowerMode === mode.value}
-                className="min-h-[34px] rounded-[3px] px-2.5 text-[0.52rem] uppercase tracking-[0.14em]"
+                className="min-h-[34px] rounded-[3px] px-2.5 text-[0.7rem] uppercase tracking-[0.14em]"
                 disabled={isSettingsDisabled}
                 key={mode.value}
                 onClick={() => void handleScalePowerModeChange(mode.value)}
@@ -250,7 +250,7 @@ function StopConditionRow({
       <div className="flex items-center gap-2">
         <span
           className={cn(
-            "inline-flex h-4 min-w-[1.25rem] items-center justify-center rounded-[2px] px-1 font-mono text-[0.42rem] font-semibold tracking-[0.08em] tabular-nums",
+            "inline-flex h-4 min-w-[1.25rem] items-center justify-center rounded-[2px] px-1 font-mono text-[0.66rem] font-semibold tracking-[0.08em] tabular-nums",
             role === "primary"
               ? "bg-[#d0a954]/15 text-[#d0a954]"
               : "border border-border/50 text-muted-foreground/65",
@@ -258,14 +258,14 @@ function StopConditionRow({
         >
           {badge}
         </span>
-        <p className="font-mono text-[0.5rem] font-semibold uppercase tracking-[0.1em] text-foreground">
+        <p className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-foreground">
           {label} stop
         </p>
-        <span className="font-mono text-[0.42rem] text-muted-foreground/40">|</span>
-        <p className="truncate font-mono text-[0.44rem] uppercase tracking-[0.06em] text-muted-foreground/65">
+        <span className="font-mono text-[0.66rem] text-muted-foreground/40">|</span>
+        <p className="truncate font-mono text-[0.67rem] uppercase tracking-[0.06em] text-muted-foreground/65">
           {description}
         </p>
-        <p className="ml-auto shrink-0 font-mono text-[0.72rem] font-semibold tabular-nums text-foreground">
+        <p className="ml-auto shrink-0 font-mono text-[0.79rem] font-semibold tabular-nums text-foreground">
           {valueLabel}
         </p>
       </div>
@@ -326,7 +326,7 @@ function FlowSlider({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="shrink-0 font-mono text-[0.46rem] uppercase tracking-[0.08em] tabular-nums text-muted-foreground/70">
+      <span className="shrink-0 font-mono text-[0.68rem] uppercase tracking-[0.08em] tabular-nums text-muted-foreground/70">
         {minLabel}
       </span>
       <input
@@ -343,7 +343,7 @@ function FlowSlider({
         type="range"
         value={value}
       />
-      <span className="shrink-0 font-mono text-[0.46rem] uppercase tracking-[0.08em] tabular-nums text-muted-foreground/70">
+      <span className="shrink-0 font-mono text-[0.68rem] uppercase tracking-[0.08em] tabular-nums text-muted-foreground/70">
         {maxLabel}
       </span>
     </div>

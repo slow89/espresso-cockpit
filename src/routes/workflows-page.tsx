@@ -38,40 +38,40 @@ function WorkflowActiveTicker() {
     >
       <div className="flex items-center gap-2 border-r border-border/40 px-3 py-1.5 md:px-4">
         <span className="block size-2 rounded-full bg-status-success-foreground shadow-[0_0_6px_rgba(107,231,159,0.5)]" />
-        <p className="font-mono text-[0.64rem] font-semibold uppercase tracking-[0.08em] text-status-success-foreground md:text-[0.68rem]">
+        <p className="font-mono text-[0.76rem] font-semibold uppercase tracking-[0.08em] text-status-success-foreground md:text-[0.78rem]">
           Active
         </p>
       </div>
 
       <div className="flex min-w-0 items-center border-r border-border/30 px-3 py-1.5 md:px-4">
-        <p className="truncate font-mono text-[0.76rem] font-semibold text-foreground md:text-[0.8rem]">
+        <p className="truncate font-mono text-[0.81rem] font-semibold text-foreground md:text-[0.83rem]">
           {getProfileTitle(activeProfile)}
         </p>
       </div>
 
       <div className="flex items-center gap-2 border-r border-border/30 px-3 py-1.5 md:px-4">
-        <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.06em] text-muted-foreground md:text-[0.52rem]">
+        <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.06em] text-muted-foreground md:text-[0.7rem]">
           Dose
         </p>
-        <p className="whitespace-nowrap font-mono text-[0.76rem] font-semibold tabular-nums text-foreground md:text-[0.8rem]">
+        <p className="whitespace-nowrap font-mono text-[0.81rem] font-semibold tabular-nums text-foreground md:text-[0.83rem]">
           {targetDose != null ? `${targetDose.toFixed(0)}g` : "--"}
         </p>
       </div>
 
       <div className="flex items-center gap-2 border-r border-border/30 px-3 py-1.5 md:px-4">
-        <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.06em] text-muted-foreground md:text-[0.52rem]">
+        <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.06em] text-muted-foreground md:text-[0.7rem]">
           Yield
         </p>
-        <p className="whitespace-nowrap font-mono text-[0.76rem] font-semibold tabular-nums text-foreground md:text-[0.8rem]">
+        <p className="whitespace-nowrap font-mono text-[0.81rem] font-semibold tabular-nums text-foreground md:text-[0.83rem]">
           {targetYield != null ? `${targetYield.toFixed(0)}g` : "--"}
         </p>
       </div>
 
       <div className="flex items-center gap-2 px-3 py-1.5 md:px-4">
-        <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.06em] text-muted-foreground md:text-[0.52rem]">
+        <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.06em] text-muted-foreground md:text-[0.7rem]">
           Ratio
         </p>
-        <p className="whitespace-nowrap font-mono text-[0.76rem] font-semibold tabular-nums text-highlight md:text-[0.8rem]">
+        <p className="whitespace-nowrap font-mono text-[0.81rem] font-semibold tabular-nums text-highlight md:text-[0.83rem]">
           {ratio}
         </p>
       </div>

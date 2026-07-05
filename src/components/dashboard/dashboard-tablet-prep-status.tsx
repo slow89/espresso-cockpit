@@ -30,7 +30,7 @@ export function DashboardTabletPrepStatus({ status }: { status: DashboardPrepSta
         />
         <p
           className={cn(
-            "font-mono text-[0.64rem] font-semibold uppercase tracking-[0.08em] md:text-[0.88rem]",
+            "font-mono text-[0.76rem] font-semibold uppercase tracking-[0.08em] md:text-[0.88rem]",
             status.tone === "ready" && "text-status-success-foreground",
             isWarming && "text-highlight-muted",
             status.tone === "offline" && "text-status-warning-foreground",
@@ -50,10 +50,10 @@ export function DashboardTabletPrepStatus({ status }: { status: DashboardPrepSta
           )}
           key={item.label}
         >
-          <p className="font-mono text-[0.5rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground md:text-[0.68rem]">
+          <p className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground md:text-[0.78rem]">
             {item.label}
           </p>
-          <p className="whitespace-nowrap font-mono text-[0.76rem] font-semibold tabular-nums text-foreground md:text-[1.05rem]">
+          <p className="whitespace-nowrap font-mono text-[0.81rem] font-semibold tabular-nums text-foreground md:text-[1.05rem]">
             {item.value}
           </p>
         </div>

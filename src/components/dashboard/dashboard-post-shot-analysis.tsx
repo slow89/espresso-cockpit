@@ -100,7 +100,7 @@ export function DashboardPostShotAnalysis({ summary }: { summary: DashboardPostS
       data-testid="dashboard-post-shot-analysis"
     >
       <div className="space-y-1.5">
-        <p className="font-mono text-[0.52rem] uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted-foreground">
           Taste · optional
         </p>
         {tasteCompassScales.map((scale) => (
@@ -113,8 +113,8 @@ export function DashboardPostShotAnalysis({ summary }: { summary: DashboardPostS
                   aria-pressed={selected}
                   className={
                     selected
-                      ? "rounded-full border border-primary/60 bg-primary/20 px-2.5 py-1 font-mono text-[0.56rem] text-primary transition-colors"
-                      : "rounded-full border border-border/70 px-2.5 py-1 font-mono text-[0.56rem] text-muted-foreground transition-colors hover:text-foreground"
+                      ? "rounded-full border border-primary/60 bg-primary/20 px-3 py-2 font-mono text-[0.72rem] text-primary transition-colors"
+                      : "rounded-full border border-border/70 px-3 py-2 font-mono text-[0.72rem] text-muted-foreground transition-colors hover:text-foreground"
                   }
                   key={option}
                   onClick={() =>
@@ -132,7 +132,7 @@ export function DashboardPostShotAnalysis({ summary }: { summary: DashboardPostS
           </div>
         ))}
         <Button
-          className="mt-1 h-9 w-full rounded-[4px] font-mono text-[0.64rem] font-semibold"
+          className="mt-1 h-11 w-full rounded-[4px] font-mono text-[0.76rem] font-semibold"
           disabled={state.phase === "loading"}
           onClick={() => (state.phase === "done" ? reset() : analyze(compass))}
           size="sm"
@@ -158,7 +158,7 @@ function AnalysisConsole({ onRetry, state }: { onRetry: () => void; state: Analy
   if (state.phase === "loading") {
     return (
       <div className="flex h-full min-h-[88px] items-center justify-center rounded-[4px] border border-dashed border-border/70">
-        <div className="flex items-center gap-2 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted-foreground">
+        <div className="flex items-center gap-2 font-mono text-[0.75rem] uppercase tracking-[0.12em] text-muted-foreground">
           <Sparkles className="size-3.5 animate-pulse text-primary" />
           <span className="animate-pulse">Reading telemetry…</span>
         </div>
@@ -169,13 +169,13 @@ function AnalysisConsole({ onRetry, state }: { onRetry: () => void; state: Analy
   if (state.phase === "error") {
     return (
       <div className="flex flex-wrap items-center gap-3 rounded-[4px] border border-status-error-border/60 bg-status-error-surface/40 px-3 py-2.5">
-        <p className="min-w-0 flex-1 text-[0.72rem] text-status-error-foreground">
+        <p className="min-w-0 flex-1 text-[0.79rem] text-status-error-foreground">
           {state.message}
         </p>
         {state.kind === "auth" ? (
           <Button
             asChild
-            className="h-8 rounded-[4px] px-3 font-mono text-[0.62rem]"
+            className="h-10 rounded-[4px] px-3 font-mono text-[0.75rem]"
             size="sm"
             variant="secondary"
           >
@@ -183,7 +183,7 @@ function AnalysisConsole({ onRetry, state }: { onRetry: () => void; state: Analy
           </Button>
         ) : null}
         <Button
-          className="h-8 rounded-[4px] px-3 font-mono text-[0.62rem]"
+          className="h-10 rounded-[4px] px-3 font-mono text-[0.75rem]"
           onClick={onRetry}
           size="sm"
           variant="secondary"
@@ -197,25 +197,25 @@ function AnalysisConsole({ onRetry, state }: { onRetry: () => void; state: Analy
   if (state.phase === "done") {
     return (
       <div className="space-y-2">
-        <p className="text-[0.72rem] leading-relaxed text-foreground/90">
+        <p className="text-[0.79rem] leading-relaxed text-foreground/90">
           {state.result.diagnosis}
         </p>
         <div className="flex items-center gap-3 rounded-[4px] border border-primary/40 bg-primary/10 px-3 py-2">
           <ArrowDownRight className="size-5 shrink-0 text-primary" />
           <div className="min-w-0">
-            <p className="font-mono text-[0.5rem] uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
               Primary adjustment
             </p>
             <p className="font-mono text-[0.85rem] font-semibold uppercase tracking-[0.06em] text-primary">
               {state.result.primary.action} · {state.result.primary.detail}
             </p>
-            <p className="mt-0.5 text-[0.66rem] text-muted-foreground">
+            <p className="mt-0.5 text-[0.77rem] text-muted-foreground">
               {state.result.primary.rationale}
             </p>
           </div>
         </div>
         {state.result.secondary ? (
-          <p className="text-[0.64rem] text-muted-foreground">
+          <p className="text-[0.76rem] text-muted-foreground">
             <span className="font-mono uppercase tracking-[0.1em]">Then consider:</span>{" "}
             {state.result.secondary.action} — {state.result.secondary.rationale}
           </p>
@@ -226,7 +226,7 @@ function AnalysisConsole({ onRetry, state }: { onRetry: () => void; state: Analy
 
   return (
     <div className="flex h-full min-h-[88px] items-center justify-center rounded-[4px] border border-dashed border-border/70 px-4">
-      <p className="text-center font-mono text-[0.58rem] uppercase tracking-[0.1em] text-muted-foreground/70">
+      <p className="text-center font-mono text-[0.73rem] uppercase tracking-[0.1em] text-muted-foreground/70">
         No reading yet — Analyze reads telemetry alone; taste taps sharpen it
       </p>
     </div>
@@ -237,12 +237,12 @@ function SetupPanel() {
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-[4px] border border-status-info-border/50 bg-status-info-surface/40 px-3 py-2.5">
       <KeyRound className="size-4 shrink-0 text-status-info-foreground" />
-      <p className="min-w-0 flex-1 text-[0.72rem] text-status-info-foreground">
+      <p className="min-w-0 flex-1 text-[0.79rem] text-status-info-foreground">
         Shot Analysis needs an LLM provider. Configure one in Setup — keys stay on this tablet.
       </p>
       <Button
         asChild
-        className="h-8 rounded-[4px] px-3 font-mono text-[0.62rem]"
+        className="h-10 rounded-[4px] px-3 font-mono text-[0.75rem]"
         size="sm"
         variant="secondary"
       >

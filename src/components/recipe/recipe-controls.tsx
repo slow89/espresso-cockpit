@@ -22,7 +22,7 @@ export function RecipeControlButton({
     <button
       aria-label={ariaLabel}
       className={cn(
-        "flex h-6 w-6 items-center justify-center rounded-[4px] border border-border bg-panel-muted text-foreground transition hover:bg-highlight/20 hover:border-highlight/60 hover:text-highlight active:bg-highlight/25 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-9 w-9 items-center justify-center rounded-[4px] border border-border bg-panel-muted text-foreground transition hover:bg-highlight/20 hover:border-highlight/60 hover:text-highlight active:bg-highlight/25 disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       disabled={disabled}
@@ -58,7 +58,7 @@ export function RecipeValueControl({
   return (
     <div
       className={cn(
-        "grid grid-cols-[26px_minmax(0,1fr)_26px] items-center gap-1 rounded-[4px] bg-panel-strong/50 px-1 py-1",
+        "grid grid-cols-[40px_minmax(0,1fr)_40px] items-center gap-1 rounded-[4px] bg-panel-strong/50 px-1 py-1",
         className,
       )}
     >
@@ -114,7 +114,7 @@ export function RecipePresetRow({
   return (
     <div
       className={cn(
-        "grid grid-cols-4 gap-1 text-[0.72rem] font-medium text-muted-foreground",
+        "grid grid-cols-4 gap-1 text-[0.79rem] font-medium text-muted-foreground",
         className,
       )}
     >
@@ -123,7 +123,7 @@ export function RecipePresetRow({
           key={preset.label}
           className={cn(
             "rounded-[4px] border font-mono tabular-nums transition",
-            align === "left" ? "px-1.5 py-1 text-left" : "px-1 py-1 text-center",
+            align === "left" ? "px-1.5 py-1.5 text-left" : "px-1 py-1.5 text-center",
             isPresetActive(activePresetValue, preset.value)
               ? "border-highlight/60 bg-highlight/15 text-foreground"
               : "border-border/50 hover:border-border hover:bg-panel-strong/60 hover:text-foreground",

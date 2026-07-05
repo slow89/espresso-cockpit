@@ -239,7 +239,7 @@ export function WorkflowFrameMetricGrid({
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       <div className="rounded-[3px] border border-chart-border bg-panel-muted px-3 py-2.5">
-        <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="font-mono text-[0.73rem] uppercase tracking-[0.18em] text-muted-foreground">
           Frame
         </p>
         <p className="mt-1 font-mono text-[0.9rem] text-foreground">
@@ -252,7 +252,7 @@ export function WorkflowFrameMetricGrid({
           className="rounded-[10px] border border-chart-border bg-panel-muted px-3 py-2.5"
           key={seriesDefinition.id}
         >
-          <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-muted-foreground">
+          <p className="font-mono text-[0.73rem] uppercase tracking-[0.18em] text-muted-foreground">
             {seriesDefinition.shortLabel}
           </p>
           <p className="mt-1 font-mono text-[0.9rem] text-foreground">

@@ -98,28 +98,28 @@ function FramePreviewOverlayDialog({
             {/* Status beacon + frame counter */}
             <div className="flex items-center gap-2 border-r border-border/40 px-3 py-1.5 md:px-4">
               <span className="block size-2 rounded-full bg-status-success-foreground shadow-[0_0_6px_rgba(107,231,159,0.5)]" />
-              <p className="font-mono text-[0.58rem] font-semibold uppercase tabular-nums tracking-[0.08em] text-status-success-foreground md:text-[0.64rem]">
+              <p className="font-mono text-[0.73rem] font-semibold uppercase tabular-nums tracking-[0.08em] text-status-success-foreground md:text-[0.76rem]">
                 F{selectedFrameIndex + 1}/{preview.frames.length}
               </p>
             </div>
 
             {/* Profile name */}
             <div className="flex min-w-0 flex-1 items-center border-r border-border/30 px-3 py-1.5 md:px-4">
-              <p className="truncate font-mono text-[0.72rem] font-semibold text-foreground md:text-[0.78rem]">
+              <p className="truncate font-mono text-[0.79rem] font-semibold text-foreground md:text-[0.82rem]">
                 {getProfileTitle(profile)}
               </p>
             </div>
 
             {/* Author */}
             <div className="hidden items-center border-r border-border/30 px-3 py-1.5 md:flex md:px-4">
-              <p className="font-mono text-[0.56rem] uppercase tracking-[0.06em] text-muted-foreground md:text-[0.6rem]">
+              <p className="font-mono text-[0.72rem] uppercase tracking-[0.06em] text-muted-foreground md:text-[0.74rem]">
                 {profile.author ?? "Unknown"}
               </p>
             </div>
 
             {/* Preset label */}
             <div className="hidden items-center border-r border-border/30 px-3 py-1.5 md:flex md:px-4">
-              <p className="font-mono text-[0.56rem] uppercase tracking-[0.08em] text-highlight md:text-[0.6rem]">
+              <p className="font-mono text-[0.72rem] uppercase tracking-[0.08em] text-highlight md:text-[0.74rem]">
                 {formatPresetLabel(activePreset)}
               </p>
             </div>
@@ -127,7 +127,7 @@ function FramePreviewOverlayDialog({
             {/* Close */}
             <Button
               autoFocus
-              className="my-auto mx-2 size-9 shrink-0 rounded-[8px] border-border/40 bg-panel px-0 text-muted-foreground hover:bg-panel-muted md:mx-3 md:size-10 xl:min-h-[36px] xl:w-auto xl:px-3 xl:font-mono xl:text-[0.68rem] xl:uppercase xl:tracking-[0.16em] xl:text-foreground"
+              className="my-auto mx-2 size-9 shrink-0 rounded-[8px] border-border/40 bg-panel px-0 text-muted-foreground hover:bg-panel-muted md:mx-3 md:size-10 xl:min-h-[36px] xl:w-auto xl:px-3 xl:font-mono xl:text-[0.78rem] xl:uppercase xl:tracking-[0.16em] xl:text-foreground"
               onClick={onClose}
               type="button"
               variant="outline"
@@ -174,10 +174,10 @@ function FramePreviewOverlayDialog({
             <aside className="grid content-start gap-4 overflow-y-auto">
               <div className="rounded-[3px] border border-border bg-panel p-3 md:p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                  <p className="font-mono text-[0.73rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                     Selected frame
                   </p>
-                  <p className="font-mono text-[0.66rem] uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="font-mono text-[0.77rem] uppercase tracking-[0.14em] text-muted-foreground">
                     Frame {selectedFrameIndex + 1} / {preview.frames.length}
                   </p>
                 </div>
@@ -191,7 +191,7 @@ function FramePreviewOverlayDialog({
               </div>
 
               <div className="rounded-[3px] border border-border bg-panel p-3 md:p-4">
-                <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="font-mono text-[0.73rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Structured frame
                 </p>
                 <div className="mt-3 grid gap-2">
@@ -201,10 +201,10 @@ function FramePreviewOverlayDialog({
                         className="rounded-[3px] border border-border bg-panel-muted px-2.5 py-2"
                         key={key}
                       >
-                        <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                        <p className="font-mono text-[0.73rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                           {formatSeriesKey(key)}
                         </p>
-                        <p className="mt-1 break-words font-mono text-[0.76rem] text-foreground">
+                        <p className="mt-1 break-words font-mono text-[0.81rem] text-foreground">
                           {formatFrameValue(value)}
                         </p>
                       </div>
@@ -216,10 +216,10 @@ function FramePreviewOverlayDialog({
               </div>
 
               <div className="rounded-[3px] border border-border bg-panel p-3 md:p-4">
-                <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="font-mono text-[0.73rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Raw frame
                 </p>
-                <pre className="mt-3 overflow-x-auto rounded-[3px] border border-border bg-panel-muted p-3 font-mono text-[0.68rem] leading-5 text-muted-foreground">
+                <pre className="mt-3 overflow-x-auto rounded-[3px] border border-border bg-panel-muted p-3 font-mono text-[0.78rem] leading-5 text-muted-foreground">
                   {JSON.stringify(selectedFrame ?? {}, null, 2)}
                 </pre>
               </div>
@@ -263,7 +263,7 @@ function FrameNavigator({
   return (
     <div className="shrink-0 border-t border-border/40 bg-panel-strong/30 pb-[env(safe-area-inset-bottom,0px)]">
       <div className="flex items-center gap-2 px-2.5 py-1 md:px-3 md:py-1.5">
-        <p className="shrink-0 font-mono text-[0.46rem] font-medium uppercase tracking-[0.1em] text-muted-foreground md:text-[0.5rem]">
+        <p className="shrink-0 font-mono text-[0.68rem] font-medium uppercase tracking-[0.1em] text-muted-foreground md:text-[0.7rem]">
           Frame
         </p>
         <div
@@ -273,7 +273,7 @@ function FrameNavigator({
           {Array.from({ length: frameCount }, (_, i) => (
             <button
               className={cn(
-                "shrink-0 rounded-[4px] px-2 py-1.5 font-mono text-[0.56rem] font-medium tabular-nums transition-colors md:min-w-[36px] md:px-2.5 md:py-2 md:text-[0.62rem]",
+                "min-w-[36px] shrink-0 rounded-[4px] px-2.5 py-2 font-mono text-[0.72rem] font-medium tabular-nums transition-colors md:min-w-[40px] md:px-3 md:py-2.5 md:text-[0.75rem]",
                 i === selectedFrameIndex
                   ? "border border-accent/50 bg-accent/12 text-accent"
                   : "border border-border/30 text-muted-foreground hover:border-highlight/40 hover:text-foreground active:bg-highlight/8",

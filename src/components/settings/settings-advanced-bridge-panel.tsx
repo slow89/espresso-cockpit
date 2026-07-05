@@ -42,15 +42,15 @@ export function SettingsAdvancedBridgePanel() {
     <details className="group px-2.5 py-2.5 md:px-3 md:py-3">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <p className="font-mono text-[0.54rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
+          <p className="font-mono text-[0.71rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted">
             Advanced Bridge
           </p>
-          <span className="font-mono text-[0.42rem] text-muted-foreground/40">|</span>
-          <p className="font-mono text-[0.46rem] uppercase tracking-[0.06em] text-muted-foreground/60">
+          <span className="font-mono text-[0.66rem] text-muted-foreground/40">|</span>
+          <p className="font-mono text-[0.68rem] uppercase tracking-[0.06em] text-muted-foreground/60">
             Only for debugging or switching targets
           </p>
         </div>
-        <span className="shrink-0 font-mono text-[0.46rem] uppercase tracking-[0.08em] text-muted-foreground/50 group-open:text-highlight-muted">
+        <span className="shrink-0 font-mono text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground/50 group-open:text-highlight-muted">
           <span className="group-open:hidden">Open</span>
           <span className="hidden group-open:inline">Close</span>
         </span>
@@ -60,11 +60,11 @@ export function SettingsAdvancedBridgePanel() {
         {/* URL editor */}
         <div className="grid gap-2 rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-2 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
           <label className="grid gap-1" htmlFor="gatewayUrl">
-            <span className="font-mono text-[0.42rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+            <span className="font-mono text-[0.66rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
               REST origin
             </span>
             <Input
-              className="h-9 rounded-[3px] border-border/50 bg-panel-strong font-mono text-[0.68rem]"
+              className="h-9 rounded-[3px] border-border/50 bg-panel-strong font-mono text-[0.78rem]"
               id="gatewayUrl"
               onChange={(event) => setDraftGatewayUrl(event.target.value)}
               placeholder="http://localhost:8080"
@@ -73,14 +73,14 @@ export function SettingsAdvancedBridgePanel() {
           </label>
 
           <Button
-            className="min-h-[36px] rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
+            className="min-h-[36px] rounded-[3px] px-3 text-[0.7rem] uppercase tracking-[0.14em]"
             onClick={() => void handleSave()}
             size="sm"
           >
             Save & reconnect
           </Button>
           <Button
-            className="min-h-[36px] rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
+            className="min-h-[36px] rounded-[3px] px-3 text-[0.7rem] uppercase tracking-[0.14em]"
             onClick={() => setDraftGatewayUrl(window.location.origin)}
             size="sm"
             variant="secondary"
@@ -93,10 +93,10 @@ export function SettingsAdvancedBridgePanel() {
         <div className="grid gap-1.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <p className="font-mono text-[0.46rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+              <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
                 Active target
               </p>
-              <p className="font-mono text-[0.72rem] font-semibold tracking-[0.02em] text-foreground">
+              <p className="font-mono text-[0.79rem] font-semibold tracking-[0.02em] text-foreground">
                 {gatewayUrl.replace(/^https?:\/\//, "")}
               </p>
             </div>

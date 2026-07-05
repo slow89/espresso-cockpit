@@ -109,7 +109,7 @@ export function SettingsDisplaySleepPanel() {
           value={formatBrightnessValue(brightnessDraft)}
         >
           <div className="mt-2 flex items-center gap-2">
-            <span className="font-mono text-[0.46rem] uppercase tracking-[0.08em] text-muted-foreground/70">
+            <span className="font-mono text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground/70">
               Dim
             </span>
             <input
@@ -126,11 +126,11 @@ export function SettingsDisplaySleepPanel() {
               type="range"
               value={brightnessDraft}
             />
-            <span className="font-mono text-[0.46rem] uppercase tracking-[0.08em] text-muted-foreground/70">
+            <span className="font-mono text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground/70">
               Auto
             </span>
           </div>
-          <p className="mt-1 font-mono text-[0.46rem] tracking-[0.03em] text-muted-foreground/50">
+          <p className="mt-1 font-mono text-[0.68rem] tracking-[0.03em] text-muted-foreground/50">
             Applied: {formatBrightness(displayState)}
           </p>
         </ControlBlock>
@@ -181,7 +181,7 @@ export function SettingsDisplaySleepPanel() {
         >
           <div className="mt-2 grid grid-cols-2 gap-1.5">
             <Button
-              className="min-h-[34px] rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
+              className="min-h-[34px] rounded-[3px] px-3 text-[0.7rem] uppercase tracking-[0.14em]"
               disabled={displayState?.platformSupported.wakeLock === false}
               onClick={() =>
                 void (displayState?.wakeLockOverride ? releaseWakeLock() : requestWakeLock())
@@ -191,7 +191,7 @@ export function SettingsDisplaySleepPanel() {
               {displayState?.wakeLockOverride ? "Let screen sleep" : "Keep screen on"}
             </Button>
             <Button
-              className="min-h-[34px] rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
+              className="min-h-[34px] rounded-[3px] px-3 text-[0.7rem] uppercase tracking-[0.14em]"
               disabled={!canToggleFullscreen}
               onClick={() => void handleFullscreenToggle()}
               size="sm"

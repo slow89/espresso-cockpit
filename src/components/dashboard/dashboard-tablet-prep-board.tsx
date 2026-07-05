@@ -69,11 +69,11 @@ function DashboardTabletRecipeCard({
   return (
     <section className="border-b border-border/70 px-3 py-2.5 md:col-span-2 md:px-5 md:py-2.5">
       <div className="flex items-center gap-2">
-        <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted md:text-[0.84rem]">
+        <p className="font-mono text-[0.74rem] font-semibold uppercase tracking-[0.1em] text-highlight-muted md:text-[0.85rem]">
           Recipe
         </p>
-        <span className="font-mono text-[0.5rem] text-muted-foreground/60">|</span>
-        <p className="font-mono text-[0.64rem] font-medium tabular-nums text-muted-foreground md:text-[0.88rem]">
+        <span className="font-mono text-[0.7rem] text-muted-foreground/60">|</span>
+        <p className="font-mono text-[0.76rem] font-medium tabular-nums text-muted-foreground md:text-[0.88rem]">
           {drinkDetail}
         </p>
       </div>
@@ -169,14 +169,14 @@ function DashboardTabletAdjustSection({
       <div className="flex items-center justify-between gap-2">
         <p
           className={cn(
-            "font-mono text-[0.56rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground md:text-[0.82rem]",
+            "font-mono text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground md:text-[0.84rem]",
             labelClassName,
           )}
         >
           {label}
         </p>
         {detail ? (
-          <p className="font-mono text-[0.56rem] tabular-nums text-muted-foreground/70 md:text-[0.82rem]">
+          <p className="font-mono text-[0.72rem] tabular-nums text-muted-foreground/70 md:text-[0.84rem]">
             {detail}
           </p>
         ) : null}
@@ -196,7 +196,7 @@ function DashboardTabletAdjustSection({
 
       <RecipePresetRow
         activePresetValue={activePresetValue}
-        className="mt-1.5 gap-1 text-[0.68rem] md:mt-1.5 md:gap-1.5 md:text-[0.88rem]"
+        className="mt-1.5 gap-1 text-[0.78rem] md:mt-1.5 md:gap-1.5 md:text-[0.88rem]"
         disabled={disabled}
         itemClassName="rounded-[4px] border border-border/60 px-1.5 py-1 md:px-2 md:py-1"
         onPresetClick={onPresetClick}

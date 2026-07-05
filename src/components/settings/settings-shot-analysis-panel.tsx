@@ -11,7 +11,7 @@ import {
 import { useShotAnalysisSettingsStore } from "@/stores/shot-analysis-store";
 
 const inputClassName =
-  "h-8 min-w-0 flex-1 rounded-[3px] border border-border/60 bg-shell px-2 font-mono text-[0.6rem] text-foreground placeholder:text-muted-foreground/50 focus:border-primary/60 focus:outline-none";
+  "h-8 min-w-0 flex-1 rounded-[3px] border border-border/60 bg-shell px-2 font-mono text-[0.74rem] text-foreground placeholder:text-muted-foreground/50 focus:border-primary/60 focus:outline-none";
 
 export function SettingsShotAnalysisPanel() {
   const apiKey = useShotAnalysisSettingsStore((state) => state.apiKey);
@@ -128,7 +128,7 @@ export function SettingsShotAnalysisPanel() {
           />
           <Button
             aria-label={showKey ? "Hide API key" : "Show API key"}
-            className="h-8 rounded-[3px] px-2"
+            className="h-10 rounded-[3px] px-3"
             onClick={() => setShowKey((previous) => !previous)}
             size="sm"
             type="button"
@@ -139,7 +139,7 @@ export function SettingsShotAnalysisPanel() {
           {canPaste ? (
             <Button
               aria-label="Paste API key"
-              className="h-8 rounded-[3px] px-2"
+              className="h-10 rounded-[3px] px-3"
               onClick={handlePaste}
               size="sm"
               type="button"
@@ -149,7 +149,7 @@ export function SettingsShotAnalysisPanel() {
             </Button>
           ) : null}
           <Button
-            className="h-8 rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
+            className="h-10 rounded-[3px] px-3 text-[0.7rem] uppercase tracking-[0.14em]"
             disabled={draft.trim() === ""}
             size="sm"
             type="submit"
@@ -159,7 +159,7 @@ export function SettingsShotAnalysisPanel() {
           </Button>
           {hasApiKey ? (
             <Button
-              className="h-8 rounded-[3px] px-3 text-[0.52rem] uppercase tracking-[0.14em]"
+              className="h-10 rounded-[3px] px-3 text-[0.7rem] uppercase tracking-[0.14em]"
               onClick={clearApiKey}
               size="sm"
               type="button"

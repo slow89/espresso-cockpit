@@ -50,7 +50,7 @@ export function DashboardWaterAlertOverlay() {
           <h1 className="font-mono text-[1.6rem] font-semibold leading-tight tracking-[0.04em] text-white md:text-[2.2rem]">
             Refill the tank!
           </h1>
-          <p className="mt-1.5 font-mono text-[0.68rem] font-bold tabular-nums text-[#f5d485]">
+          <p className="mt-1.5 font-mono text-[0.78rem] font-bold tabular-nums text-[#f5d485]">
             Water level: {formatMillimeters(currentLevel)}
             {refillLevel != null ? ` / refill at ${formatMillimeters(refillLevel)}` : ""}
           </p>
@@ -60,7 +60,7 @@ export function DashboardWaterAlertOverlay() {
       {/* Dismiss button */}
       <div className="relative px-6 pb-4 text-center">
         <button
-          className="rounded-[12px] border border-white/20 bg-white/10 px-6 py-2.5 font-mono text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm transition hover:bg-white/20 active:bg-white/25 md:text-[0.78rem]"
+          className="rounded-[12px] border border-white/20 bg-white/10 px-6 py-2.5 font-mono text-[0.79rem] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm transition hover:bg-white/20 active:bg-white/25 md:text-[0.82rem]"
           onClick={dismiss}
           type="button"
         >

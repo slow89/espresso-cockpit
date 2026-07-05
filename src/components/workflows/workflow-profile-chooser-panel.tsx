@@ -47,7 +47,7 @@ export function WorkflowProfileChooserPanel() {
         <ProfileLibraryActions />
         <CurrentProfileRow />
         <div className="grid md:min-h-0 md:overflow-hidden">
-          <p className="border-b border-border/30 px-3 py-1.5 font-mono text-[0.5rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
+          <p className="border-b border-border/30 px-3 py-1.5 font-mono text-[0.7rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">
             Saved profiles
           </p>
           {availableProfiles.length ? (
@@ -113,7 +113,7 @@ function ProfileLibraryActions() {
     <section className="border-b border-border/30 px-3 py-2">
       <div className="flex items-end gap-2">
         <div className="min-w-0 flex-1">
-          <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.1em] text-highlight">
+          <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.1em] text-highlight">
             Visualizer Import
           </p>
           <div className="mt-1.5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
@@ -121,7 +121,7 @@ function ProfileLibraryActions() {
               <span className="sr-only">Share code</span>
               <Input
                 autoCapitalize="characters"
-                className="h-8 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.68rem] uppercase"
+                className="h-10 rounded-[3px] border-border/60 bg-panel-strong font-mono text-[0.78rem] uppercase"
                 id="visualizer-share-code"
                 onChange={(event) => setShareCode(event.target.value)}
                 placeholder="AB12"
@@ -129,7 +129,7 @@ function ProfileLibraryActions() {
               />
             </label>
             <Button
-              className="h-8 shrink-0 rounded-[3px] px-3 font-mono text-[0.56rem] uppercase tracking-[0.1em]"
+              className="h-10 shrink-0 rounded-[3px] px-3 font-mono text-[0.72rem] uppercase tracking-[0.1em]"
               disabled={isImportDisabled}
               onClick={() => {
                 void handleVisualizerImport();
@@ -146,18 +146,18 @@ function ProfileLibraryActions() {
       {libraryStatus.message ? (
         <p
           className={cn(
-            "mt-1.5 font-mono text-[0.56rem] leading-4",
+            "mt-1.5 font-mono text-[0.72rem] leading-4",
             libraryStatus.tone === "error" ? "text-destructive" : "text-highlight",
           )}
         >
           {libraryStatus.message}
         </p>
       ) : !isVisualizerReady ? (
-        <p className="mt-1.5 font-mono text-[0.56rem] leading-4 text-muted-foreground/60">
+        <p className="mt-1.5 font-mono text-[0.72rem] leading-4 text-muted-foreground/60">
           Enable Visualizer in Setup.
         </p>
       ) : (
-        <p className="mt-1.5 font-mono text-[0.56rem] leading-4 text-muted-foreground/60">
+        <p className="mt-1.5 font-mono text-[0.72rem] leading-4 text-muted-foreground/60">
           Enter 4-digit share code.
         </p>
       )}
@@ -174,7 +174,7 @@ function CurrentProfileRow() {
     <div className="border-b border-border/30 bg-panel-strong/30 px-3 py-2">
       <div className="flex items-center gap-2">
         <span className="block size-1.5 rounded-full bg-status-success-foreground shadow-[0_0_4px_rgba(107,231,159,0.5)]" />
-        <p className="font-mono text-[0.5rem] font-medium uppercase tracking-[0.1em] text-status-success-foreground">
+        <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.1em] text-status-success-foreground">
           Active
         </p>
       </div>
@@ -182,7 +182,7 @@ function CurrentProfileRow() {
         {getProfileTitle(profile)}
       </p>
       <div className="mt-1 flex items-center gap-2">
-        <p className="font-mono text-[0.52rem] uppercase tracking-[0.08em] text-muted-foreground">
+        <p className="font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted-foreground">
           {joinValues([profile?.author ?? "Unknown author", profile?.beverage_type ?? "espresso"])}
         </p>
         <FrameCountButton
@@ -238,17 +238,17 @@ function ProfileCard({ isApplying, record }: { isApplying: boolean; record: Prof
     >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <p className="font-mono text-[0.82rem] font-semibold leading-none tracking-[0.02em] text-foreground">
+          <p className="font-mono text-[0.84rem] font-semibold leading-none tracking-[0.02em] text-foreground">
             {getProfileTitle(profile)}
           </p>
           {record.isDefault ? (
-            <span className="font-mono text-[0.44rem] font-semibold uppercase tracking-[0.08em] text-highlight-muted">
+            <span className="font-mono text-[0.67rem] font-semibold uppercase tracking-[0.08em] text-highlight-muted">
               Def
             </span>
           ) : null}
         </div>
         <div className="mt-1 flex items-center gap-2">
-          <p className="font-mono text-[0.5rem] uppercase tracking-[0.08em] text-muted-foreground">
+          <p className="font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted-foreground">
             {joinValues([profile.author ?? "Unknown author", profile.beverage_type ?? "espresso"])}
           </p>
           <FrameCountButton
@@ -258,7 +258,7 @@ function ProfileCard({ isApplying, record }: { isApplying: boolean; record: Prof
           />
         </div>
         <p
-          className="mt-0.5 line-clamp-1 font-mono text-[0.52rem] leading-4 text-muted-foreground/60"
+          className="mt-0.5 line-clamp-1 font-mono text-[0.7rem] leading-4 text-muted-foreground/60"
           title={profile.notes?.trim() || "No profile notes from the bridge."}
         >
           {profile.notes?.trim() || "No profile notes."}
@@ -280,7 +280,7 @@ function FrameCountButton({
   return (
     <button
       className={cn(
-        "rounded-[3px] border px-2 py-1 font-mono text-[0.56rem] font-semibold uppercase tabular-nums tracking-[0.08em] transition md:px-2.5 md:py-1 md:text-[0.6rem]",
+        "rounded-[3px] border px-2.5 py-2 font-mono text-[0.72rem] font-semibold uppercase tabular-nums tracking-[0.08em] transition md:px-3 md:py-2 md:text-[0.74rem]",
         disabled
           ? "border-border/30 text-muted-foreground/40"
           : "border-highlight/40 bg-highlight/8 text-highlight hover:border-highlight/60 hover:bg-highlight/15 hover:text-foreground",

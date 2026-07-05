@@ -4,6 +4,7 @@ import type { MachineSnapshot } from "@/rest/types";
 
 import {
   appendTelemetryHistory,
+  maxShotTelemetrySamples,
   maxTelemetrySamples,
   mergeScaleSnapshotIntoTelemetry,
   telemetrySeriesRegistry,
@@ -143,6 +144,39 @@ describe("appendTelemetryHistory", () => {
 
     expect(trimmed).toHaveLength(maxTelemetrySamples);
     expect(trimmed[0]?.pressure).toBe(8);
+  });
+
+  it("keeps the opening of a long shot instead of trimming it away", () => {
+    // Idle backlog that would normally dominate the ring buffer.
+    let telemetry: ReturnType<typeof appendTelemetryHistory> = [];
+    for (let index = 0; index < maxTelemetrySamples; index += 1) {
+      telemetry = appendTelemetryHistory(
+        telemetry,
+        buildSnapshot({
+          timestamp: new Date(Date.UTC(2026, 2, 21, 12, 0, index)).toISOString(),
+        }),
+      );
+    }
+
+    // A shot longer than the idle ring buffer.
+    const shotSampleCount = maxTelemetrySamples + 120;
+    for (let index = 0; index < shotSampleCount; index += 1) {
+      telemetry = appendTelemetryHistory(
+        telemetry,
+        buildSnapshot({
+          timestamp: new Date(Date.UTC(2026, 2, 21, 12, 5, index)).toISOString(),
+          state: { state: "espresso", substate: "pouring" },
+          pressure: index,
+        }),
+      );
+    }
+
+    const firstShotSample = telemetry.find((sample) => sample.shotElapsedSeconds === 0);
+    expect(firstShotSample).toBeDefined();
+    expect(firstShotSample?.pressure).toBe(0);
+    // Every shot sample survives, so the chart can render from t=0.
+    expect(telemetry.filter((sample) => sample.state === "espresso")).toHaveLength(shotSampleCount);
+    expect(telemetry.length).toBeLessThanOrEqual(maxShotTelemetrySamples);
   });
 
   it("starts shot timing from the bridge espresso shot state", () => {

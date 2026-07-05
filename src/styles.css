@@ -105,6 +105,12 @@
   --chart-atmosphere-tint-alpha: 0.03;
   --chart-atmosphere-edge-rgb: 255, 190, 87;
   --chart-atmosphere-edge-alpha: 0.06;
+  --chart-phase-band-rgb: 255, 190, 87;
+  --chart-phase-band-alpha: 0.04;
+  --chart-tooltip-surface-rgb: 12, 15, 19;
+  --chart-tooltip-surface-alpha: 0.94;
+  --chart-tooltip-border-rgb: 255, 196, 72;
+  --chart-tooltip-border-alpha: 0.22;
 
   --chart-crosshair-glow: rgba(var(--chart-crosshair-glow-rgb), var(--chart-crosshair-glow-alpha));
   --chart-atmosphere-tint: rgba(
@@ -186,6 +192,12 @@
   --chart-axis: rgba(var(--chart-axis-rgb), var(--chart-axis-alpha));
   --chart-crosshair: rgba(var(--chart-crosshair-rgb), var(--chart-crosshair-alpha));
   --chart-event: rgba(var(--chart-event-rgb), var(--chart-event-alpha));
+  --chart-phase-band: rgba(var(--chart-phase-band-rgb), var(--chart-phase-band-alpha));
+  --chart-tooltip-surface: rgba(
+    var(--chart-tooltip-surface-rgb),
+    var(--chart-tooltip-surface-alpha)
+  );
+  --chart-tooltip-border: rgba(var(--chart-tooltip-border-rgb), var(--chart-tooltip-border-alpha));
 
   --surface-top-strip: rgba(6, 7, 8, 0.96);
   --surface-nav: rgba(4, 5, 6, 0.98);
@@ -272,6 +284,12 @@
   --chart-atmosphere-tint-alpha: 0.025;
   --chart-atmosphere-edge-rgb: 177, 108, 18;
   --chart-atmosphere-edge-alpha: 0.04;
+  --chart-phase-band-rgb: 122, 86, 22;
+  --chart-phase-band-alpha: 0.05;
+  --chart-tooltip-surface-rgb: 255, 252, 247;
+  --chart-tooltip-surface-alpha: 0.97;
+  --chart-tooltip-border-rgb: 92, 78, 49;
+  --chart-tooltip-border-alpha: 0.22;
 
   --surface-top-strip: rgba(255, 251, 244, 0.92);
   --surface-nav: rgba(251, 246, 238, 0.96);

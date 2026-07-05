@@ -3,6 +3,13 @@ import type { MachinePhase, MachineSnapshot, ScaleSnapshot } from "@/rest/types"
 export type TelemetrySeriesFamily = "pressure" | "flow" | "weight" | "temperature" | "progress";
 export type TelemetryStrokeStyle = "solid" | "dashed";
 export const maxTelemetrySamples = 180;
+// Active shots must never lose their opening samples, so they get a far larger
+// budget than the idle backlog. ~10 min at the DE1's stream rate — big enough to
+// keep any real shot whole, bounded enough to stay memory-safe.
+export const maxShotTelemetrySamples = 2400;
+// Samples of idle context kept ahead of an active shot's start, so the chart has
+// a little lead-in without dragging the whole pre-shot backlog along.
+const shotLeadInSamples = 12;
 
 export type TelemetrySample = Pick<
   MachineSnapshot,
@@ -334,7 +341,7 @@ export function appendTelemetryHistory(
       ? null
       : Math.max(0, (currentTimestampMs - shotStartTimestampMs) / 1000);
 
-  return [
+  return trimTelemetryHistory([
     ...telemetry,
     {
       timestamp: snapshot.timestamp,
@@ -355,7 +362,31 @@ export function appendTelemetryHistory(
       weight: scaleSnapshot?.weight ?? null,
       weightFlow: scaleSnapshot?.weightFlow ?? null,
     },
-  ].slice(-maxTelemetrySamples);
+  ]);
+}
+
+// Trims the rolling telemetry buffer without ever discarding the opening of an
+// in-progress shot. When idle, the buffer is a plain ring of `maxTelemetrySamples`.
+// Once a shot is active, we anchor retention to that shot's first sample (plus a
+// small idle lead-in) so a long shot always renders from t=0, capped only by the
+// generous `maxShotTelemetrySamples` ceiling.
+export function trimTelemetryHistory(samples: TelemetrySample[]) {
+  const latest = samples[samples.length - 1];
+
+  if (!isShotActiveMachinePhase(latest)) {
+    return samples.length > maxTelemetrySamples ? samples.slice(-maxTelemetrySamples) : samples;
+  }
+
+  // Walk back over the trailing run of active-shot samples to find where it began.
+  let shotStartIndex = samples.length - 1;
+  while (shotStartIndex > 0 && isShotActiveMachinePhase(samples[shotStartIndex - 1])) {
+    shotStartIndex -= 1;
+  }
+
+  const keepFrom = Math.max(0, shotStartIndex - shotLeadInSamples);
+  const kept = keepFrom > 0 ? samples.slice(keepFrom) : samples;
+
+  return kept.length > maxShotTelemetrySamples ? kept.slice(-maxShotTelemetrySamples) : kept;
 }
 
 export function mergeScaleSnapshotIntoTelemetry(

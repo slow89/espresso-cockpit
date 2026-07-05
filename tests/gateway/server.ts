@@ -3,7 +3,7 @@ import { URL } from "node:url";
 
 import { WebSocketServer, type WebSocket } from "ws";
 
-import { machineStateChangeSchema } from "../../src/rest/types";
+import { machineStateChangeSchema, type MachineStateChange } from "../../src/rest/types";
 import {
   defaultGatewayScenarioId,
   gatewayScenarios,
@@ -34,6 +34,8 @@ const channelClients: Record<GatewayStreamChannel, Set<WebSocket>> = {
 const runtime = createScenarioRuntime(defaultGatewayScenarioId);
 const gatewayPort = Number(getFlagValue("--port") ?? "18080");
 const gatewayHost = getFlagValue("--host") ?? "127.0.0.1";
+let shotSimulationInterval: ReturnType<typeof setInterval> | null = null;
+let shotSimulationStartedAtMs = 0;
 
 const server = http.createServer((request, response) => {
   void handleRequest(request, response).catch((error) => {
@@ -63,6 +65,11 @@ server.on("upgrade", (request, socket, head) => {
     if (channel === "devices") {
       websocket.on("message", (message) => {
         handleDevicesCommand(message.toString(), websocket);
+      });
+    }
+    if (channel === "display") {
+      websocket.on("message", (message) => {
+        handleDisplayCommand(message.toString(), websocket);
       });
     }
     websocket.on("close", () => {
@@ -132,6 +139,7 @@ async function handleRequest(request: http.IncomingMessage, response: http.Serve
   }
 
   if (method === "POST" && path === "/__control/reset") {
+    stopShotSimulation();
     loadScenario(defaultGatewayScenarioId);
     sendJson(response, 200, summarizeRuntime());
     return;
@@ -148,6 +156,7 @@ async function handleRequest(request: http.IncomingMessage, response: http.Serve
       return;
     }
 
+    stopShotSimulation();
     loadScenario(nextScenarioId);
     sendJson(response, 200, summarizeRuntime());
     return;
@@ -185,31 +194,9 @@ async function handleRequest(request: http.IncomingMessage, response: http.Serve
     const nextState = machineStateChangeSchema.parse(
       decodeURIComponent(path.split("/").at(-1) ?? "idle"),
     );
-    runtime.state.machineSnapshot = {
-      ...runtime.state.machineSnapshot,
-      flow: nextState === "espresso" ? 2.4 : 0,
-      pressure: nextState === "espresso" ? 8.8 : 0,
-      state: {
-        state: nextState,
-        substate:
-          nextState === "sleeping" ? "idle" : nextState === "espresso" ? "pouring" : "ready",
-      },
-      timestamp: new Date().toISOString(),
-    };
-
-    if (nextState !== "espresso") {
-      runtime.state.scaleSnapshot = runtime.state.scaleSnapshot
-        ? {
-            ...runtime.state.scaleSnapshot,
-            timerValue: 0,
-            weightFlow: 0,
-          }
-        : null;
-    }
-
-    broadcastState(["machine", "scale"]);
-    response.writeHead(204, corsHeaders());
-    response.end();
+    applyRequestedMachineState(nextState);
+    broadcastState(["machine", "scale", "timeToReady"]);
+    sendJson(response, 200, runtime.state.machineSnapshot);
     return;
   }
 
@@ -382,8 +369,7 @@ async function handleRequest(request: http.IncomingMessage, response: http.Serve
   if (method === "POST" && path === "/api/v1/settings") {
     const body = await readJsonBody(request);
     runtime.state.bridgeSettings = mergeRecord(runtime.state.bridgeSettings, body);
-    response.writeHead(204, corsHeaders());
-    response.end();
+    sendJson(response, 200, runtime.state.bridgeSettings);
     return;
   }
 
@@ -395,8 +381,7 @@ async function handleRequest(request: http.IncomingMessage, response: http.Serve
   if (method === "POST" && path === "/api/v1/machine/calibration") {
     const body = await readJsonBody(request);
     runtime.state.machineCalibration = mergeRecord(runtime.state.machineCalibration, body);
-    response.writeHead(202, corsHeaders());
-    response.end();
+    sendJson(response, 200, runtime.state.machineCalibration);
     return;
   }
 
@@ -420,8 +405,7 @@ async function handleRequest(request: http.IncomingMessage, response: http.Serve
       ...(typeof body === "object" && body ? body : {}),
     };
     broadcastChannel("water");
-    response.writeHead(202, corsHeaders());
-    response.end();
+    sendJson(response, 200, runtime.state.waterLevels);
     return;
   }
 
@@ -434,34 +418,21 @@ async function handleRequest(request: http.IncomingMessage, response: http.Serve
     const body = await readJsonBody(request);
     const brightness = Number(body?.brightness ?? runtime.state.displayState.requestedBrightness);
 
-    runtime.state.displayState = {
-      ...runtime.state.displayState,
-      brightness,
-      lowBatteryBrightnessActive: false,
-      requestedBrightness: brightness,
-    };
+    updateDisplayBrightness(brightness);
     broadcastState(["display"]);
     sendJson(response, 200, runtime.state.displayState);
     return;
   }
 
   if (method === "POST" && path === "/api/v1/display/wakelock") {
-    runtime.state.displayState = {
-      ...runtime.state.displayState,
-      wakeLockEnabled: true,
-      wakeLockOverride: true,
-    };
+    updateWakeLockOverride(true);
     broadcastState(["display"]);
     sendJson(response, 200, runtime.state.displayState);
     return;
   }
 
   if (method === "DELETE" && path === "/api/v1/display/wakelock") {
-    runtime.state.displayState = {
-      ...runtime.state.displayState,
-      wakeLockEnabled: false,
-      wakeLockOverride: false,
-    };
+    updateWakeLockOverride(false);
     broadcastState(["display"]);
     sendJson(response, 200, runtime.state.displayState);
     return;
@@ -673,6 +644,12 @@ function sendScaleChannelState(websocket: WebSocket) {
 }
 
 function getChannelPayload(channel: GatewayStreamChannel) {
+  const fault = getStreamFault(channel);
+
+  if (fault) {
+    return fault.body;
+  }
+
   if (channel === "display") {
     return runtime.state.displayState;
   }
@@ -694,6 +671,39 @@ function getChannelPayload(channel: GatewayStreamChannel) {
   }
 
   return runtime.state.waterLevels;
+}
+
+function getStreamFault(channel: GatewayStreamChannel) {
+  const path = getStreamRestStatePath(channel);
+
+  if (!path) {
+    return null;
+  }
+
+  const match = findRouteFault("GET", path);
+  const fault = match?.fault ?? null;
+
+  if (!fault || fault.status < 400) {
+    return null;
+  }
+
+  return fault;
+}
+
+function getStreamRestStatePath(channel: GatewayStreamChannel) {
+  if (channel === "devices") {
+    return "/api/v1/devices";
+  }
+
+  if (channel === "display") {
+    return "/api/v1/display";
+  }
+
+  if (channel === "machine") {
+    return "/api/v1/machine/state";
+  }
+
+  return null;
 }
 
 function createScenarioRuntime(scenarioId: GatewayScenarioId): GatewayRuntimeState {
@@ -719,6 +729,124 @@ function loadScenario(scenarioId: GatewayScenarioId) {
   broadcastState(["devices", "display", "machine", "scale", "timeToReady", "water"]);
 }
 
+function applyRequestedMachineState(nextState: MachineStateChange) {
+  if (nextState === "espresso") {
+    startShotSimulation();
+    return;
+  }
+
+  stopShotSimulation();
+  runtime.state.machineSnapshot = {
+    ...runtime.state.machineSnapshot,
+    flow: 0,
+    pressure: 0,
+    profileFrame: 0,
+    state: {
+      state: nextState,
+      substate: nextState === "sleeping" ? "idle" : "ready",
+    },
+    targetFlow: 0,
+    targetPressure: 0,
+    timestamp: getNextSnapshotTimestamp(runtime.state.machineSnapshot.timestamp),
+  };
+
+  runtime.state.scaleSnapshot = runtime.state.scaleSnapshot
+    ? {
+        ...runtime.state.scaleSnapshot,
+        timerValue: 0,
+        weightFlow: 0,
+      }
+    : null;
+}
+
+function startShotSimulation() {
+  stopShotSimulation();
+  shotSimulationStartedAtMs = Date.now();
+  applyShotSimulationTick(0);
+
+  shotSimulationInterval = setInterval(() => {
+    const elapsedSeconds = (Date.now() - shotSimulationStartedAtMs) / 1000;
+
+    if (elapsedSeconds >= 30) {
+      finishShotSimulation(30);
+      return;
+    }
+
+    applyShotSimulationTick(elapsedSeconds);
+    broadcastState(["machine", "scale", "timeToReady"]);
+  }, 500);
+}
+
+function stopShotSimulation() {
+  if (shotSimulationInterval == null) {
+    return;
+  }
+
+  clearInterval(shotSimulationInterval);
+  shotSimulationInterval = null;
+}
+
+function finishShotSimulation(elapsedSeconds: number) {
+  applyShotSimulationTick(elapsedSeconds);
+  stopShotSimulation();
+  runtime.state.machineSnapshot = {
+    ...runtime.state.machineSnapshot,
+    flow: 0,
+    pressure: 0,
+    profileFrame: 0,
+    state: {
+      state: "idle",
+      substate: "ready",
+    },
+    targetFlow: 0,
+    targetPressure: 0,
+    timestamp: new Date(shotSimulationStartedAtMs + elapsedSeconds * 1000 + 500).toISOString(),
+  };
+  runtime.state.scaleSnapshot = runtime.state.scaleSnapshot
+    ? {
+        ...runtime.state.scaleSnapshot,
+        timerValue: Math.round(elapsedSeconds * 1000),
+        weightFlow: 0,
+      }
+    : null;
+  broadcastState(["machine", "scale", "timeToReady"]);
+}
+
+function applyShotSimulationTick(elapsedSeconds: number) {
+  const substate =
+    elapsedSeconds < 0.8 ? "preparingForShot" : elapsedSeconds < 3 ? "preinfusion" : "pouring";
+  const progress = Math.min(1, elapsedSeconds / 8);
+  const pouringSeconds = Math.max(0, elapsedSeconds - 1.2);
+  const flow = substate === "preparingForShot" ? 0 : roundTo(2.4 + Math.sin(elapsedSeconds) * 0.2);
+  const pressure =
+    substate === "preparingForShot" ? 0 : roundTo(Math.min(8.8, 2.2 + progress * 8.2));
+  const weight = roundTo(Math.min(42, pouringSeconds * 1.45));
+
+  runtime.state.machineSnapshot = {
+    ...runtime.state.machineSnapshot,
+    flow,
+    pressure,
+    profileFrame: elapsedSeconds < 1 ? 0 : elapsedSeconds < 6 ? 1 : 2,
+    state: {
+      state: "espresso",
+      substate,
+    },
+    targetFlow: 2.5,
+    targetPressure: substate === "preinfusion" ? 3 : 8.5,
+    timestamp: new Date(shotSimulationStartedAtMs + elapsedSeconds * 1000).toISOString(),
+  };
+
+  runtime.state.scaleSnapshot = runtime.state.scaleSnapshot
+    ? {
+        ...runtime.state.scaleSnapshot,
+        timerValue: Math.round(elapsedSeconds * 1000),
+        timestamp: runtime.state.machineSnapshot.timestamp,
+        weight,
+        weightFlow: substate === "pouring" ? 1.4 : 0,
+      }
+    : null;
+}
+
 function summarizeRuntime() {
   return {
     checkpoints: gatewayScenarios[runtime.scenarioId].expectedCheckpoints,
@@ -728,7 +856,7 @@ function summarizeRuntime() {
   };
 }
 
-function takeRouteFault(method: GatewayRouteFault["method"], path: string) {
+function findRouteFault(method: GatewayRouteFault["method"], path: string) {
   const faultIndex = runtime.activeFaults.findIndex(
     (entry) => entry.method === method && entry.path === path,
   );
@@ -737,7 +865,20 @@ function takeRouteFault(method: GatewayRouteFault["method"], path: string) {
     return null;
   }
 
-  const fault = runtime.activeFaults[faultIndex];
+  return {
+    fault: runtime.activeFaults[faultIndex] ?? null,
+    faultIndex,
+  };
+}
+
+function takeRouteFault(method: GatewayRouteFault["method"], path: string) {
+  const match = findRouteFault(method, path);
+
+  if (!match) {
+    return null;
+  }
+
+  const { fault, faultIndex } = match;
 
   if (fault?.once) {
     runtime.activeFaults.splice(faultIndex, 1);
@@ -886,6 +1027,38 @@ function buildDevicesPayload() {
   };
 }
 
+function updateDisplayBrightness(brightness: number) {
+  runtime.state.displayState = {
+    ...runtime.state.displayState,
+    brightness,
+    lowBatteryBrightnessActive: false,
+    requestedBrightness: brightness,
+  };
+}
+
+function updateWakeLockOverride(enabled: boolean) {
+  runtime.state.displayState = {
+    ...runtime.state.displayState,
+    wakeLockEnabled: enabled,
+    wakeLockOverride: enabled,
+  };
+}
+
+function getNextSnapshotTimestamp(timestamp: string) {
+  const previousTimestampMs = Date.parse(timestamp);
+
+  if (!Number.isFinite(previousTimestampMs)) {
+    return new Date().toISOString();
+  }
+
+  return new Date(previousTimestampMs + 1_000).toISOString();
+}
+
+function roundTo(value: number, digits = 1) {
+  const multiplier = 10 ** digits;
+  return Math.round(value * multiplier) / multiplier;
+}
+
 function handleDevicesCommand(rawMessage: string, websocket: WebSocket) {
   try {
     const message = JSON.parse(rawMessage) as {
@@ -971,6 +1144,39 @@ function handleDevicesCommand(rawMessage: string, websocket: WebSocket) {
     websocket.send(
       JSON.stringify({
         error: error instanceof Error ? error.message : "Invalid devices command",
+      }),
+    );
+  }
+}
+
+function handleDisplayCommand(rawMessage: string, websocket: WebSocket) {
+  try {
+    const message = JSON.parse(rawMessage) as {
+      brightness?: number;
+      command?: string;
+    };
+
+    if (message.command === "setBrightness") {
+      updateDisplayBrightness(Number(message.brightness ?? runtime.state.displayState.brightness));
+      broadcastState(["display"]);
+      return;
+    }
+
+    if (message.command === "requestWakeLock") {
+      updateWakeLockOverride(true);
+      broadcastState(["display"]);
+      return;
+    }
+
+    if (message.command === "releaseWakeLock") {
+      updateWakeLockOverride(false);
+      broadcastState(["display"]);
+      return;
+    }
+  } catch (error) {
+    websocket.send(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Invalid display command",
       }),
     );
   }

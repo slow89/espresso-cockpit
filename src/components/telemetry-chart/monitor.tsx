@@ -11,6 +11,7 @@ import {
 } from "@/components/chart-monitor/chrome";
 import {
   formatTelemetryClock,
+  formatTelemetryValue,
   type TelemetrySample,
   type TelemetrySeriesDefinition,
   type TelemetrySeriesFamily,
@@ -28,8 +29,8 @@ import {
   getAxisDomain,
   getGlowFilterId,
   getLaneTicks,
+  getPhaseSegments,
   getSampleXValue,
-  getStateEvents,
   getTimelineTicks,
   getUnifiedChartMetrics,
   getUniqueSeriesColors,
@@ -63,7 +64,7 @@ export function TabletTelemetryMonitor({
 
       <TelemetryMonitorCanvas
         density="compact"
-        hoveredSample={model.activeSample}
+        hoveredSample={model.hoveredSampleIndex == null ? null : model.activeSample}
         isLive={model.isLive}
         laneVisibility={model.laneVisibility}
         onPointerLeave={onPointerLeave}
@@ -105,7 +106,7 @@ export function DesktopTelemetryMonitor({
         <div className="mt-1.5 min-h-0 flex-1">
           <TelemetryMonitorCanvas
             density="regular"
-            hoveredSample={model.activeSample}
+            hoveredSample={model.hoveredSampleIndex == null ? null : model.activeSample}
             isLive={model.isLive}
             laneVisibility={model.laneVisibility}
             onPointerLeave={onPointerLeave}
@@ -224,7 +225,7 @@ function TelemetryMonitorCanvas({
     hoveredSample == null || timelineSamples.length === 0
       ? null
       : xScale(getSampleXValue(hoveredSample, usesShotTimeline));
-  const stateEvents = getStateEvents(timelineSamples, usesShotTimeline);
+  const phaseSegments = getPhaseSegments(timelineSamples, usesShotTimeline, maxTimelineValue);
   const allColors = getUniqueSeriesColors(visibleSeries);
   const solidSeries = visibleSeries.filter((s) => s.strokeStyle === "solid");
   const lastSample = timelineSamples[timelineSamples.length - 1];
@@ -374,36 +375,13 @@ function TelemetryMonitorCanvas({
             />
           ) : null}
 
-          {/* State events as vertical markers */}
-          {stateEvents.map((event, index) => {
-            const x = xScale(event.xValue);
-            const eventLabelY =
-              index % 2 === 0 ? (density === "compact" ? 10 : 14) : density === "compact" ? 22 : 28;
-
-            return (
-              <Group key={`${event.label}-${event.xValue}-${index}`}>
-                <line
-                  stroke={chartTheme.event}
-                  strokeDasharray="4 4"
-                  x1={x}
-                  x2={x}
-                  y1={0}
-                  y2={chartMetrics.plotHeight}
-                />
-                <text
-                  dominantBaseline="hanging"
-                  fill={chartTheme.muted}
-                  fontFamily={chartTheme.mono}
-                  fontSize={density === "compact" ? "8" : "9"}
-                  textAnchor="middle"
-                  x={Math.max(40, Math.min(chartMetrics.innerWidth - 40, x))}
-                  y={eventLabelY}
-                >
-                  {density === "compact" ? compactStateLabel(event.label) : event.label}
-                </text>
-              </Group>
-            );
-          })}
+          {/* Phase bands — soft shaded regions that reveal the shot's structure */}
+          <PhaseBands
+            density={density}
+            plotHeight={chartMetrics.plotHeight}
+            segments={phaseSegments}
+            xScale={xScale}
+          />
 
           {/* Area fills */}
           {solidSeries.map((series) => {
@@ -553,6 +531,18 @@ function TelemetryMonitorCanvas({
                 );
               })
             : null}
+
+          {/* Floating crosshair readout */}
+          {hoveredX != null && hoveredSample ? (
+            <CrosshairTooltip
+              density={density}
+              hoveredSample={hoveredSample}
+              hoveredX={hoveredX}
+              plotWidth={chartMetrics.innerWidth}
+              series={solidSeries}
+              usesShotTimeline={usesShotTimeline}
+            />
+          ) : null}
 
           {/* Legend */}
           {visibleSeries.length > 0 ? (
@@ -840,6 +830,169 @@ function ChartLegend({
           </text>
         </Group>
       ))}
+    </Group>
+  );
+}
+
+function PhaseBands({
+  density,
+  plotHeight,
+  segments,
+  xScale,
+}: {
+  density: ChartDensity;
+  plotHeight: number;
+  segments: Array<{ label: string; startX: number; endX: number }>;
+  xScale: LinearScale;
+}) {
+  const fontSize = density === "compact" ? 8 : 9.5;
+  const charW = fontSize * 0.6;
+  const labelPad = density === "compact" ? 5 : 7;
+
+  return (
+    <Group>
+      {segments.map((segment, index) => {
+        const x0 = xScale(segment.startX);
+        const x1 = xScale(segment.endX);
+        const width = Math.max(0, x1 - x0);
+        const label = density === "compact" ? compactStateLabel(segment.label) : segment.label;
+        const fitsLabel = width >= label.length * charW + labelPad * 2;
+
+        return (
+          <Group key={`phase-${segment.label}-${segment.startX}-${index}`}>
+            {index % 2 === 1 ? (
+              <rect
+                fill={chartTheme.phaseBand}
+                height={plotHeight}
+                width={width}
+                x={x0}
+                y={0}
+                style={{ pointerEvents: "none" }}
+              />
+            ) : null}
+
+            {index > 0 ? (
+              <line stroke={chartTheme.event} x1={x0} x2={x0} y1={0} y2={plotHeight} />
+            ) : null}
+
+            {fitsLabel ? (
+              <text
+                dominantBaseline="hanging"
+                fill={chartTheme.muted}
+                fontFamily={chartTheme.mono}
+                fontSize={fontSize}
+                x={x0 + labelPad}
+                y={density === "compact" ? 6 : 8}
+              >
+                {label}
+              </text>
+            ) : null}
+          </Group>
+        );
+      })}
+    </Group>
+  );
+}
+
+function CrosshairTooltip({
+  density,
+  hoveredSample,
+  hoveredX,
+  plotWidth,
+  series,
+  usesShotTimeline,
+}: {
+  density: ChartDensity;
+  hoveredSample: TelemetrySample;
+  hoveredX: number;
+  plotWidth: number;
+  series: TelemetrySeriesDefinition[];
+  usesShotTimeline: boolean;
+}) {
+  const rows = series
+    .map((definition) => {
+      const value = definition.accessor(hoveredSample);
+      if (value == null) return null;
+      return {
+        color: definition.color,
+        id: definition.id,
+        label: definition.shortLabel,
+        value: formatTelemetryValue(definition, value),
+      };
+    })
+    .filter((row): row is NonNullable<typeof row> => row != null);
+
+  const fontSize = density === "compact" ? 8.5 : 10;
+  const charW = fontSize * 0.62;
+  const lineHeight = density === "compact" ? 12 : 14;
+  const padX = density === "compact" ? 7 : 9;
+  const padY = density === "compact" ? 6 : 8;
+  const swatch = density === "compact" ? 6 : 7;
+  const timeLabel = formatTelemetryClock(getSampleXValue(hoveredSample, usesShotTimeline));
+
+  const longestRow = rows.reduce((max, row) => {
+    const rowWidth = swatch + 4 + (row.label.length + row.value.length + 2) * charW;
+    return Math.max(max, rowWidth);
+  }, timeLabel.length * charW);
+  const boxWidth = longestRow + padX * 2;
+  const boxHeight = padY * 2 + lineHeight * (rows.length + 1);
+
+  // Flip to the left of the crosshair when the chip would overflow the right edge.
+  const gap = 10;
+  const placeRight = hoveredX + gap + boxWidth <= plotWidth;
+  const boxX = placeRight ? hoveredX + gap : hoveredX - gap - boxWidth;
+  const boxY = 4;
+
+  return (
+    <Group left={Math.max(0, boxX)} top={boxY} style={{ pointerEvents: "none" }}>
+      <rect
+        fill={chartTheme.tooltipSurface}
+        height={boxHeight}
+        rx={6}
+        stroke={chartTheme.tooltipBorder}
+        width={boxWidth}
+        x={0}
+        y={0}
+      />
+      <text
+        dominantBaseline="hanging"
+        fill={chartTheme.muted}
+        fontFamily={chartTheme.mono}
+        fontSize={fontSize}
+        x={padX}
+        y={padY}
+      >
+        {timeLabel}
+      </text>
+      {rows.map((row, index) => {
+        const rowY = padY + lineHeight * (index + 1);
+        return (
+          <Group key={`tip-${row.id}`} top={rowY}>
+            <rect fill={row.color} height={swatch} rx={1.5} width={swatch} x={padX} y={1} />
+            <text
+              dominantBaseline="hanging"
+              fill={chartTheme.text}
+              fontFamily={chartTheme.mono}
+              fontSize={fontSize}
+              x={padX + swatch + 5}
+              y={0}
+            >
+              {row.label}
+            </text>
+            <text
+              dominantBaseline="hanging"
+              fill={row.color}
+              fontFamily={chartTheme.mono}
+              fontSize={fontSize}
+              textAnchor="end"
+              x={boxWidth - padX}
+              y={0}
+            >
+              {row.value}
+            </text>
+          </Group>
+        );
+      })}
     </Group>
   );
 }

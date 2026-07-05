@@ -87,6 +87,51 @@ describe("createBridgeClient", () => {
     );
   });
 
+  it("accepts null machine state change responses from the gateway", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => "null",
+    } as Response);
+
+    await expect(
+      createBridgeClient("http://bridge.local:8080").requestMachineState("idle"),
+    ).resolves.toBeNull();
+
+    expect(fetchMock).toHaveBeenCalledWith("http://bridge.local:8080/api/v1/machine/state/idle", {
+      method: "PUT",
+    });
+  });
+
+  it("returns machine snapshots from state change responses when available", async () => {
+    const snapshot = {
+      timestamp: "2026-03-28T20:00:01.000Z",
+      state: {
+        state: "idle",
+        substate: "ready",
+      },
+      flow: 0,
+      pressure: 0,
+      targetFlow: 0,
+      targetPressure: 0,
+      mixTemperature: 93,
+      groupTemperature: 93,
+      targetMixTemperature: 93,
+      targetGroupTemperature: 93,
+      profileFrame: 0,
+      steamTemperature: 135,
+    };
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify(snapshot),
+    } as Response);
+
+    await expect(
+      createBridgeClient("http://bridge.local:8080").requestMachineState("idle"),
+    ).resolves.toEqual(snapshot);
+  });
+
   it("posts machine calibration to the machine calibration endpoint", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,

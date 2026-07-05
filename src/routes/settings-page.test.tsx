@@ -7,6 +7,7 @@ import { useDisplayStore } from "@/stores/display-store";
 import { useMachineStore } from "@/stores/machine-store";
 import { usePresenceStore } from "@/stores/presence-store";
 import { useScaleStore } from "@/stores/scale-store";
+import { useShotAnalysisSettingsStore } from "@/stores/shot-analysis-store";
 import { useThemeStore } from "@/stores/theme-store";
 
 import { SettingsPage } from "./settings-page";
@@ -583,5 +584,24 @@ describe("SettingsPage", () => {
         Username: "brew-user",
       });
     });
+  });
+
+  it("saves and clears the skin-local shot analysis API key", () => {
+    render(<SettingsPage />);
+
+    expect(screen.getByText("Not set")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Anthropic API key"), {
+      target: { value: "  sk-ant-test-key  " },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(useShotAnalysisSettingsStore.getState().apiKey).toBe("sk-ant-test-key");
+    expect(screen.getByText("Configured")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+
+    expect(useShotAnalysisSettingsStore.getState().apiKey).toBe("");
+    expect(screen.getByText("Not set")).toBeInTheDocument();
   });
 });

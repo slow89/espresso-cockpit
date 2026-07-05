@@ -11,7 +11,6 @@ import {
   useUpdateWorkflowMutation,
   useWorkflowQuery,
 } from "@/rest/queries";
-import { useDashboardUiStore } from "@/stores/dashboard-ui-store";
 import { useDevicesStore } from "@/stores/devices-store";
 import { type LiveConnectionState } from "@/stores/live-connection-state";
 import { useMachineStore } from "@/stores/machine-store";
@@ -39,20 +38,27 @@ export function DashboardRecipeButton() {
 }
 
 export function DevShotToggleButton() {
-  const isSimulatedShotActive = useDashboardUiStore((state) => state.isSimulatedShotActive);
-  const toggleSimulatedShot = useDashboardUiStore((state) => state.toggleSimulatedShot);
+  const { data: snapshot } = useMachineStateQuery();
+  const requestMachineStateMutation = useRequestMachineStateMutation();
+  const isSimulatedShotActive = snapshot?.state.state === "espresso";
+  const isDisabled = snapshot == null || requestMachineStateMutation.isPending;
+
+  function handleToggleSimulatedShot() {
+    requestMachineStateMutation.mutate(isSimulatedShotActive ? "idle" : "espresso");
+  }
 
   return (
     <button
-      aria-label={isSimulatedShotActive ? "Pause shot simulator" : "Play shot simulator"}
+      aria-label={isSimulatedShotActive ? "Stop shot simulator" : "Start shot simulator"}
       className={cn(
-        "flex min-h-8 min-w-[36px] shrink-0 items-center justify-center rounded-[4px] border border-border bg-panel-strong/80 px-2 text-muted-foreground transition hover:text-foreground",
+        "flex min-h-8 min-w-[36px] shrink-0 items-center justify-center rounded-[4px] border border-border bg-panel-strong/80 px-2 text-muted-foreground transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50",
         isSimulatedShotActive
           ? "border-status-success-border bg-status-success-surface text-status-success-foreground"
           : "border-border/50",
       )}
-      onClick={toggleSimulatedShot}
-      title={isSimulatedShotActive ? "Pause shot simulator" : "Play shot simulator"}
+      disabled={isDisabled}
+      onClick={handleToggleSimulatedShot}
+      title={isSimulatedShotActive ? "Stop shot simulator" : "Start shot simulator"}
       type="button"
     >
       {isSimulatedShotActive ? <Pause className="size-3" /> : <Play className="size-3" />}
@@ -150,6 +156,7 @@ export function ReservoirStatusCard() {
 
 export function ScaleStatusCard() {
   const devicesConnection = useDevicesStore((state) => state.connection);
+  const devices = useDevicesStore((state) => state.devices);
   const scaleConnection = useScaleStore((state) => state.scaleConnection);
   const scaleMessage = useScaleStore((state) => state.scaleMessage);
   const requestScaleReconnect = useDevicesStore((state) => state.requestScaleReconnect);
@@ -162,6 +169,18 @@ export function ScaleStatusCard() {
   const isScaleDisconnected = !hasLiveScale;
   const weight = hasLiveScale ? (scaleSnapshot?.weight ?? null) : null;
   const batteryLevel = hasLiveScale ? (scaleSnapshot?.batteryLevel ?? null) : null;
+  const hasKnownScaleDevice = devices.some((device) => device.type === "scale");
+  const statusLabel = getScaleStatusLabel({
+    devicesConnection,
+    hasKnownScaleDevice,
+    scaleConnection,
+    scaleDeviceStatus,
+  });
+  const disconnectedDetail = getScaleDisconnectedDetail({
+    devicesConnection,
+    hasKnownScaleDevice,
+    scaleDeviceStatus,
+  });
   const canUseScaleWeightForDose =
     hasLiveScale && weight != null && Number.isFinite(weight) && weight > 0;
 
@@ -214,17 +233,17 @@ export function ScaleStatusCard() {
             ) : null}
             {isScaleDisconnected ? (
               <span className="rounded-sm bg-destructive/20 px-1.5 py-0.5 font-mono text-[0.55rem] font-bold uppercase tracking-[0.06em] text-destructive">
-                {getScaleStatusLabel(scaleConnection, scaleDeviceStatus)}
+                {statusLabel}
               </span>
             ) : null}
           </div>
           {!isScaleDisconnected ? (
             <p className="mt-0.5 truncate font-mono text-[0.6rem] uppercase tracking-[0.06em] text-status-info-foreground">
-              {getScaleStatusLabel(scaleConnection, scaleDeviceStatus)}
+              {statusLabel}
             </p>
           ) : (
             <p className="mt-0.5 truncate font-mono text-[0.6rem] font-medium uppercase tracking-[0.06em] text-destructive/80">
-              Connection lost
+              {disconnectedDetail}
             </p>
           )}
         </div>
@@ -348,10 +367,17 @@ function formatScaleWeight(weight: number | null) {
   return `${weight.toFixed(1)} g`;
 }
 
-function getScaleStatusLabel(
-  scaleConnection: LiveConnectionState,
-  scaleDeviceStatus: "connected" | "disconnected" | null,
-) {
+function getScaleStatusLabel({
+  devicesConnection,
+  hasKnownScaleDevice,
+  scaleConnection,
+  scaleDeviceStatus,
+}: {
+  devicesConnection: LiveConnectionState;
+  hasKnownScaleDevice: boolean;
+  scaleConnection: LiveConnectionState;
+  scaleDeviceStatus: "connected" | "disconnected" | null;
+}) {
   if (scaleConnection === "connecting") {
     return "Looking";
   }
@@ -365,6 +391,10 @@ function getScaleStatusLabel(
   }
 
   if (scaleDeviceStatus === "disconnected") {
+    if (devicesConnection === "live" && !hasKnownScaleDevice) {
+      return "No scale paired";
+    }
+
     return "Scale off";
   }
 
@@ -373,6 +403,26 @@ function getScaleStatusLabel(
   }
 
   return "Paired";
+}
+
+function getScaleDisconnectedDetail({
+  devicesConnection,
+  hasKnownScaleDevice,
+  scaleDeviceStatus,
+}: {
+  devicesConnection: LiveConnectionState;
+  hasKnownScaleDevice: boolean;
+  scaleDeviceStatus: "connected" | "disconnected" | null;
+}) {
+  if (
+    scaleDeviceStatus === "disconnected" &&
+    devicesConnection === "live" &&
+    !hasKnownScaleDevice
+  ) {
+    return "Pair in setup";
+  }
+
+  return "Connection lost";
 }
 
 function getMachineConnectionLabel(liveConnection: LiveConnectionState, hasQueryError: boolean) {

@@ -310,7 +310,11 @@ export function useRequestMachineStateMutation() {
   return useMutation({
     mutationFn: (nextState: MachineStateChange) =>
       getClient(gatewayOrigin).requestMachineState(nextState),
-    onSuccess: async () => {
+    onSuccess: async (snapshot) => {
+      if (snapshot) {
+        client.setQueryData(bridgeQueryKeys.machineState(gatewayOrigin), snapshot);
+      }
+
       await client.invalidateQueries({
         queryKey: bridgeQueryKeys.machineState(gatewayOrigin),
       });

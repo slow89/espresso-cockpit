@@ -74,19 +74,46 @@ test.describe("dashboard", () => {
     }
   });
 
+  test("starts a simulator shot from the dashboard dev control", async ({
+    app,
+    browserSignals,
+    page,
+  }, testInfo) => {
+    test.skip(!usesTabletDashboardLayout(testInfo.project.name));
+
+    await app.gotoScenario({
+      route: "/?dev=true",
+      scenarioId: "dashboard-idle",
+    });
+
+    await page.getByRole("button", { name: "Start shot simulator" }).click();
+
+    await expect(page.getByTestId("dashboard-tablet-shot-workspace")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Stop shot simulator" })).toBeVisible();
+    await assertBottomNavReachable(page);
+    await assertNoCriticalOverflow(page);
+    assertNoAppErrors(browserSignals, {
+      allowedNetworkPaths: ["/api/v1/machine/state/espresso"],
+    });
+  });
+
   test("shows the sleep screen and wakes back into the main workspace", async ({
     app,
     browserSignals,
     page,
-  }) => {
+  }, testInfo) => {
     await app.gotoScenario({
       route: "/",
       scenarioId: "dashboard-sleeping",
     });
 
     await expect(page.getByTestId("dashboard-sleep-screen")).toBeVisible();
-    await page.getByRole("button", { name: "Turn on machine" }).click();
-    await expect(page.getByRole("button", { name: "Sleep machine" })).toBeVisible();
+    await page.getByRole("button", { name: "Turn on machine" }).click({ noWaitAfter: true });
+    if (usesTabletDashboardLayout(testInfo.project.name)) {
+      await expect(page.getByTestId("dashboard-tablet-prep-board")).toBeVisible();
+    } else {
+      await expect(page.getByTestId("dashboard-desktop-workspace")).toBeVisible();
+    }
     await assertBottomNavReachable(page);
     assertNoAppErrors(browserSignals, {
       allowedNetworkPaths: ["/api/v1/machine/state/idle"],
@@ -115,16 +142,18 @@ test.describe("dashboard", () => {
     const summary = page.getByTestId("dashboard-tablet-post-shot-summary");
 
     await expect(summary).toBeVisible();
-    await expect(summary.getByText("Shot complete")).toBeVisible();
     await expect(summary.getByText("House")).toBeVisible();
     await expect(summary.getByText("6.0s")).toBeVisible();
     await expect(summary.getByText("18.6 g")).toBeVisible();
+    await expect(summary.getByText("-17.4 g")).toBeVisible();
     await expect(summary.getByRole("button", { name: "Saving" })).toBeVisible();
+    await expect(page.getByTestId("dashboard-tablet-prep-board")).toBeVisible();
     await assertBottomNavReachable(page);
     await assertNoCriticalOverflow(page);
     assertNoAppErrors(browserSignals);
 
-    await summary.getByRole("button", { name: "Done" }).click();
+    await summary.getByRole("button", { name: "Dismiss shot summary" }).click();
+    await expect(summary).toBeHidden();
     await expect(page.getByTestId("dashboard-tablet-prep-board")).toBeVisible();
   });
 

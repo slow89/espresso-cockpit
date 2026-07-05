@@ -108,6 +108,8 @@ export const useMachineStore = create<MachineState>((set, get) => ({
 
             if (isShotActiveMachinePhase(snapshot.state)) {
               dashboardUiStore.clearPostShotSummary();
+            } else if (snapshot.state.state === "sleeping") {
+              dashboardUiStore.clearPostShotSummary();
             } else if (isShotActiveMachinePhase(previousTelemetry[previousTelemetry.length - 1])) {
               dashboardUiStore.capturePostShotSummary(
                 previousTelemetry,

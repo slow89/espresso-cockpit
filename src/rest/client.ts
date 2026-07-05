@@ -112,6 +112,44 @@ async function ensureResponseOk(response: Response, fallbackMessage: string) {
   throw new BridgeClientError(message, response.status);
 }
 
+async function parseOptionalResponse<TSchema extends z.ZodTypeAny>(
+  response: Response,
+  schema: TSchema,
+  fallbackMessage: string,
+): Promise<z.infer<TSchema> | null> {
+  await ensureResponseOk(response, fallbackMessage);
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  const body = await response.text();
+
+  if (!body.trim()) {
+    return null;
+  }
+
+  let json: unknown;
+
+  try {
+    json = JSON.parse(body);
+  } catch {
+    throw new BridgeClientError(body, response.status);
+  }
+
+  if (json == null) {
+    return null;
+  }
+
+  const parsed = schema.safeParse(json);
+
+  if (!parsed.success) {
+    throw new BridgeClientError(parsed.error.message, response.status);
+  }
+
+  return parsed.data;
+}
+
 export function createBridgeClient(baseUrl: string) {
   const origin = normalizeGatewayUrl(baseUrl);
 
@@ -166,7 +204,11 @@ export function createBridgeClient(baseUrl: string) {
         method: "PUT",
       });
 
-      await ensureResponseOk(response, `Unable to request machine state ${parsedState}`);
+      return parseOptionalResponse(
+        response,
+        machineSnapshotSchema,
+        `Unable to request machine state ${parsedState}`,
+      );
     },
     async tareScale() {
       const response = await fetch(`${origin}/api/v1/scale/tare`, {

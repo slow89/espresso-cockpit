@@ -30,6 +30,9 @@ export const chartTheme = {
   event: "var(--chart-event)",
   atmosphereTint: "var(--chart-atmosphere-tint)",
   atmosphereEdge: "var(--chart-atmosphere-edge)",
+  phaseBand: "var(--chart-phase-band)",
+  tooltipSurface: "var(--chart-tooltip-surface)",
+  tooltipBorder: "var(--chart-tooltip-border)",
   mono: "var(--font-mono)",
   sans: "var(--font-sans)",
 } as const;
@@ -406,6 +409,31 @@ export function getStateEvents(samples: TelemetrySample[], usesShotTimeline: boo
       },
     ];
   });
+}
+
+export type PhaseSegment = {
+  label: string;
+  startX: number;
+  endX: number;
+};
+
+// Collapses the per-sample state transitions into contiguous phase segments so the
+// chart can shade the shot's structure (preinfusion → rise → pour …) as soft
+// background bands instead of a thicket of dashed vertical lines.
+export function getPhaseSegments(
+  samples: TelemetrySample[],
+  usesShotTimeline: boolean,
+  maxTimelineValue: number,
+): PhaseSegment[] {
+  const events = getStateEvents(samples, usesShotTimeline);
+
+  return events
+    .map((event, index) => ({
+      label: event.label,
+      startX: event.xValue,
+      endX: index < events.length - 1 ? events[index + 1].xValue : maxTimelineValue,
+    }))
+    .filter((segment) => segment.endX > segment.startX);
 }
 
 export function getSampleXValue(sample: TelemetrySample, usesShotTimeline: boolean) {

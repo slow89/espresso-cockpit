@@ -236,6 +236,73 @@ describe("useMachineStore", () => {
     });
   });
 
+  it("clears a captured post-shot summary when the machine enters sleeping state", async () => {
+    await useMachineStore.getState().connectLive();
+
+    MockWebSocket.instances[0]?.emitOpen();
+    MockWebSocket.instances[0]?.emitMessage({
+      flow: 0,
+      groupTemperature: 93,
+      mixTemperature: 93,
+      pressure: 0,
+      profileFrame: 0,
+      state: { state: "espresso", substate: "preparingForShot" },
+      steamTemperature: 135,
+      targetFlow: 0,
+      targetGroupTemperature: 93,
+      targetMixTemperature: 93,
+      targetPressure: 0,
+      timestamp: "2026-03-28T20:00:00.000Z",
+    });
+    MockWebSocket.instances[0]?.emitMessage({
+      flow: 2.4,
+      groupTemperature: 93,
+      mixTemperature: 93,
+      pressure: 8.8,
+      profileFrame: 2,
+      state: { state: "espresso", substate: "pouring" },
+      steamTemperature: 135,
+      targetFlow: 0,
+      targetGroupTemperature: 93,
+      targetMixTemperature: 93,
+      targetPressure: 0,
+      timestamp: "2026-03-28T20:00:06.000Z",
+    });
+    MockWebSocket.instances[0]?.emitMessage({
+      flow: 0,
+      groupTemperature: 93,
+      mixTemperature: 93,
+      pressure: 0,
+      profileFrame: 0,
+      state: { state: "idle", substate: "idle" },
+      steamTemperature: 135,
+      targetFlow: 0,
+      targetGroupTemperature: 93,
+      targetMixTemperature: 93,
+      targetPressure: 0,
+      timestamp: "2026-03-28T20:00:07.000Z",
+    });
+
+    expect(useDashboardUiStore.getState().postShotSummary).not.toBeNull();
+
+    MockWebSocket.instances[0]?.emitMessage({
+      flow: 0,
+      groupTemperature: 60,
+      mixTemperature: 60,
+      pressure: 0,
+      profileFrame: 0,
+      state: { state: "sleeping", substate: "idle" },
+      steamTemperature: 60,
+      targetFlow: 0,
+      targetGroupTemperature: 93,
+      targetMixTemperature: 93,
+      targetPressure: 0,
+      timestamp: "2026-03-28T20:05:00.000Z",
+    });
+
+    expect(useDashboardUiStore.getState().postShotSummary).toBeNull();
+  });
+
   it("marks the live machine stream as errored when it receives malformed payloads", async () => {
     await useMachineStore.getState().connectLive();
 

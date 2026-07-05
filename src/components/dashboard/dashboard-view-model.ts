@@ -32,9 +32,9 @@ export type DashboardShotSummaryItem = {
   value: string;
 };
 
-export type DashboardPostShotSummaryMetric = {
+export type DashboardPostShotYieldDelta = {
   label: string;
-  value: string;
+  tone: "on-target" | "over" | "under";
 };
 
 export type DashboardControlRow = {
@@ -417,44 +417,46 @@ export function useDashboardPostShotSummaryModel() {
   const targetYield = summary.workflow.targetYield;
   const historyShotId = getPostShotHistoryShotId(summary, latestShotQuery.data);
   const title = summary.workflow.profileTitle ?? summary.workflow.name ?? "Shot complete";
+  const targetRatio =
+    targetDose != null && targetYield != null && targetDose > 0 ? targetYield / targetDose : null;
 
   return {
     historyShotId,
-    metrics: [
-      {
-        label: "Time",
-        value: durationSeconds == null ? "--.-s" : formatShotDuration(durationSeconds),
-      },
-      {
-        label: "Yield",
-        value: finalWeight == null ? "--.- g" : `${finalWeight.toFixed(1)} g`,
-      },
-      {
-        label: "Ratio",
-        value: actualRatio == null ? "--" : `1:${actualRatio.toFixed(1)}`,
-      },
-      {
-        label: "Dose",
-        value: formatSummaryNumber(targetDose, "g"),
-      },
-      {
-        label: "Target",
-        value: formatSummaryNumber(targetYield, "g"),
-      },
-    ] satisfies ReadonlyArray<DashboardPostShotSummaryMetric>,
     onDismiss: dismissPostShotSummary,
+    summary,
+    ratioValue: actualRatio == null ? "--" : `1:${actualRatio.toFixed(1)}`,
     subtitle: summary.workflow.coffeeName ?? "No coffee saved",
+    targetRatioLabel: targetRatio == null ? null : `target 1:${targetRatio.toFixed(1)}`,
+    targetYieldLabel: targetYield == null ? null : `target ${targetYield.toFixed(0)} g`,
     telemetry: summary.telemetry,
+    timeValue: durationSeconds == null ? "--.-s" : formatShotDuration(durationSeconds),
     title,
+    yieldDelta: buildYieldDelta(finalWeight, targetYield),
+    yieldValue: finalWeight == null ? "--.- g" : `${finalWeight.toFixed(1)} g`,
   };
 }
 
-function formatSummaryNumber(value: number | null | undefined, suffix: string) {
-  if (value == null || Number.isNaN(value)) {
-    return "--";
+function buildYieldDelta(
+  actual: number | null,
+  target: number | null,
+): DashboardPostShotYieldDelta | null {
+  if (actual == null || target == null || Number.isNaN(actual) || Number.isNaN(target)) {
+    return null;
   }
 
-  return `${value.toFixed(1)} ${suffix}`;
+  const delta = actual - target;
+  const rounded = Math.round(delta * 10) / 10;
+
+  if (Math.abs(rounded) < 0.5) {
+    return { label: "on target", tone: "on-target" };
+  }
+
+  const sign = rounded > 0 ? "+" : "";
+
+  return {
+    label: `${sign}${rounded.toFixed(1)} g`,
+    tone: rounded > 0 ? "over" : "under",
+  };
 }
 
 function formatShotDuration(seconds: number) {

@@ -52,6 +52,14 @@ _Avoid_: Disconnect scale
 The branded name of this Skin.
 _Avoid_: Treating Cockpit as a separate architectural role from Skin
 
+**Shot Analysis**:
+An on-demand, LLM-generated reading of the just-finished **Shot** — a short diagnosis of the telemetry plus one primary dial-in adjustment with rationale — requested from the **Post-Shot Summary**.
+_Avoid_: Auto-applied machine changes, multi-variable adjustment lists
+
+**Taste Compass**:
+An optional set of three quick tap scales the operator can give before requesting a **Shot Analysis**: extraction (too sour ↔ balanced ↔ too bitter), strength (weak ↔ right ↔ harsh), and body (thin ↔ right ↔ heavy).
+_Avoid_: "Acidity" as an input label (ambiguous between pleasant brightness and under-extraction sourness)
+
 ## Relationships
 
 - A **Skin** talks to exactly one **Bridge** origin at a time.
@@ -74,6 +82,15 @@ _Avoid_: Treating Cockpit as a separate architectural role from Skin
 - The **Compatibility Reconnect Adapter** may exist only while **Preferred Scale Reconnect** is missing from the **Bridge**.
 - **Disconnect Scale** does not change the **Preferred Scale**.
 - **Forget Scale** clears the **Preferred Scale**.
+- A **Shot Analysis** consumes the Skin's frozen local **Shot** telemetry and shot facts, not the Visualizer record.
+- A **Shot Analysis** is requested by the Skin directly from the LLM provider; the **Bridge** is not involved.
+- A **Shot Analysis** runs only when the operator asks for it, never automatically.
+- A **Shot Analysis** may include the **Taste Compass** when the operator has tapped any of its scales.
+- The **Taste Compass** is always optional; a **Shot Analysis** without taste input reads telemetry alone.
+- A v1 **Shot Analysis** and its **Taste Compass** input are ephemeral: they are discarded with the **Post-Shot Summary** and are not written to the **Bridge** or Visualizer.
+- A **Shot Analysis** recommends; the operator applies. It never changes machine, profile, or workflow state.
+- A **Shot Analysis** and its **Taste Compass** are presented in place inside the expanded **Post-Shot Summary**, never on a separate route or modal.
+- A **Shot Analysis** requires an operator-supplied API key kept in Skin-local settings; without one the Analyze affordance leads to setup, not an error.
 
 ## Example dialogue
 

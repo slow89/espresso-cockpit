@@ -1,6 +1,7 @@
 import { SettingsAdvancedBridgePanel } from "@/components/settings/settings-advanced-bridge-panel";
 import { SettingsDevicePairingPanel } from "@/components/settings/settings-device-pairing-panel";
 import { SettingsDisplaySleepPanel } from "@/components/settings/settings-display-sleep-panel";
+import { SettingsShotAnalysisPanel } from "@/components/settings/settings-shot-analysis-panel";
 import { SettingsShotCalibrationPanel } from "@/components/settings/settings-shot-calibration-panel";
 import { SettingsWaterAlertPanel } from "@/components/settings/settings-water-alert-panel";
 
@@ -24,6 +25,7 @@ export function SettingsPage() {
         <SettingsDevicePairingPanel />
         <SettingsDisplaySleepPanel />
         <SettingsShotCalibrationPanel />
+        <SettingsShotAnalysisPanel />
         <SettingsWaterAlertPanel />
         <SettingsAdvancedBridgePanel />
       </div>

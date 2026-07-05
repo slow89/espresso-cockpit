@@ -1,3 +1,4 @@
+import { provisionShotAnalysisFromDeploy } from "@/lib/shot-analysis-provisioning";
 import { useBridgeConfigStore } from "@/stores/bridge-config-store";
 import { devicesStore, initializeDevicesStoreRuntime } from "@/stores/devices-store";
 import { displayStore } from "@/stores/display-store";
@@ -25,6 +26,7 @@ export function initializeAppRuntime() {
   let previousGatewayUrl = useBridgeConfigStore.getState().gatewayUrl;
   const cleanupDevicesRuntime = initializeDevicesStoreRuntime();
 
+  void provisionShotAnalysisFromDeploy();
   resetGatewayStreams();
 
   const unsubscribeConfig = useBridgeConfigStore.subscribe((state) => {

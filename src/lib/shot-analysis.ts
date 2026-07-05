@@ -1,4 +1,7 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { APICallError } from "@ai-sdk/provider";
+import { generateObject, NoObjectGeneratedError, RetryError } from "ai";
 import { z } from "zod";
 
 import type { DashboardPostShotSummary } from "@/lib/dashboard-post-shot-summary";
@@ -9,7 +12,38 @@ import {
 } from "@/lib/dashboard-post-shot-summary";
 import type { TelemetrySample } from "@/lib/telemetry";
 
-export const shotAnalysisModel = "claude-opus-4-8";
+export type ShotAnalysisProviderId = "anthropic" | "openai-compatible";
+
+export const shotAnalysisProviders: ReadonlyArray<{
+  id: ShotAnalysisProviderId;
+  label: string;
+}> = [
+  { id: "anthropic", label: "Anthropic" },
+  { id: "openai-compatible", label: "OpenAI-compatible" },
+];
+
+/** Model used when the operator leaves the model field empty on Anthropic. */
+export const defaultShotAnalysisModel = "claude-opus-4-8";
+
+/** Operator-supplied provider settings, persisted Skin-local. */
+export interface ShotAnalysisConnection {
+  apiKey: string;
+  /** OpenAI-compatible endpoint, e.g. https://openrouter.ai/api/v1. Unused for Anthropic. */
+  baseUrl: string;
+  /** Empty selects the provider default (Anthropic only). */
+  model: string;
+  provider: ShotAnalysisProviderId;
+}
+
+export function isShotAnalysisConfigured(connection: ShotAnalysisConnection): boolean {
+  if (connection.provider === "anthropic") {
+    return connection.apiKey !== "";
+  }
+
+  // Keyless endpoints (e.g. local Ollama) are valid, so only the endpoint and
+  // model are required.
+  return connection.baseUrl !== "" && connection.model !== "";
+}
 
 // Enough resolution for the model to see ramps and tails without paying for
 // every sample the DE1 streamed.
@@ -30,21 +64,28 @@ export const tasteCompassScales: ReadonlyArray<{
   { id: "body", label: "Body", options: ["Thin", "Right", "Heavy"] },
 ];
 
-const shotAnalysisAdjustmentSchema = z.object({
-  action: z.string().min(1),
-  detail: z.string().min(1),
-  rationale: z.string().min(1),
-});
-
-const shotAnalysisResultSchema = z.object({
-  diagnosis: z.string().min(1),
-  primary: shotAnalysisAdjustmentSchema,
+export const shotAnalysisResultSchema = z.object({
+  diagnosis: z
+    .string()
+    .min(1)
+    .describe(
+      "Two or three sentences reading the telemetry (and taste input when given), citing concrete numbers from the data.",
+    ),
+  primary: z.object({
+    action: z
+      .string()
+      .min(1)
+      .describe("Short imperative label for the single dial-in change, e.g. 'Grind finer'."),
+    detail: z.string().min(1).describe("The magnitude, e.g. '2 steps' or '1:2.0 → 1:2.3'."),
+    rationale: z.string().min(1).describe("One sentence on why this change first."),
+  }),
   secondary: z
     .object({
       action: z.string().min(1),
       rationale: z.string().min(1),
     })
-    .nullable(),
+    .nullable()
+    .describe("Optional follow-up to consider only after the primary change is tested, or null."),
 });
 
 export type ShotAnalysisResult = z.infer<typeof shotAnalysisResultSchema>;
@@ -60,51 +101,6 @@ export class ShotAnalysisError extends Error {
     this.kind = kind;
   }
 }
-
-const shotAnalysisResponseJsonSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["diagnosis", "primary", "secondary"],
-  properties: {
-    diagnosis: {
-      type: "string",
-      description:
-        "Two or three sentences reading the telemetry (and taste input when given), citing concrete numbers from the data.",
-    },
-    primary: {
-      type: "object",
-      additionalProperties: false,
-      required: ["action", "detail", "rationale"],
-      properties: {
-        action: {
-          type: "string",
-          description: "Short imperative label for the single dial-in change, e.g. 'Grind finer'.",
-        },
-        detail: {
-          type: "string",
-          description: "The magnitude, e.g. '2 steps' or '1:2.0 → 1:2.3'.",
-        },
-        rationale: { type: "string", description: "One sentence on why this change first." },
-      },
-    },
-    secondary: {
-      anyOf: [
-        {
-          type: "object",
-          additionalProperties: false,
-          required: ["action", "rationale"],
-          properties: {
-            action: { type: "string" },
-            rationale: { type: "string" },
-          },
-        },
-        { type: "null" },
-      ],
-      description:
-        "Optional follow-up to consider only after the primary change is tested, or null.",
-    },
-  },
-} as const;
 
 const shotAnalysisSystemPrompt = [
   "You are an espresso dial-in assistant reading a single finished shot from a Decent DE1.",
@@ -226,103 +222,80 @@ function formatFact(value: number | null | undefined, unit: string) {
   return `${value.toFixed(1)} ${unit}`;
 }
 
-export function parseShotAnalysisText(text: string): ShotAnalysisResult {
-  let raw: unknown;
-
-  try {
-    raw = JSON.parse(text);
-  } catch {
-    throw new ShotAnalysisError("response", "The analysis came back malformed.");
+function buildShotAnalysisModel(connection: ShotAnalysisConnection) {
+  if (connection.provider === "anthropic") {
+    // ADR 0002: the Skin calls the provider directly from the tablet with the
+    // operator's own key, so browser access is deliberate.
+    return createAnthropic({
+      apiKey: connection.apiKey,
+      headers: { "anthropic-dangerous-direct-browser-access": "true" },
+    })(connection.model === "" ? defaultShotAnalysisModel : connection.model);
   }
 
-  const parsed = shotAnalysisResultSchema.safeParse(raw);
-
-  if (!parsed.success) {
-    throw new ShotAnalysisError("response", "The analysis came back malformed.");
-  }
-
-  return parsed.data;
+  return createOpenAICompatible({
+    apiKey: connection.apiKey === "" ? undefined : connection.apiKey,
+    baseURL: connection.baseUrl,
+    name: "openai-compatible",
+  })(connection.model);
 }
 
 export async function requestShotAnalysis({
   apiKey,
+  baseUrl,
   compass,
+  model,
+  provider,
   signal,
   summary,
-}: {
-  apiKey: string;
+}: ShotAnalysisConnection & {
   compass: TasteCompassState;
   signal?: AbortSignal;
   summary: DashboardPostShotSummary;
 }): Promise<ShotAnalysisResult> {
-  // ADR 0002: the Skin calls the Anthropic API directly from the tablet with
-  // the operator's own key, so browser access is deliberate.
-  const client = new Anthropic({
-    apiKey,
-    dangerouslyAllowBrowser: true,
-    maxRetries: 1,
-  });
-
-  let response: Anthropic.Message;
-
   try {
-    response = await client.messages.create(
-      {
-        model: shotAnalysisModel,
-        max_tokens: 8192,
-        thinking: { type: "adaptive" },
-        system: shotAnalysisSystemPrompt,
-        output_config: {
-          format: {
-            type: "json_schema",
-            schema: shotAnalysisResponseJsonSchema,
-          },
-        },
-        messages: [{ role: "user", content: buildShotAnalysisPrompt(summary, compass) }],
-      },
-      { signal },
-    );
+    const { object } = await generateObject({
+      abortSignal: signal,
+      maxRetries: 1,
+      model: buildShotAnalysisModel({ apiKey, baseUrl, model, provider }),
+      prompt: buildShotAnalysisPrompt(summary, compass),
+      schema: shotAnalysisResultSchema,
+      system: shotAnalysisSystemPrompt,
+    });
+
+    return object;
   } catch (error) {
     throw toShotAnalysisError(error);
   }
-
-  if (response.stop_reason === "refusal") {
-    throw new ShotAnalysisError("response", "The analysis service declined this request.");
-  }
-
-  const text = response.content
-    .filter((block) => block.type === "text")
-    .map((block) => block.text)
-    .join("");
-
-  if (text === "") {
-    throw new ShotAnalysisError("response", "The analysis came back empty.");
-  }
-
-  return parseShotAnalysisText(text);
 }
 
 function toShotAnalysisError(error: unknown): unknown {
-  if (
-    error instanceof Anthropic.AuthenticationError ||
-    error instanceof Anthropic.PermissionDeniedError
-  ) {
-    return new ShotAnalysisError("auth", "The API key was rejected.");
+  if (RetryError.isInstance(error)) {
+    // Aborts propagate untouched so callers can tell a cancelled request from
+    // a failed one; otherwise classify what actually failed.
+    return error.reason === "abort" ? error : toShotAnalysisError(error.lastError);
   }
 
-  if (error instanceof Anthropic.RateLimitError || error instanceof Anthropic.InternalServerError) {
-    return new ShotAnalysisError("busy", "The analysis service is busy right now.");
+  if (NoObjectGeneratedError.isInstance(error)) {
+    return new ShotAnalysisError("response", "The analysis came back malformed.");
   }
 
-  if (error instanceof Anthropic.APIConnectionError) {
-    return new ShotAnalysisError("network", "Couldn't reach the analysis service.");
-  }
+  if (APICallError.isInstance(error)) {
+    const status = error.statusCode;
 
-  if (error instanceof Anthropic.APIError) {
+    if (status === 401 || status === 403) {
+      return new ShotAnalysisError("auth", "The API key was rejected.");
+    }
+
+    if (status === 429 || (status != null && status >= 500)) {
+      return new ShotAnalysisError("busy", "The analysis service is busy right now.");
+    }
+
+    if (status == null) {
+      return new ShotAnalysisError("network", "Couldn't reach the analysis service.");
+    }
+
     return new ShotAnalysisError("response", "The analysis request failed.");
   }
 
-  // AbortError and anything else non-API propagate untouched so callers can
-  // tell a cancelled request from a failed one.
   return error;
 }

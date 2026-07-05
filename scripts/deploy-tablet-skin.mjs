@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import { networkInterfaces } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { access, readFile, stat, writeFile } from "node:fs/promises";
+import { access, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
@@ -39,6 +39,8 @@ async function main() {
   if (!skinId) {
     throw new Error(`Missing skin id in ${manifestPath}`);
   }
+
+  await writeShotAnalysisProvision(path.join(distDir, "shot-analysis-provision.json"));
 
   console.log(`Packaging ${skinId}@${stampedManifest.version} from dist/...`);
   await execFileAsync("zip", ["-rFS", zipPath, "."], { cwd: distDir });
@@ -243,6 +245,35 @@ function safeJsonParse(value) {
   } catch {
     return value;
   }
+}
+
+// Bundles SHOT_ANALYSIS_* from .env into the skin so the tablet provisions
+// itself on boot — a long API key is not typable on the tablet (ADR 0002).
+async function writeShotAnalysisProvision(filePath) {
+  const provider = process.env.SHOT_ANALYSIS_PROVIDER?.trim() || "anthropic";
+  const apiKey = process.env.SHOT_ANALYSIS_API_KEY?.trim() ?? "";
+  const baseUrl = process.env.SHOT_ANALYSIS_BASE_URL?.trim() ?? "";
+  const model = process.env.SHOT_ANALYSIS_MODEL?.trim() ?? "";
+
+  if (provider !== "anthropic" && provider !== "openai-compatible") {
+    throw new Error(
+      `Invalid SHOT_ANALYSIS_PROVIDER "${provider}". Use "anthropic" or "openai-compatible".`,
+    );
+  }
+
+  const configured = provider === "anthropic" ? apiKey !== "" : baseUrl !== "" && model !== "";
+
+  if (!configured) {
+    await rm(filePath, { force: true });
+    return;
+  }
+
+  await writeFile(
+    filePath,
+    `${JSON.stringify({ apiKey, baseUrl, model, provider }, null, 2)}\n`,
+    "utf8",
+  );
+  console.log(`Bundling shot analysis provisioning (${provider}).`);
 }
 
 function loadLocalEnvFile(filePath) {

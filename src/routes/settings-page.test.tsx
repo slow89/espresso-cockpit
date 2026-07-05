@@ -106,6 +106,12 @@ describe("SettingsPage", () => {
     useBridgeConfigStore.setState({
       gatewayUrl: "http://bridge.local:8080",
     });
+    useShotAnalysisSettingsStore.setState({
+      apiKey: "",
+      baseUrl: "",
+      model: "",
+      provider: "anthropic",
+    });
     useDevicesStore.setState({
       connection: "live",
       connectionStatus: {
@@ -591,17 +597,35 @@ describe("SettingsPage", () => {
 
     expect(screen.getByText("Not set")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("Anthropic API key"), {
+    fireEvent.change(screen.getByLabelText("API key"), {
       target: { value: "  sk-ant-test-key  " },
     });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(useShotAnalysisSettingsStore.getState().apiKey).toBe("sk-ant-test-key");
-    expect(screen.getByText("Configured")).toBeInTheDocument();
+    expect(screen.getByText("Saved · …-key")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Clear" }));
 
     expect(useShotAnalysisSettingsStore.getState().apiKey).toBe("");
     expect(screen.getByText("Not set")).toBeInTheDocument();
+  });
+
+  it("configures an OpenAI-compatible shot analysis provider", () => {
+    render(<SettingsPage />);
+
+    fireEvent.change(screen.getByLabelText("Provider"), {
+      target: { value: "openai-compatible" },
+    });
+    fireEvent.change(screen.getByLabelText("Base URL"), {
+      target: { value: "http://localhost:11434/v1" },
+    });
+    fireEvent.change(screen.getByLabelText("Model"), { target: { value: "llama3.3:70b" } });
+
+    const state = useShotAnalysisSettingsStore.getState();
+
+    expect(state.provider).toBe("openai-compatible");
+    expect(state.baseUrl).toBe("http://localhost:11434/v1");
+    expect(state.model).toBe("llama3.3:70b");
   });
 });

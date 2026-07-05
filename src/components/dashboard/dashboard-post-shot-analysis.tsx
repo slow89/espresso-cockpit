@@ -5,6 +5,7 @@ import { ArrowDownRight, KeyRound, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DashboardPostShotSummary } from "@/lib/dashboard-post-shot-summary";
 import {
+  isShotAnalysisConfigured,
   requestShotAnalysis,
   ShotAnalysisError,
   tasteCompassScales,
@@ -23,6 +24,9 @@ type AnalysisUiState =
 
 function useShotAnalysisRequest(summary: DashboardPostShotSummary) {
   const apiKey = useShotAnalysisSettingsStore((state) => state.apiKey);
+  const baseUrl = useShotAnalysisSettingsStore((state) => state.baseUrl);
+  const model = useShotAnalysisSettingsStore((state) => state.model);
+  const provider = useShotAnalysisSettingsStore((state) => state.provider);
   const [state, setState] = useState<AnalysisUiState>({ phase: "idle" });
   const abortRef = useRef<AbortController | null>(null);
 
@@ -31,7 +35,7 @@ function useShotAnalysisRequest(summary: DashboardPostShotSummary) {
   }, []);
 
   function analyze(compass: TasteCompassState) {
-    if (apiKey === "") {
+    if (!isShotAnalysisConfigured({ apiKey, baseUrl, model, provider })) {
       setState({ phase: "setup" });
       return;
     }
@@ -41,7 +45,15 @@ function useShotAnalysisRequest(summary: DashboardPostShotSummary) {
     abortRef.current = controller;
     setState({ phase: "loading" });
 
-    requestShotAnalysis({ apiKey, compass, signal: controller.signal, summary })
+    requestShotAnalysis({
+      apiKey,
+      baseUrl,
+      compass,
+      model,
+      provider,
+      signal: controller.signal,
+      summary,
+    })
       .then((result) => {
         if (!controller.signal.aborted) {
           setState({ phase: "done", result });
@@ -226,7 +238,7 @@ function SetupPanel() {
     <div className="flex flex-wrap items-center gap-3 rounded-[4px] border border-status-info-border/50 bg-status-info-surface/40 px-3 py-2.5">
       <KeyRound className="size-4 shrink-0 text-status-info-foreground" />
       <p className="min-w-0 flex-1 text-[0.72rem] text-status-info-foreground">
-        Shot Analysis needs an Anthropic API key. Add one in Setup — it stays on this tablet.
+        Shot Analysis needs an LLM provider. Configure one in Setup — keys stay on this tablet.
       </p>
       <Button
         asChild

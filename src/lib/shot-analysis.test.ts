@@ -6,9 +6,9 @@ import {
   buildShotAnalysisPrompt,
   buildTelemetryTable,
   downsampleTelemetry,
+  isShotAnalysisConfigured,
   maxShotAnalysisTelemetryRows,
-  parseShotAnalysisText,
-  ShotAnalysisError,
+  shotAnalysisResultSchema,
 } from "./shot-analysis";
 
 describe("buildShotAnalysisPrompt", () => {
@@ -81,37 +81,53 @@ describe("downsampleTelemetry", () => {
   });
 });
 
-describe("parseShotAnalysisText", () => {
+describe("shotAnalysisResultSchema", () => {
   it("parses a well-formed analysis", () => {
-    const result = parseShotAnalysisText(
-      JSON.stringify({
-        diagnosis: "Fast pour, pressure never held the plateau.",
-        primary: { action: "Grind finer", detail: "2 steps", rationale: "Slows early flow." },
-        secondary: null,
-      }),
-    );
+    const result = shotAnalysisResultSchema.parse({
+      diagnosis: "Fast pour, pressure never held the plateau.",
+      primary: { action: "Grind finer", detail: "2 steps", rationale: "Slows early flow." },
+      secondary: null,
+    });
 
     expect(result.primary.action).toBe("Grind finer");
     expect(result.secondary).toBeNull();
   });
 
   it("parses an optional secondary adjustment", () => {
-    const result = parseShotAnalysisText(
-      JSON.stringify({
-        diagnosis: "Choked tail.",
-        primary: { action: "Grind coarser", detail: "1 step", rationale: "Opens the tail." },
-        secondary: { action: "Drop temperature 1 °C", rationale: "If bitterness lingers." },
-      }),
-    );
+    const result = shotAnalysisResultSchema.parse({
+      diagnosis: "Choked tail.",
+      primary: { action: "Grind coarser", detail: "1 step", rationale: "Opens the tail." },
+      secondary: { action: "Drop temperature 1 °C", rationale: "If bitterness lingers." },
+    });
 
     expect(result.secondary?.action).toBe("Drop temperature 1 °C");
   });
 
-  it("rejects non-JSON and schema mismatches", () => {
-    expect(() => parseShotAnalysisText("not json")).toThrow(ShotAnalysisError);
-    expect(() => parseShotAnalysisText(JSON.stringify({ diagnosis: "only" }))).toThrow(
-      ShotAnalysisError,
-    );
+  it("rejects schema mismatches", () => {
+    expect(shotAnalysisResultSchema.safeParse({ diagnosis: "only" }).success).toBe(false);
+  });
+});
+
+describe("isShotAnalysisConfigured", () => {
+  it("requires an API key for Anthropic", () => {
+    expect(
+      isShotAnalysisConfigured({ apiKey: "", baseUrl: "", model: "", provider: "anthropic" }),
+    ).toBe(false);
+    expect(
+      isShotAnalysisConfigured({ apiKey: "sk-ant", baseUrl: "", model: "", provider: "anthropic" }),
+    ).toBe(true);
+  });
+
+  it("requires an endpoint and model for OpenAI-compatible, but no key", () => {
+    const base = { apiKey: "", provider: "openai-compatible" } as const;
+
+    expect(isShotAnalysisConfigured({ ...base, baseUrl: "", model: "llama3" })).toBe(false);
+    expect(
+      isShotAnalysisConfigured({ ...base, baseUrl: "http://localhost:11434/v1", model: "" }),
+    ).toBe(false);
+    expect(
+      isShotAnalysisConfigured({ ...base, baseUrl: "http://localhost:11434/v1", model: "llama3" }),
+    ).toBe(true);
   });
 });
 

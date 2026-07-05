@@ -765,7 +765,7 @@ describe("DashboardPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Analyze" }));
 
-    expect(screen.getByText(/needs an Anthropic API key/)).toBeInTheDocument();
+    expect(screen.getByText(/needs an LLM provider/)).toBeInTheDocument();
     expect(shotAnalysisMocks.requestShotAnalysis).not.toHaveBeenCalled();
   });
 

@@ -418,6 +418,39 @@ describe("DashboardPage", () => {
     expect(screen.queryByTestId("dashboard-tablet-shot-workspace")).not.toBeInTheDocument();
   });
 
+  it("replaces the controls with the utility screen while flushing and stops via the stop button", async () => {
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("flush", "pouring"),
+      error: null,
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByTestId("dashboard-utility-screen")).toBeInTheDocument();
+    expect(screen.getByText("Flushing")).toBeInTheDocument();
+    expect(screen.queryByTestId("dashboard-tablet-prep-board")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("dashboard-desktop-workspace")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Stop" }));
+
+    await waitFor(() => {
+      expect(requestMachineStateMutate).toHaveBeenCalledWith("idle");
+    });
+  });
+
+  it("replaces the controls with the utility screen while steaming", () => {
+    queryMocks.useMachineStateQuery.mockReturnValue({
+      data: buildSnapshot("steam", "pouring"),
+      error: null,
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByTestId("dashboard-utility-screen")).toBeInTheDocument();
+    expect(screen.getByText("Steaming")).toBeInTheDocument();
+    expect(screen.queryByTestId("dashboard-tablet-prep-board")).not.toBeInTheDocument();
+  });
+
   it("uses the workflow profile temperature for the brew control instead of the live mix temperature", () => {
     queryMocks.useMachineStateQuery.mockReturnValue({
       data: buildSnapshot("idle", "idle", {

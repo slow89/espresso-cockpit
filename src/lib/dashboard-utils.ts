@@ -2,7 +2,8 @@ import type { MachineSnapshot, TimeToReadySnapshot } from "@/rest/types";
 import { isShotActiveMachinePhase, type TelemetrySample } from "@/lib/telemetry";
 import type { DashboardPostShotSummary } from "@/lib/dashboard-post-shot-summary";
 
-export type DashboardPresentationMode = "controls" | "post-shot" | "shot";
+export type DashboardPresentationMode = "controls" | "post-shot" | "shot" | "utility";
+export type DashboardUtilityAction = "flush" | "hotWater" | "steam";
 export type DashboardPrepStatusTone = "warming" | "ready" | "offline" | "sleeping";
 export type DashboardPrepStatus = {
   items: ReadonlyArray<{
@@ -34,6 +35,22 @@ export function getDashboardDevEnabled() {
   return new URLSearchParams(window.location.search).get("dev") === "true";
 }
 
+export function getDashboardUtilityAction(
+  snapshot?: MachineSnapshot | null,
+): DashboardUtilityAction | null {
+  switch (snapshot?.state.state) {
+    case "flush":
+      return "flush";
+    case "hotWater":
+      return "hotWater";
+    case "steam":
+    case "steamRinse":
+      return "steam";
+    default:
+      return null;
+  }
+}
+
 export function getDashboardPresentationMode({
   postShotSummary,
   simulatedShotActive,
@@ -57,6 +74,10 @@ export function getDashboardPresentationMode({
 
   if (isShotActiveMachinePhase(latestTelemetry)) {
     return "shot";
+  }
+
+  if (getDashboardUtilityAction(snapshot) != null) {
+    return "utility";
   }
 
   return postShotSummary == null ? "controls" : "post-shot";

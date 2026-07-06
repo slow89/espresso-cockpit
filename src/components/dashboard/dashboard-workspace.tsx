@@ -2,12 +2,21 @@ import { DashboardControlRail } from "@/components/dashboard/dashboard-control-r
 import { DashboardTabletPostShotSummary } from "@/components/dashboard/dashboard-tablet-post-shot-summary";
 import { DashboardTabletPrepBoard } from "@/components/dashboard/dashboard-tablet-prep-board";
 import { DashboardTabletShotSummary } from "@/components/dashboard/dashboard-tablet-shot-summary";
+import { DashboardUtilityScreen } from "@/components/dashboard/dashboard-utility-screen";
 import { TelemetryChart } from "@/components/telemetry-chart";
 import { useMachineStore } from "@/stores/machine-store";
 import { useDashboardPresentationMode } from "./dashboard-view-model";
 
 export function DashboardWorkspace() {
   const presentationMode = useDashboardPresentationMode();
+
+  if (presentationMode === "utility") {
+    return (
+      <section className="min-h-0 flex flex-1 flex-col">
+        <DashboardUtilityScreen />
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-0 flex flex-1 flex-col">

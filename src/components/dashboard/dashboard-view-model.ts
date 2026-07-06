@@ -9,7 +9,9 @@ import {
   formatSecondaryNumber,
   getDashboardPrepStatus,
   getDashboardPresentationMode,
+  getDashboardUtilityAction,
   type DashboardPresentationMode,
+  type DashboardUtilityAction,
 } from "@/lib/dashboard-utils";
 import {
   formatBrewRatio,
@@ -392,6 +394,12 @@ export function useDashboardPresentationMode(): DashboardPresentationMode {
 
 export function useDashboardShotActive(): boolean {
   return useDashboardPresentationMode() === "shot";
+}
+
+export function useDashboardActiveUtilityAction(): DashboardUtilityAction | null {
+  const { data: snapshot } = useMachineStateQuery();
+
+  return getDashboardUtilityAction(snapshot);
 }
 
 export function getDashboardActiveRecipe(workflow: WorkflowRecord | null | undefined) {

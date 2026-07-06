@@ -169,4 +169,37 @@ describe("getDashboardPresentationMode", () => {
       }),
     ).toBe("shot");
   });
+
+  it("switches to the utility screen while flushing, steaming, or pouring hot water", () => {
+    for (const state of ["flush", "steam", "steamRinse", "hotWater"] as const) {
+      expect(
+        getDashboardPresentationMode({
+          snapshot: buildSnapshot(state, "pouring"),
+          telemetry: [],
+        }),
+      ).toBe("utility");
+    }
+  });
+
+  it("prefers the utility screen over a pending post-shot summary", () => {
+    expect(
+      getDashboardPresentationMode({
+        postShotSummary: {
+          endedAt: "2026-04-05T12:00:05.000Z",
+          localId: "summary-1",
+          startedAt: "2026-04-05T12:00:00.000Z",
+          telemetry: [],
+          workflow: {
+            coffeeName: null,
+            name: null,
+            profileTitle: null,
+            targetDoseWeight: null,
+            targetYield: null,
+          },
+        },
+        snapshot: buildSnapshot("steam", "pouring"),
+        telemetry: [],
+      }),
+    ).toBe("utility");
+  });
 });

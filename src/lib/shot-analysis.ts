@@ -1,7 +1,13 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { APICallError } from "@ai-sdk/provider";
-import { generateObject, NoObjectGeneratedError, RetryError } from "ai";
+import {
+  generateText,
+  NoObjectGeneratedError,
+  NoOutputGeneratedError,
+  Output,
+  RetryError,
+} from "ai";
 import { z } from "zod";
 
 import type { DashboardPostShotSummary } from "@/lib/dashboard-post-shot-summary";
@@ -253,16 +259,16 @@ export async function requestShotAnalysis({
   summary: DashboardPostShotSummary;
 }): Promise<ShotAnalysisResult> {
   try {
-    const { object } = await generateObject({
+    const { output } = await generateText({
       abortSignal: signal,
       maxRetries: 1,
       model: buildShotAnalysisModel({ apiKey, baseUrl, model, provider }),
+      output: Output.object({ schema: shotAnalysisResultSchema }),
       prompt: buildShotAnalysisPrompt(summary, compass),
-      schema: shotAnalysisResultSchema,
       system: shotAnalysisSystemPrompt,
     });
 
-    return object;
+    return output;
   } catch (error) {
     throw toShotAnalysisError(error);
   }
@@ -275,7 +281,7 @@ function toShotAnalysisError(error: unknown): unknown {
     return error.reason === "abort" ? error : toShotAnalysisError(error.lastError);
   }
 
-  if (NoObjectGeneratedError.isInstance(error)) {
+  if (NoObjectGeneratedError.isInstance(error) || NoOutputGeneratedError.isInstance(error)) {
     return new ShotAnalysisError("response", "The analysis came back malformed.");
   }
 

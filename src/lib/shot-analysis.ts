@@ -270,11 +270,26 @@ export async function requestShotAnalysis({
 
     return output;
   } catch (error) {
-    throw toShotAnalysisError(error);
+    const normalizedError = toShotAnalysisError(error);
+
+    // Streamline Bridge persists WebView console output. Keep this deliberately
+    // free of request data and credentials while retaining enough information
+    // to diagnose failures that only happen in the tablet's embedded browser.
+    const errorName = error instanceof Error ? error.name : typeof error;
+    const errorMessage = error instanceof Error ? error.message : "No error message";
+    const kind = normalizedError instanceof ShotAnalysisError ? normalizedError.kind : "cancelled";
+
+    console.warn(`[shot-analysis] Request failed: ${errorName} (${kind}): ${errorMessage}`);
+
+    throw normalizedError;
   }
 }
 
-function toShotAnalysisError(error: unknown): unknown {
+export function toShotAnalysisError(error: unknown): unknown {
+  if (error instanceof ShotAnalysisError) {
+    return error;
+  }
+
   if (RetryError.isInstance(error)) {
     // Aborts propagate untouched so callers can tell a cancelled request from
     // a failed one; otherwise classify what actually failed.
@@ -303,5 +318,13 @@ function toShotAnalysisError(error: unknown): unknown {
     return new ShotAnalysisError("response", "The analysis request failed.");
   }
 
-  return error;
+  // Browser fetch failures surface as a bare TypeError instead of an
+  // APICallError in some Android WebView / provider combinations.
+  if (error instanceof TypeError) {
+    return new ShotAnalysisError("network", "Couldn't reach the analysis service.");
+  }
+
+  // Do not make callers understand every AI SDK error class. Anything that
+  // reached the provider but was not classified above is a response failure.
+  return new ShotAnalysisError("response", "The analysis request failed.");
 }

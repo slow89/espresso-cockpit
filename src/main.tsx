@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
+import "@/lib/browser-compatibility";
 import { AppProviders } from "@/app/providers";
 import { initializeAppRuntime } from "@/app/runtime";
 import { AppRouter } from "@/router";

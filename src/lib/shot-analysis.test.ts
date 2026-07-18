@@ -8,7 +8,9 @@ import {
   downsampleTelemetry,
   isShotAnalysisConfigured,
   maxShotAnalysisTelemetryRows,
+  ShotAnalysisError,
   shotAnalysisResultSchema,
+  toShotAnalysisError,
 } from "./shot-analysis";
 
 describe("buildShotAnalysisPrompt", () => {
@@ -128,6 +130,31 @@ describe("isShotAnalysisConfigured", () => {
     expect(
       isShotAnalysisConfigured({ ...base, baseUrl: "http://localhost:11434/v1", model: "llama3" }),
     ).toBe(true);
+  });
+});
+
+describe("toShotAnalysisError", () => {
+  it("classifies bare browser fetch failures as network errors", () => {
+    const error = toShotAnalysisError(new TypeError("Failed to fetch"));
+
+    expect(error).toBeInstanceOf(ShotAnalysisError);
+    expect(error).toMatchObject({
+      kind: "network",
+      message: "Couldn't reach the analysis service.",
+    });
+  });
+
+  it("normalizes unrecognized SDK failures as response errors", () => {
+    const error = toShotAnalysisError(new Error("AI_TypeValidationError"));
+
+    expect(error).toBeInstanceOf(ShotAnalysisError);
+    expect(error).toMatchObject({ kind: "response", message: "The analysis request failed." });
+  });
+
+  it("preserves an existing classified error", () => {
+    const original = new ShotAnalysisError("auth", "The API key was rejected.");
+
+    expect(toShotAnalysisError(original)).toBe(original);
   });
 });
 

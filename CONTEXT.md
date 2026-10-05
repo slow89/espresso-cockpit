@@ -75,6 +75,7 @@ _Avoid_: "Acidity" as an input label (ambiguous between pleasant brightness and 
 - A v1 **Post-Shot Summary** is a tablet Brew dashboard behavior.
 - A v1 **Post-Shot Summary** can open shot history only after the **Bridge** exposes the persisted **Shot** identifier.
 - A v1 **Post-Shot Summary** freezes the completed **Shot** telemetry instead of following the live telemetry buffer after the machine returns to idle.
+- A **Post-Shot Summary** keeps the frozen **Shot** telemetry chart on screen and replaces the prep controls until it is dismissed.
 - A v1 **Post-Shot Summary** may be shown before its **Bridge**-persisted **Shot** identifier is known.
 - A v1 **Post-Shot Summary** does not show placeholder analysis or recommendation content.
 - The **Bridge** owns machine, device, readiness, display, presence, and Skin installation policy.

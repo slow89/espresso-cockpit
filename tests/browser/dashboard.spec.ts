@@ -147,12 +147,14 @@ test.describe("dashboard", () => {
     await expect(summary.getByText("18.6 g")).toBeVisible();
     await expect(summary.getByText("-17.4 g")).toBeVisible();
     await expect(summary.getByRole("button", { name: "Saving" })).toBeVisible();
-    await expect(page.getByTestId("dashboard-tablet-prep-board")).toBeVisible();
+    await expect(summary.getByLabel("espresso telemetry monitor")).toBeVisible();
+    await expect(summary.getByRole("button", { name: "Analyze" })).toBeInViewport();
+    await expect(page.getByTestId("dashboard-tablet-prep-board")).toBeHidden();
     await assertBottomNavReachable(page);
     await assertNoCriticalOverflow(page);
     assertNoAppErrors(browserSignals);
 
-    await summary.getByRole("button", { name: "Dismiss shot summary" }).click();
+    await summary.getByRole("button", { name: "Done" }).click();
     await expect(summary).toBeHidden();
     await expect(page.getByTestId("dashboard-tablet-prep-board")).toBeVisible();
   });

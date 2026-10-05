@@ -140,6 +140,18 @@ describe("TelemetryChart", () => {
     expect(screen.queryByText("Frame")).not.toBeInTheDocument();
   });
 
+  it("pulses the latest samples while live but not for a frozen recording", () => {
+    const pulseSelector = 'circle[style*="telemetry-pulse"]';
+    const { container, rerender } = render(<TelemetryChart data={samples} layout="tablet" />);
+
+    expect(container.querySelectorAll(pulseSelector).length).toBeGreaterThan(0);
+
+    rerender(<TelemetryChart data={samples} frozen layout="tablet" />);
+
+    expect(container.querySelectorAll(pulseSelector)).toHaveLength(0);
+    expect(screen.getAllByText("0:01.0").length).toBeGreaterThan(0);
+  });
+
   it("opens the tablet config overlay and updates the preset", () => {
     render(<TelemetryChart data={samples} layout="tablet" />);
 

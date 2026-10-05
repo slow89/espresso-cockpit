@@ -35,11 +35,10 @@ export function DashboardWorkspace() {
       <div className="flex min-h-0 flex-1 flex-col xl:hidden">
         {presentationMode === "shot" ? (
           <DashboardTabletShotWorkspace />
+        ) : presentationMode === "post-shot" ? (
+          <DashboardTabletPostShotSummary />
         ) : (
-          <>
-            {presentationMode === "post-shot" ? <DashboardTabletPostShotSummary /> : null}
-            <DashboardTabletPrepBoard />
-          </>
+          <DashboardTabletPrepBoard />
         )}
       </div>
     </section>

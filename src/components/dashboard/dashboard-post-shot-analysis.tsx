@@ -96,7 +96,7 @@ export function DashboardPostShotAnalysis({ summary }: { summary: DashboardPostS
 
   return (
     <div
-      className="grid gap-3 px-3 py-2.5 md:grid-cols-[auto_minmax(0,1fr)] md:gap-6 md:px-4"
+      className="grid gap-3 px-3 py-2.5 md:grid-cols-[auto_minmax(0,1fr)] md:gap-6 md:px-4 lg:grid-cols-1 lg:gap-3"
       data-testid="dashboard-post-shot-analysis"
     >
       <div className="space-y-1.5">
@@ -104,7 +104,7 @@ export function DashboardPostShotAnalysis({ summary }: { summary: DashboardPostS
           Taste · optional
         </p>
         {tasteCompassScales.map((scale) => (
-          <div className="flex items-center gap-1.5" key={scale.id}>
+          <div className="grid grid-cols-3 gap-1.5" key={scale.id}>
             {scale.options.map((option, index) => {
               const selected = compass[scale.id] === index;
 

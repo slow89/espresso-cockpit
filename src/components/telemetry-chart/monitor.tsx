@@ -349,7 +349,12 @@ function TelemetryMonitorCanvas({
           {/* Grid */}
           <GridColumns
             height={chartMetrics.plotHeight}
-            numTicks={density === "compact" ? 4 : Math.max(Math.round(maxTimelineValue / 4), 5)}
+            // Capped: a long idle buffer must not ask for thousands of grid lines.
+            numTicks={
+              density === "compact"
+                ? 4
+                : Math.min(Math.max(Math.round(maxTimelineValue / 4), 5), 20)
+            }
             scale={xScale}
             stroke={chartTheme.grid}
             width={chartMetrics.innerWidth}
@@ -732,8 +737,9 @@ function ChartXAxis({
   y: number;
 }) {
   const ticks = getTimelineTicks(maxTimelineValue, density === "compact" ? 4 : 6);
-  const tickLabelInset = density === "compact" ? 120 : 32;
-  const axisLabelInset = density === "compact" ? 8 : 12;
+  // Compact tick labels sit on their ticks; the "Time" caption moves into the
+  // right margin so it never collides with the last tick, even on narrow charts.
+  const tickLabelInset = density === "compact" ? 0 : 32;
 
   return (
     <Group top={y}>
@@ -765,8 +771,8 @@ function ChartXAxis({
         fill={chartTheme.muted}
         fontFamily={chartTheme.mono}
         fontSize={density === "compact" ? "8.5" : "10"}
-        textAnchor="end"
-        x={width - axisLabelInset}
+        textAnchor={density === "compact" ? "start" : "end"}
+        x={density === "compact" ? width + 22 : width - 12}
         y={density === "compact" ? 14 : 18}
       >
         Time

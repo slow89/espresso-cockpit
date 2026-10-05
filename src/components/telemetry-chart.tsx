@@ -23,10 +23,13 @@ import type {
 export function TelemetryChart({
   className,
   data,
+  frozen = false,
   layout = "auto",
 }: {
   className?: string;
   data: TelemetrySample[];
+  /** The data is a finished recording, so skip the live-shot pulse and glow. */
+  frozen?: boolean;
   layout?: TelemetryLayoutMode;
 }) {
   const activePreset = useTelemetryChartStore((state) => state.activePreset);
@@ -52,7 +55,7 @@ export function TelemetryChart({
     .map((seriesId) => getTelemetrySeriesDefinition(seriesId))
     .filter((series): series is TelemetrySeriesDefinition => series != null);
   const summarySeries = selectedSeries.filter((series) => laneVisibility[series.family]);
-  const isLive = usesShotTimeline && timelineSamples.length > 0;
+  const isLive = !frozen && usesShotTimeline && timelineSamples.length > 0;
   const model = {
     activePreset,
     activeSample,

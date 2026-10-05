@@ -718,9 +718,10 @@ describe("DashboardPage", () => {
     expect(within(summary).getByText("37.2 g")).toBeInTheDocument();
     expect(within(summary).getByText("1:2.1")).toBeInTheDocument();
     expect(within(summary).getByText("+1.2 g")).toBeInTheDocument();
-    expect(screen.getByTestId("dashboard-tablet-prep-board")).toBeInTheDocument();
+    expect(within(summary).getByTestId("telemetry-chart")).toHaveTextContent("samples:2");
+    expect(screen.queryByTestId("dashboard-tablet-prep-board")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Dismiss shot summary" }));
+    fireEvent.click(within(summary).getByRole("button", { name: "Done" }));
 
     expect(screen.queryByTestId("dashboard-tablet-post-shot-summary")).not.toBeInTheDocument();
     expect(screen.getByTestId("dashboard-tablet-prep-board")).toBeInTheDocument();

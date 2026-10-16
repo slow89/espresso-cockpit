@@ -1,7 +1,7 @@
 # How are numbers entered on the tablet without the soft keyboard?
 
 Type: prototype
-Status: claimed
+Status: resolved
 Blocked by: —
 Map: [Profile authoring in Cockpit](../map.md)
 
@@ -53,3 +53,26 @@ Things to react to in the browser:
 3. Is a right-side drawer (B) acceptable, or must the keypad be full-screen to get keys above 44px?
 4. In A, do the preset chips earn their height, or should they be per-field "recent values" instead?
 5. Is a mix wanted: steppers in place (A) plus tap-the-value for a keypad (B)?
+
+**2026-10-15 — operator reaction, round 1.** Leaning **C (drag ruler)**. Problem raised: at three-digit values (temperature) the ruler was too busy, a label every 28px. Fixed in the prototype: labels now sit at a "nice" multiple of the coarse step at least 70px apart, whole-number labels drop the ".0", and ticks are tiered (label / coarse-step / fine). Not yet decided: whether C stands alone or pairs with a keypad for typed entry (question 5 above).
+
+**2026-10-15 — operator decision.** "Looks good, go with that": the drag ruler as prototyped, standalone.
+
+## Answer
+
+**Numeric values are entered with a drag ruler (prototype Variant C).** Tapping a field selects it; a ruler strip along the bottom of the editor is bound to that field. Dragging the ruler changes the value one UI step per 14px tick with snapping, and the ruler's ends are press-and-hold ± buttons that move by the field's coarse step. The Android keyboard is never used for numbers; it remains only for text (title, notes, Step name).
+
+Decided details, all visible in the prototype on branch `prototype/numeric-input` (`/prototype/numeric-input?variant=C`):
+
+- **Step sizes are the machine's where they are usable, 0.1 where not**: pressure, flow, exit, and limiter values step 0.1 with the encoded 1/16 value (DE1) shown when it differs; temperature 0.5 °C; seconds 0.1 s below 12.75 s and 1 s above; volume 1 mL; weight 0.1 g. The ruler shows the encoded value next to the entered one when they drift ("machine 9.125").
+- **Coarse steps**: 0.5 bar / 0.5 mL/s, 1 °C, 1 s, 10 mL, 1 g. Used by the rail-end buttons and by hold-to-repeat acceleration.
+- **Rail legibility**: labels sit at a "nice" multiple of the coarse step at least 70px apart (so 5 °C, 10 mL, 0.5 bar, 5 s), whole numbers drop the ".0", and ticks are tiered: tall for labelled values, medium for coarse steps, short for fine steps. This was the operator's one correction during review.
+- **Range**: out-of-range ticks render dimmed and the value clamps at the field's limits, so the Skin never produces a value the machine would wrap.
+- **Commit timing**: ruler edits land in the Profile Draft, never directly on the machine (Decenza's per-tap upload pitfall from the prior-art research).
+- **Rejected**: in-place ± steppers with presets (Variant A, too much chrome per field), a keypad drawer (Variant B, typing is rarely the need), sliders and chart-point dragging (not enough travel for 1/16-bar or 0.5 °C precision on a 600px-tall screen).
+
+**Knock-ons for other tickets:**
+
+- *How does the step editor lay out at 1024×600?* must reserve roughly 132px of height for the ruler strip and decide whether field tiles carry preset chips for long jumps (for example 25 s → 90 s is a long drag or 65 coarse taps without them).
+- *Which fields does the editor expose, and what limits does the Skin enforce?* owns the per-field min/max the ruler clamps to; the prototype used machine limits as placeholders.
+- The existing `RecipeValueControl` stepper on the Brew and Profiles screens is unchanged by this decision.

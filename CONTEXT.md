@@ -92,6 +92,18 @@ _Avoid_: Profile version (ambiguous with the profile format version)
 An unsaved, in-progress edit of a **Profile** held by the **Skin** until it is saved to the **Profile Library**.
 _Avoid_: Pending profile, temp profile
 
+**Profile Revision**:
+A **Profile** saved from another to replace it in the **Profile Library**.
+_Avoid_: Profile version, edit, overwrite
+
+**Superseded Profile**:
+A **Profile** that a **Profile Revision** has replaced, kept only as part of its **Profile Lineage**.
+_Avoid_: Retired profile (the **Bridge** retires **Bundled Profiles**), old version, hidden profile
+
+**Profile Fork**:
+A **Profile** saved from another as a separate profile that sits beside it in the **Profile Library**.
+_Avoid_: Copy, branch, duplicate (as a noun)
+
 ## Relationships
 
 - A **Skin** talks to exactly one **Bridge** origin at a time.
@@ -130,6 +142,11 @@ _Avoid_: Pending profile, temp profile
 - The **Profile Library** is owned by the **Bridge**; the **Skin** reads and writes it but keeps no library of its own.
 - A **Bundled Profile** can be duplicated, hidden, or restored, but its **Steps** cannot be edited in place.
 - A **Profile Draft** becomes a **Profile** only when it is saved to the **Profile Library**.
+- Saving a **Profile Draft** whose **Steps** changed makes a **Profile Revision**; the **Profile** it came from becomes a **Superseded Profile**.
+- Changing only a **Profile**'s title or notes updates it in place and makes no **Profile Revision**.
+- A **Profile Fork** never supersedes its parent; both stay in the **Profile Library**.
+- A **Profile Lineage** links **Profile Revisions** and **Profile Forks** alike; only a **Profile Revision** supersedes its parent.
+- A **Superseded Profile** is not the same as a **Profile** the operator hid.
 
 ## Example dialogue
 

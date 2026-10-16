@@ -30,3 +30,14 @@ From [Does the tablet's Bridge expose the profile write endpoints?](04-tablet-br
 - **Every hidden profile on the tablet was hidden by the Bridge, not the operator.** All 13 are Bundled Profiles the Bridge retired as stale: 9 of them during the v0.7.11 → v0.8.8 upgrade, which replaced their content under new ids. A "Hidden" view would mostly show these old bundled versions.
 - **A retired Bundled Profile can leave the manifest** ("Rao Allongé 3"), so restore-by-filename via `/defaults` can't bring it back. Only a visibility change can.
 - **Bridge upgrades rewrite the Bundled side of the library**, so a fork whose `parentId` points at a bundled id can end up parented to a hidden record.
+
+From [What does Save do to a profile and its lineage?](06-save-semantics-and-lineage.md):
+
+- **There are three kinds of hidden record**:
+  - **Superseded Profiles**: replaced by a **Profile Revision**, identified by a child carrying the revision marker in `metadata`;
+  - profiles the operator hid;
+  - Bundled Profiles the Bridge retired.
+  A Hidden view shouldn't list Superseded Profiles, which belong to the lineage.
+- **Restoring a Bundled Profile's original** after the operator revised it means bringing back the Superseded root of that lineage. The two copies then share a title, which is tolerated, because titles are only checked for uniqueness at save time.
+- **Still open here**: what deleting the current Revision does to its Superseded ancestors.
+- **A collision on Save** with a hidden or deleted record offers to restore it, so restore must work from that prompt too.

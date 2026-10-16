@@ -30,3 +30,8 @@ From [How do existing DE1 profile editors lay out step editing?](03-editor-prior
 From [Does the tablet's Bridge expose the profile write endpoints?](04-tablet-bridge-endpoints.md):
 
 - **The Active Profile already drifts from the library.** On the operator's tablet, the Workflow's "Blooming Espresso" matches no library record. Every Step runs 9.5 °C cooler than the library copy, because Cockpit's dashboard brew-temperature control rewrites Step temperatures in the Workflow copy (`src/components/dashboard/dashboard-view-model.ts:164-178`). So "edit what's loaded" with no library match is the normal case, not an edge case.
+
+From [What does Save do to a profile and its lineage?](06-save-semantics-and-lineage.md):
+
+- **Every Save that changes Steps makes a new record with a new id** (a **Profile Revision** or a **Profile Fork**). The old record is hidden or left as it was, never rewritten. Whether a Save also updates the **Active Profile** belongs to this ticket.
+- **Dial-in back-and-forth** (9.0 → 9.2 → 9.0 bar) makes the second Save collide with the Superseded 9.0 version. It writes nothing and offers to go back to that version.

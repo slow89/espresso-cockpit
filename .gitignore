@@ -4,4 +4,4 @@ dist
 artifacts
 *.zip
 .env
-output
+output.playwright-mcp/

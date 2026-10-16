@@ -23,6 +23,11 @@ const HistoryRoutePage = lazyRouteComponent(
 );
 const SettingsPage = lazyRouteComponent(() => import("@/routes/settings-page"), "SettingsPage");
 const WorkflowsPage = lazyRouteComponent(() => import("@/routes/workflows-page"), "WorkflowsPage");
+// PROTOTYPE — throwaway route, remove with src/components/prototype/.
+const PrototypeNumericInputPage = lazyRouteComponent(
+  () => import("@/routes/prototype-numeric-input-page"),
+  "PrototypeNumericInputPage",
+);
 const historySearchSchema = z.object({
   shotId: z.string().optional(),
 });
@@ -70,7 +75,21 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, workflowsRoute, historyRoute, settingsRoute]);
+// PROTOTYPE — throwaway route.
+const prototypeNumericInputRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/prototype/numeric-input",
+  validateSearch: z.object({ variant: z.enum(["A", "B", "C"]).default("A") }),
+  component: PrototypeNumericInputPage,
+});
+
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  workflowsRoute,
+  historyRoute,
+  settingsRoute,
+  prototypeNumericInputRoute,
+]);
 
 const router = createRouter({
   routeTree,
@@ -98,7 +117,8 @@ function RootLayout() {
     pathname === "/" ||
     pathname === "/workflows" ||
     pathname === "/history" ||
-    pathname === "/settings";
+    pathname === "/settings" ||
+    pathname.startsWith("/prototype/");
 
   return (
     <div className="min-h-screen bg-canvas text-foreground">

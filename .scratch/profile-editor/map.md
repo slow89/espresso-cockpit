@@ -22,7 +22,7 @@ A handoff-ready spec for creating and editing **Profiles** inside Cockpit, tuned
   - **research** tickets: `/research`
 - **Code conventions the spec must respect** (see `AGENTS.md`): zustand stores and derived state over `useEffect` / mirrored state, the React compiler with no manual memoisation, and components under ~300 lines.
 - **Plan, don't do**: tickets produce decisions, not shipped code. When the frontier is empty, run `/to-spec` to write the spec from Decisions so far, then hand off.
-- **Tracker**: local markdown. This map lives on branch `t3code/f038c29e`, and later sessions need that branch (merged or checked out) to see it. Research findings live on throwaway `research/<name>` branches, linked from each research ticket.
+- **Tracker**: local markdown, on `main` (merged in PR #2). Ticket edits ride on whichever branch the session uses, so merge them back promptly. Research findings live on throwaway `research/<name>` branches, linked from each research ticket.
 
 ## Decisions so far
 
@@ -31,6 +31,7 @@ A handoff-ready spec for creating and editing **Profiles** inside Cockpit, tuned
 - [How do existing DE1 profile editors lay out step editing?](issues/03-editor-prior-art.md) — list + detail with chart-as-Step-selector dominates (no curve dragging anywhere); de1app's four field groups are universal; numbers via ± stepper + full-screen in-app keypad; Bridge-era skins fork Bundled Profiles, offer Save a copy / history / Try-without-saving; the Bridge has no editor UI of its own.
 - [What does the Bridge's profile write API accept, reject, and return?](issues/01-bridge-profile-write-api.md) — ids hash execution fields incl. Step names; PUT replace moves to a new id and orphans children; POST dedups silently (title-only copies return the original); Bundled Profiles reject any `profile` edit; no push channel (refetch, ETag); Workflow profile changes upload immediately with no idle check; Bridge validates no ranges.
 - [What does each profile and step field mean, and what ranges does the machine allow?](issues/02-profile-field-semantics.md) — 20 Steps max, DE1 1/16 bar, 0.5 °C steps; the Bridge wraps out-of-range values silently instead of rejecting them; profile `target_weight` is dead at runtime (Workflow `targetYield` stops the shot); "no exit" = omit `exit`, not 0.
+- [Does the tablet's Bridge expose the profile write endpoints?](issues/04-tablet-bridge-endpoints.md) — yes, after the operator upgraded v0.7.11 → Decaid v0.8.8, which matches the researched `main` for profiles; below v0.8.0 an execution-changing PUT can lose the profile. DE1Pro, `tracking` mode; 1 operator profile among 86 bundled, all 13 hidden ones retired by the Bridge; the Active Profile already drifts from the library (dashboard temperature offset). Tablet moved to `192.168.68.50`.
 
 ## Not yet specified
 

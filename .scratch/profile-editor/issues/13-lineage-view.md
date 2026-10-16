@@ -25,3 +25,8 @@ From [What does the Bridge's profile write API accept…](01-bridge-profile-writ
 - **Self-parent cycle**: a rare cycle can make the lineage request hang.
 
 From [How do existing DE1 profile editors lay out step editing?](03-editor-prior-art.md): Bridge-era skins (streamline-js) already ship version history and "Restore original" on top of the Bridge lineage API. Their surfaces are linked in the research doc.
+
+From [Does the tablet's Bridge expose the profile write endpoints?](04-tablet-bridge-endpoints.md):
+
+- **Lineage is almost empty today.** Only one record on the tablet has a `parentId` (bundled provenance: Adaptive v3 → v2). Every other lineage is a single record.
+- **Bridge upgrades retire bundled versions under new ids.** A lineage reaching back to a Bundled Profile can therefore hit a hidden, superseded version after an upgrade.

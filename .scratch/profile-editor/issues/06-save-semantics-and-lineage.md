@@ -23,3 +23,7 @@ From [What does the Bridge's profile write API accept…](01-bridge-profile-writ
 - **Step names are execution fields**, so renaming a Step changes the id.
 - **`POST` dedups silently.** Content identical to an existing record (even a deleted, hidden, or Bundled one) returns that record, and the new title, notes, and `parentId` are ignored. So "Duplicate" can't produce an unmodified renamed copy, and Bundled Profiles can't be renamed or annotated.
 - **A `PUT` that collides with existing content** returns 400 and changes nothing.
+
+## Comments
+
+**2026-10-15 — claimed.** Grilling session in progress on branch `t3/wayfinder-06-save-semantics`.

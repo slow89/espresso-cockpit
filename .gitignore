@@ -5,3 +5,4 @@ artifacts
 *.zip
 .env
 output.playwright-mcp/
+.playwright-mcp/

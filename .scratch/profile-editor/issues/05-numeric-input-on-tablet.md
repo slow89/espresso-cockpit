@@ -53,3 +53,5 @@ Things to react to in the browser:
 3. Is a right-side drawer (B) acceptable, or must the keypad be full-screen to get keys above 44px?
 4. In A, do the preset chips earn their height, or should they be per-field "recent values" instead?
 5. Is a mix wanted: steppers in place (A) plus tap-the-value for a keypad (B)?
+
+**2026-10-15 — operator reaction, round 1.** Leaning **C (drag ruler)**. Problem raised: at three-digit values (temperature) the ruler was too busy, a label every 28px. Fixed in the prototype: labels now sit at a "nice" multiple of the coarse step at least 70px apart, whole-number labels drop the ".0", and ticks are tiered (label / coarse-step / fine). Not yet decided: whether C stands alone or pairs with a keypad for typed entry (question 5 above).

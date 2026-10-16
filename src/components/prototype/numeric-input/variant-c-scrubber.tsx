@@ -93,7 +93,8 @@ function Ruler({
       inRange: tickValue >= spec.min - 1e-9 && tickValue <= spec.max + 1e-9,
     };
   });
-  const majorEvery = spec.digits === 0 ? 10 : spec.coarseStep / step;
+  const coarseEvery = Math.max(1, Math.round(spec.coarseStep / step));
+  const labelEvery = pickLabelInterval(coarseEvery);
 
   return (
     <div className="flex flex-col border-t border-border/50 bg-panel-strong/70">
@@ -141,8 +142,9 @@ function Ruler({
           onPointerCancel={() => (drag.current = null)}
         >
           {ticks.map((tick) => {
-            const major = Math.round(tick.tickValue / (step * majorEvery)) * step * majorEvery;
-            const isMajor = Math.abs(major - tick.tickValue) < step / 4;
+            const unitIndex = Math.round(tick.tickValue / step);
+            const isLabel = unitIndex % labelEvery === 0;
+            const isCoarse = unitIndex % coarseEvery === 0;
             return (
               <div
                 key={tick.index}
@@ -152,13 +154,17 @@ function Ruler({
                 <div
                   className={cn(
                     "w-px",
-                    isMajor ? "h-7 bg-foreground/70" : "h-4 bg-foreground/30",
+                    isLabel
+                      ? "h-8 bg-foreground/80"
+                      : isCoarse
+                        ? "h-5 bg-foreground/45"
+                        : "h-3 bg-foreground/20",
                     !tick.inRange && "bg-status-warning-foreground/30",
                   )}
                 />
-                {isMajor && tick.inRange && (
-                  <span className="mt-0.5 font-mono text-[0.62rem] tabular-nums text-muted-foreground">
-                    {formatValue(spec, major)}
+                {isLabel && tick.inRange && (
+                  <span className="mt-0.5 font-mono text-[0.66rem] tabular-nums text-muted-foreground">
+                    {formatLabel(tick.tickValue)}
                   </span>
                 )}
               </div>
@@ -178,4 +184,19 @@ function Ruler({
       </div>
     </div>
   );
+}
+
+const MIN_LABEL_GAP_PX = 70;
+
+/** Label every N ticks, N a "nice" multiple of the coarse step, so labels never crowd. */
+function pickLabelInterval(coarseEvery: number) {
+  const candidates = [1, 2, 5, 10, 20, 50, 100].map((factor) => factor * coarseEvery);
+  return (
+    candidates.find((every) => every * TICK_PX >= MIN_LABEL_GAP_PX) ??
+    candidates[candidates.length - 1]
+  );
+}
+
+function formatLabel(value: number) {
+  return Number.isInteger(value) ? String(value) : String(Number(value.toFixed(2)));
 }

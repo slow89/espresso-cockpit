@@ -60,6 +60,38 @@ _Avoid_: Auto-applied machine changes, multi-variable adjustment lists
 An optional set of three quick tap scales the operator can give before requesting a **Shot Analysis**: extraction (too sour ↔ balanced ↔ too bitter), strength (weak ↔ right ↔ harsh), and body (thin ↔ right ↔ heavy).
 _Avoid_: "Acidity" as an input label (ambiguous between pleasant brightness and under-extraction sourness)
 
+**Profile**:
+A named, ordered list of **Steps** plus profile-level targets (temperature, target weight, target volume) that the machine runs during a **Shot**.
+_Avoid_: Recipe (that is dose and yield), program
+
+**Step**:
+One segment of a **Profile** with its own pump mode (pressure or flow), target, temperature, transition, exit conditions, limiter, and weight exit.
+_Avoid_: Frame, except for the machine's runtime index of the running **Step**
+
+**Workflow**:
+The **Bridge**'s current brewing setup: the **Active Profile** plus dose and yield, grinder and coffee context, and steam, hot water, and rinse settings.
+_Avoid_: Recipe, preset
+
+**Active Profile**:
+The copy of a **Profile** embedded in the **Workflow** that the next **Shot** will run.
+_Avoid_: Selected profile, current library profile
+
+**Profile Library**:
+The **Bridge**-owned collection of saved **Profiles**, including **Bundled Profiles** and operator-created ones.
+_Avoid_: Skin-local profiles, profile cache
+
+**Bundled Profile**:
+A **Profile** shipped with the **Bridge** whose **Steps** cannot be edited in place.
+_Avoid_: Default profile
+
+**Profile Lineage**:
+The parent and child chain of **Profiles** saved from one another in the **Profile Library**.
+_Avoid_: Profile version (ambiguous with the profile format version)
+
+**Profile Draft**:
+An unsaved, in-progress edit of a **Profile** held by the **Skin** until it is saved to the **Profile Library**.
+_Avoid_: Pending profile, temp profile
+
 ## Relationships
 
 - A **Skin** talks to exactly one **Bridge** origin at a time.
@@ -92,6 +124,12 @@ _Avoid_: "Acidity" as an input label (ambiguous between pleasant brightness and 
 - A **Shot Analysis** recommends; the operator applies. It never changes machine, profile, or workflow state.
 - A **Shot Analysis** and its **Taste Compass** are presented in place inside the expanded **Post-Shot Summary**, never on a separate route or modal.
 - A **Shot Analysis** requires an operator-supplied API key kept in Skin-local settings; without one the Analyze affordance leads to setup, not an error.
+- A **Profile** has one or more **Steps**.
+- A **Workflow** holds exactly one **Active Profile**.
+- An **Active Profile** is a copy, not a reference: changing a **Profile** in the **Profile Library** does not change the **Active Profile** by itself.
+- The **Profile Library** is owned by the **Bridge**; the **Skin** reads and writes it but keeps no library of its own.
+- A **Bundled Profile** can be duplicated, hidden, or restored, but its **Steps** cannot be edited in place.
+- A **Profile Draft** becomes a **Profile** only when it is saved to the **Profile Library**.
 
 ## Example dialogue
 
@@ -110,3 +148,6 @@ _Avoid_: "Acidity" as an input label (ambiguous between pleasant brightness and 
 - The **Compatibility Reconnect Adapter** is not for first-time pairing or guessing which scale to use.
 - **Disconnect Scale** is the normal temporary row action and preserves the **Preferred Scale**.
 - **Forget Scale** belongs in settings, clears the **Preferred Scale**, and may also disconnect the scale if it is currently connected.
+- Existing UI copy says "frames" (the frame-count button, the frame preview overlay); the canonical term is **Step**, and "frame" survives only as the machine's runtime index of the running **Step**.
+- The **Bridge** calls **Bundled Profiles** "default profiles" (`isDefault`); "default" is avoided in the **Skin** because it also reads as "the profile selected by default".
+- A **Profile**'s JSON `version` field is the profile format version, not a position in its **Profile Lineage**.

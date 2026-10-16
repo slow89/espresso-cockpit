@@ -24,3 +24,9 @@ From [What does the Bridge's profile write API accept…](01-bridge-profile-writ
 - **`includeHidden=true` also returns deleted profiles.**
 - **Re-creating content identical to a deleted profile returns the deleted record** (`POST` dedups and ignores visibility), so "create" can silently resurrect into the trash.
 - **Not-found codes are inconsistent** across endpoints (404, 400, or 500).
+
+From [Does the tablet's Bridge expose the profile write endpoints?](04-tablet-bridge-endpoints.md):
+
+- **Every hidden profile on the tablet was hidden by the Bridge, not the operator.** All 13 are Bundled Profiles the Bridge retired as stale: 9 of them during the v0.7.11 → v0.8.8 upgrade, which replaced their content under new ids. A "Hidden" view would mostly show these old bundled versions.
+- **A retired Bundled Profile can leave the manifest** ("Rao Allongé 3"), so restore-by-filename via `/defaults` can't bring it back. Only a visibility change can.
+- **Bridge upgrades rewrite the Bundled side of the library**, so a fork whose `parentId` points at a bundled id can end up parented to a hidden record.

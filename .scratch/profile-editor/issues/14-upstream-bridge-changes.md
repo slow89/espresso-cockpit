@@ -14,6 +14,7 @@ Research turned up Bridge behaviour that the editor must either design around or
 
 Known gaps:
 
+- **Minimum Bridge version.** Below v0.8.0, an execution-changing `PUT` is a non-atomic hard delete followed by an insert, and a content collision then loses the profile. The tablet was on v0.7.11 until it was upgraded to v0.8.8 on 2026-10-15. Decide the floor (v0.8.0, or v0.8.8 as the tested build) and what the Skin does on an older Bridge: block editing, go read-only, or only ever `POST`. `GET /api/v1/info` reports `version` and has done so since v0.5.5. See [Does the tablet's Bridge expose the profile write endpoints?](04-tablet-bridge-endpoints.md).
 - `PUT` with an execution change orphans children and drops the old id, so in-place edits lose Profile Lineage.
 - `POST` dedups on execution content and ignores title, notes, and `parentId`, so there's no renamed duplicate and Bundled Profiles can't be renamed.
 - No range validation, and the encoder wraps values silently. No 20-Step cap.

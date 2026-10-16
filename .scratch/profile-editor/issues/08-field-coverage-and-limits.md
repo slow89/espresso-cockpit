@@ -24,3 +24,9 @@ From [What does the Bridge's profile write API accept…](01-bridge-profile-writ
 - **Legacy and unknown keys are dropped by the Bridge on save regardless**, so round-trip safety is about not losing *kept* fields, not preserving legacy ones.
 - **Round floats to the machine's encoded precision.** Otherwise cosmetic float drift churns the content-hash id.
 - **Never compute ids in the Skin**: Dart writes `93.0` where JS writes `93`.
+
+From [Does the tablet's Bridge expose the profile write endpoints?](04-tablet-bridge-endpoints.md):
+
+- **The operator's machine is a DE1Pro** (not Bengle; firmware 1333, empty `/machine/capabilities`). Their precision is 1/16 for pressure, flow, exit, and limiter values. The spec still has to cover Bengle.
+- **Two Bundled Profiles already sit at the 20-Step cap** (Gagné Adaptive Shot / Allongé). Duplicating either leaves no room to add a Step.
+- **`gatewayMode` is `tracking`**, so per-Step weight exits and stop-at-weight are live for this operator (whenever a scale is connected).

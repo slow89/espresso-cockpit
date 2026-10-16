@@ -26,3 +26,7 @@ From [How do existing DE1 profile editors lay out step editing?](03-editor-prior
 
 - **Bridge-era skins** offer "Try / Use for shot" without saving.
 - **de1app's "Ok"** applying without saving is a known source of surprise.
+
+From [Does the tablet's Bridge expose the profile write endpoints?](04-tablet-bridge-endpoints.md):
+
+- **The Active Profile already drifts from the library.** On the operator's tablet, the Workflow's "Blooming Espresso" matches no library record. Every Step runs 9.5 °C cooler than the library copy, because Cockpit's dashboard brew-temperature control rewrites Step temperatures in the Workflow copy (`src/components/dashboard/dashboard-view-model.ts:164-178`). So "edit what's loaded" with no library match is the normal case, not an edge case.

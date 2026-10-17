@@ -1,0 +1,5 @@
+# Save Makes a Profile Revision Instead of Overwriting
+
+Saving a Profile Draft whose Steps changed never overwrites the Profile it came from. Cockpit `POST`s a new Profile with `parentId` set to the source and a revision marker in its `metadata`, then hides the source, which becomes a Superseded Profile. The Profile Library still shows one entry per profile, and every earlier version stays in its Profile Lineage. Bundled Profiles follow the same rule; only title- or notes-only edits update a Profile in place.
+
+Overwriting looks simpler but doesn't fit the Bridge: profile ids hash the execution fields, so a `PUT` that changes a Step moves the record to a new id and orphans every Profile saved from it, and Bundled Profiles reject Step edits outright. The cost is that a Save is two requests and isn't atomic (a failed hide leaves both versions visible), and other skins see Superseded Profiles as ordinary hidden records. If the Bridge gains a lineage-keeping `PUT` or an atomic revision endpoint, Cockpit can switch to it without changing what the operator sees.

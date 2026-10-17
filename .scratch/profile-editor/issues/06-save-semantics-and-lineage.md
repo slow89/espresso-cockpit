@@ -42,7 +42,7 @@ During the confirmation summary, an earlier suggestion of mine ("retry the hide 
 
 ## Answer
 
-**Save never overwrites a profile's Steps. It saves a new record and hides the old one, so the library shows one entry per profile while every earlier version stays in its Profile Lineage.** Everything below works on today's Bridge (Decaid v0.8.8) with no upstream change.
+**Save never overwrites a profile's Steps. It saves a new record and hides the old one, so the library shows one entry per profile while every earlier version stays in its Profile Lineage.** Everything below works on today's Bridge (Decaid v0.8.8) with no upstream change. The reason Save doesn't overwrite is recorded in [ADR 0003](../../../docs/adr/0003-save-makes-a-profile-revision.md).
 
 **Saving**
 

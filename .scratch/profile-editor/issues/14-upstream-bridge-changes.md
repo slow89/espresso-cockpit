@@ -27,3 +27,13 @@ Known gaps:
   - `includeHidden=true` includes deleted profiles.
   - A rare self-parent cycle hangs lineage.
 - In `full` gateway mode the Bridge does no weight or volume stops.
+
+From [What does Save do to a profile and its lineage?](06-save-semantics-and-lineage.md):
+
+- **Designed around, not required upstream**:
+  - `PUT` orphaning children: Save never `PUT`s Step changes; it `POST`s a **Profile Revision** and hides the source.
+  - `POST` dedup: the Skin detects it from the returned record, and Duplicate requires a Step change.
+  - Bundled Profiles' locked title and notes are accepted.
+- **Nice-to-haves surfaced**:
+  - a `POST` response that says whether the record already existed (`200` or `created: false`), so the Skin needn't infer it;
+  - an atomic "save Revision" (`POST` child plus hide parent), or a `PUT` that keeps lineage. Today's Revision is two requests and not atomic.

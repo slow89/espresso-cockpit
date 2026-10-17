@@ -29,4 +29,11 @@ From [How do existing DE1 profile editors lay out step editing?](03-editor-prior
 From [Does the tablet's Bridge expose the profile write endpoints?](04-tablet-bridge-endpoints.md):
 
 - **Lineage is almost empty today.** Only one record on the tablet has a `parentId` (bundled provenance: Adaptive v3 → v2). Every other lineage is a single record.
-- **Bridge upgrades retire bundled versions under new ids.** A lineage reaching back to a Bundled Profile can therefore hit a hidden, superseded version after an upgrade.
+- **Bridge upgrades retire bundled versions under new ids.** A lineage reaching back to a Bundled Profile can therefore hit a hidden, Bridge-retired version after an upgrade. (Not a **Superseded Profile**: that term is reserved for a record a **Profile Revision** replaced.)
+
+From [What does Save do to a profile and its lineage?](06-save-semantics-and-lineage.md):
+
+- **Save makes Profile Revisions.** Step changes `POST` a child carrying a revision marker in `metadata`, then hide the source as a **Superseded Profile**. **Save as new** and Duplicate make **Profile Forks**, which carry no marker and leave the source visible. The lineage can show Revisions as a linear history and Forks as branches.
+- **Going back can't re-save old content**, because `POST` dedups and returns the Superseded record. This ticket owns what "go back" does: un-hide the old record and hide the current head, or open a draft. Either way, keep the Superseded rule meaningful: a hidden record whose child carries the revision marker.
+- **A collision on Save offers "go back"**: a draft whose Steps match a Superseded Profile in its lineage offers to go back to that version. Same action, same semantics.
+- **No automatic repair on load.** A Superseded Profile the operator brought back stays visible.

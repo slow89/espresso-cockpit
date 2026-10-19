@@ -35,3 +35,7 @@ From [What does Save do to a profile and its lineage?](06-save-semantics-and-lin
 
 - **Every Save that changes Steps makes a new record with a new id** (a **Profile Revision** or a **Profile Fork**). The old record is hidden or left as it was, never rewritten. Whether a Save also updates the **Active Profile** belongs to this ticket.
 - **Dial-in back-and-forth** (9.0 → 9.2 → 9.0 bar) makes the second Save collide with the Superseded 9.0 version. It writes nothing and offers to go back to that version.
+
+## Comments
+
+**2026-10-18 — claimed.** Grilling session in progress on branch `t3/wayfinder-07-active-profile`.

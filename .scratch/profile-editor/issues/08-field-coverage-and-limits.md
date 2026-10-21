@@ -30,3 +30,8 @@ From [Does the tablet's Bridge expose the profile write endpoints?](04-tablet-br
 - **The operator's machine is a DE1Pro** (not Bengle; firmware 1333, empty `/machine/capabilities`). Their precision is 1/16 for pressure, flow, exit, and limiter values. The spec still has to cover Bengle.
 - **Two Bundled Profiles already sit at the 20-Step cap** (Gagné Adaptive Shot / Allongé). Duplicating either leaves no room to add a Step.
 - **`gatewayMode` is `tracking`**, so per-Step weight exits and stop-at-weight are live for this operator (whenever a scale is connected).
+
+From [How does editing relate to the Active Profile and the dial-in loop?](07-active-profile-and-dial-in-loop.md):
+
+- **`target_weight` is decided: hidden and preserved.** The editor doesn't show it, and every save or load copies the stored value unchanged. It is part of the profile's hash, so leaving it alone avoids id churn. Yield stays a Workflow setting, so field placement can skip it.
+- **The editor never writes the Workflow's `context`.** Dose and yield aren't editor fields.

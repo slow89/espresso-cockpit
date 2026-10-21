@@ -37,3 +37,10 @@ From [What does Save do to a profile and its lineage?](06-save-semantics-and-lin
 - **Nice-to-haves surfaced**:
   - a `POST` response that says whether the record already existed (`200` or `created: false`), so the Skin needn't infer it;
   - an atomic "save Revision" (`POST` child plus hide parent), or a `PUT` that keeps lineage. Today's Revision is two requests and not atomic.
+
+From [How does editing relate to the Active Profile and the dial-in loop?](07-active-profile-and-dial-in-loop.md):
+
+- **Designed around, not required upstream**: Workflow profile uploads with no idle or shot check. Cockpit disables every Workflow write while the Bridge reports the machine running something.
+- **Nice-to-haves surfaced**:
+  - a Bridge-side guard on profile writes during a shot, which would protect every client, not just Cockpit;
+  - a source profile id on the Workflow, which could replace Cockpit's title matching for "which library profile is loaded".

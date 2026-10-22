@@ -139,6 +139,9 @@ _Avoid_: Copy, branch, duplicate (as a noun)
 - A **Profile** has one or more **Steps**.
 - A **Workflow** holds exactly one **Active Profile**.
 - An **Active Profile** is a copy, not a reference: changing a **Profile** in the **Profile Library** does not change the **Active Profile** by itself.
+- An **Active Profile** belongs to the visible **Profile** with the same title, if there is one, and may differ from it in content.
+- A **Profile Draft** of the **Profile** the **Active Profile** belongs to starts from the **Active Profile**, not the library copy.
+- Saving a **Profile Draft** of the **Profile** the **Active Profile** belongs to also updates the **Active Profile**; saving any other **Profile Draft** leaves the **Workflow** alone.
 - The **Profile Library** is owned by the **Bridge**; the **Skin** reads and writes it but keeps no library of its own.
 - A **Bundled Profile** can be duplicated, hidden, or restored, but its **Steps** cannot be edited in place.
 - A **Profile Draft** becomes a **Profile** only when it is saved to the **Profile Library**.

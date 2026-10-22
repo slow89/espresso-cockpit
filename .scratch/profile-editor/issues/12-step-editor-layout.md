@@ -34,3 +34,14 @@ From [Which fields does the editor expose, and what limits does the Skin enforce
 - **Profile-level fields**: the title goes in the header; notes, author, beverage type, tank preheat, and stop at volume go on one **Profile settings** surface; the preinfusion boundary is a **Preinfusion | Pour divider in the Step list** that the operator moves.
 - **Step actions have limits**: Add and Duplicate are disabled at 20 Steps, and Delete at one Step, each with the reason shown.
 - **Fields carry flags** in two tiers: blocking (a value that would wrap; Save and Use for next shot are disabled with the reason) and warning (outside the practical range, or an exit of 0). The field also shows what the machine would run.
+
+From [Where does profile authoring live in the app, and what are its entry points?](09-app-placement-and-entry-points.md):
+
+- **The editor is full screen, covering the nav.** Below its header it gets roughly 1024×550.
+- **The header must host**:
+  - **← Library** and **Brew**;
+  - the title with badges (New, Copy, or Editing; Loaded; Differs from saved; Bundled);
+  - up to five actions: Revert to saved, Save as new, Use for next shot, Save & use, and Save;
+  - disabled actions show their reason in a strip below.
+  This ticket may restyle the header, but must keep those.
+- **The Library's detail pane already shows a read-only chart** using `workflow-frame-chart` in its tablet layout. The editor's live chart can share it.

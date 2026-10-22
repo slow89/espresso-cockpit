@@ -61,7 +61,7 @@ An optional set of three quick tap scales the operator can give before requestin
 _Avoid_: "Acidity" as an input label (ambiguous between pleasant brightness and under-extraction sourness)
 
 **Profile**:
-A named, ordered list of **Steps** plus profile-level targets (temperature, target weight, target volume) that the machine runs during a **Shot**.
+A named, ordered list of **Steps** plus profile-level settings (beverage type, tank preheat, stop at volume, and where preinfusion ends) that the machine runs during a **Shot**.
 _Avoid_: Recipe (that is dose and yield), program
 
 **Step**:
@@ -148,8 +148,8 @@ _Avoid_: Copy, branch, duplicate (as a noun)
 - The **Profile Library** is owned by the **Bridge**; the **Skin** reads and writes it but keeps no library of its own.
 - A **Bundled Profile** can be duplicated, hidden, or restored, but its **Steps** cannot be edited in place.
 - A **Profile Draft** becomes a **Profile** only when it is saved to the **Profile Library**.
-- Saving a **Profile Draft** whose **Steps** changed makes a **Profile Revision**; the **Profile** it came from becomes a **Superseded Profile**.
-- Changing only a **Profile**'s title or notes updates it in place and makes no **Profile Revision**.
+- Saving a **Profile Draft** that changes how the **Profile** runs (its **Steps** or profile-level settings) makes a **Profile Revision**; the **Profile** it came from becomes a **Superseded Profile**.
+- Changing only a **Profile**'s title, author, or notes updates it in place and makes no **Profile Revision**.
 - A **Profile Fork** never supersedes its parent; both stay in the **Profile Library**.
 - A **Profile Lineage** links **Profile Revisions** and **Profile Forks** alike; only a **Profile Revision** supersedes its parent.
 - A **Superseded Profile** is not the same as a **Profile** the operator hid.

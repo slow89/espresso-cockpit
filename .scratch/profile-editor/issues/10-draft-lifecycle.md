@@ -28,3 +28,15 @@ From [How does editing relate to the Active Profile and the dial-in loop?](07-ac
 - **A trial the operator loaded lives in the Workflow, not the Skin.** Use for next shot writes the draft into the Workflow, and reopening the loaded profile reseeds the draft from it. Such a trial already survives route changes, sleep, and reloads, so this ticket only needs to decide drafts that live in the editor and were never loaded.
 - **"Starts a Shot from the machine" no longer threatens a loaded trial.** Cockpit never changes the Workflow while the machine is running something. Editing stays open mid-shot.
 - **Deferred to this ticket:** whether a trial replaced by loading another profile (after the operator confirms "Discard and load") is stashed as a draft and offered back the next time that profile is opened.
+
+From [Which fields does the editor expose, and what limits does the Skin enforce?](08-field-coverage-and-limits.md):
+
+- **A draft holds more than the profile**: each Step remembers its target and cap for the mode it isn't using, plus the last exit and limiter values, while the draft is open. If drafts are stashed or survive a reload, those values go with them.
+- **"Unsaved" means the draft differs from its source**, not that a field was touched. Edits that are undone leave no change.
+
+From [Where does profile authoring live in the app, and what are its entry points?](09-app-placement-and-entry-points.md):
+
+- **The editor is a full-screen route covering the nav**, with two exits: **← Library** and **Brew**. Both keep the draft; this ticket decides for how long.
+- **A reload lands back in the editor's route.** This ticket decides whether the draft is still there.
+- **Cockpit doesn't navigate when a shot starts**, so a shot can begin while the editor covers the screen.
+- **Save, Save & use, and Use for next shot all stay in the editor.** Nothing closes it automatically.

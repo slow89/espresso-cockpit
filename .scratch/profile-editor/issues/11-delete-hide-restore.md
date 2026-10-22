@@ -41,3 +41,10 @@ From [What does Save do to a profile and its lineage?](06-save-semantics-and-lin
 - **Restoring a Bundled Profile's original** after the operator revised it means bringing back the Superseded root of that lineage. The two copies then share a title, which is tolerated, because titles are only checked for uniqueness at save time.
 - **Still open here**: what deleting the current Revision does to its Superseded ancestors.
 - **A collision on Save** with a hidden or deleted record offers to restore it, so restore must work from that prompt too.
+
+From [Where does profile authoring live in the app, and what are its entry points?](09-app-placement-and-entry-points.md):
+
+- **Hide and Delete live behind ⋯ in the Library's detail pane.**
+- **The list has filter chips** (All · Yours · Espresso · Pour-over · Other). A chip is one candidate home for hidden and deleted profiles.
+- **Forks nest under their visible parent.** A Fork whose parent is hidden or deleted becomes a top-level row.
+- **The loaded profile is marked in the list** with a green dot and a Loaded badge, and a strip above the Library always shows it.

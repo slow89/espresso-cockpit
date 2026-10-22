@@ -53,6 +53,8 @@ const workflowsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/workflows",
   loader: prefetchWorkflowQuery,
+  // PROTOTYPE — throwaway: app-placement variants (ticket 09).
+  validateSearch: z.object({ variant: z.enum(["A", "B", "C"]).optional() }),
   component: WorkflowsPage,
 });
 

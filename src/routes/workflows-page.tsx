@@ -1,3 +1,19 @@
+import { useNavigate, useSearch } from "@tanstack/react-router";
+
+// PROTOTYPE — throwaway imports for the app-placement variants (ticket 09).
+import { ConfirmDialog, PrototypeSwitcher } from "@/components/prototype/app-placement/shared";
+import {
+  VariantAGrownChooser,
+  variantAName,
+} from "@/components/prototype/app-placement/variant-a-grown-chooser";
+import {
+  VariantBLibraryPage,
+  variantBName,
+} from "@/components/prototype/app-placement/variant-b-library-page";
+import {
+  VariantCWorkbench,
+  variantCName,
+} from "@/components/prototype/app-placement/variant-c-workbench";
 import { WorkflowProfileChooserPanel } from "@/components/workflows/workflow-profile-chooser-panel";
 import { WorkflowShotSetupPanel } from "@/components/workflows/workflow-shot-setup-panel";
 import { FramePreviewOverlay } from "@/components/workflows/frame-preview-overlay";
@@ -5,7 +21,43 @@ import { formatBrewRatio } from "@/lib/recipe-utils";
 import { getProfileTitle } from "@/lib/workflow-utils";
 import { useWorkflowQuery } from "@/rest/queries";
 
+const prototypeVariants = [
+  { key: "today", name: "Today's Profiles tab" },
+  { key: "A", name: variantAName },
+  { key: "B", name: variantBName },
+  { key: "C", name: variantCName },
+] as const;
+
+function AppPlacementPrototype({ variant }: { variant: "A" | "B" | "C" }) {
+  if (variant === "A") return <VariantAGrownChooser />;
+  if (variant === "B") return <VariantBLibraryPage />;
+  return <VariantCWorkbench />;
+}
+
 export function WorkflowsPage() {
+  const navigate = useNavigate();
+  const { variant } = useSearch({ from: "/workflows" });
+
+  return (
+    <>
+      {variant ? <AppPlacementPrototype variant={variant} /> : <CurrentWorkflowsPage />}
+      <PrototypeSwitcher
+        current={variant ?? "today"}
+        onChange={(key) =>
+          navigate({
+            to: "/workflows",
+            search: { variant: key === "today" ? undefined : (key as "A" | "B" | "C") },
+            replace: true,
+          })
+        }
+        variants={prototypeVariants}
+      />
+      <ConfirmDialog />
+    </>
+  );
+}
+
+function CurrentWorkflowsPage() {
   return (
     <div>
       <div className="app-shell overflow-hidden border-b border-border/30 bg-shell md:flex md:flex-col">

@@ -48,3 +48,7 @@ From [Which fields does the editor expose, and what limits does the Skin enforce
 - **New** opens a one-Step draft ("New profile", 9 bar, 93 °C, 30 s). Nothing is written until Save.
 - **Save as new and Duplicate stay disabled until something the machine runs differs from the source**, not just a Step. The reason reads "A copy must change how the profile runs".
 - **Title, author, and notes** are the fields that update in place, and they're locked on Bundled Profiles until something that runs has changed.
+
+## Comments
+
+**2026-10-21 — claimed.** Prototype session in progress on branch `t3/wayfinder-09-app-placement`.

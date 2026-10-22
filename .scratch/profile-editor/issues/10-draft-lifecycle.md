@@ -40,3 +40,7 @@ From [Where does profile authoring live in the app, and what are its entry point
 - **A reload lands back in the editor's route.** This ticket decides whether the draft is still there.
 - **Cockpit doesn't navigate when a shot starts**, so a shot can begin while the editor covers the screen.
 - **Save, Save & use, and Use for next shot all stay in the editor.** Nothing closes it automatically.
+
+## Comments
+
+**2026-10-21 — claimed.** Grilling session in progress on branch `t3/wayfinder-10-draft-lifecycle`.

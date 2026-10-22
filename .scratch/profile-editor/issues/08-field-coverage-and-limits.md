@@ -35,3 +35,7 @@ From [How does editing relate to the Active Profile and the dial-in loop?](07-ac
 
 - **`target_weight` is decided: hidden and preserved.** The editor doesn't show it, and every save or load copies the stored value unchanged. It is part of the profile's hash, so leaving it alone avoids id churn. Yield stays a Workflow setting, so field placement can skip it.
 - **The editor never writes the Workflow's `context`.** Dose and yield aren't editor fields.
+
+## Comments
+
+**2026-10-21 — claimed.** Grilling session in progress on branch `t3/wayfinder-08-field-coverage`.

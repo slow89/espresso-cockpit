@@ -37,3 +37,9 @@ From [What does Save do to a profile and its lineage?](06-save-semantics-and-lin
 - **Going back can't re-save old content**, because `POST` dedups and returns the Superseded record. This ticket owns what "go back" does: un-hide the old record and hide the current head, or open a draft. Either way, keep the Superseded rule meaningful: a hidden record whose child carries the revision marker.
 - **A collision on Save offers "go back"**: a draft whose Steps match a Superseded Profile in its lineage offers to go back to that version. Same action, same semantics.
 - **No automatic repair on load.** A Superseded Profile the operator brought back stays visible.
+
+From [Where does profile authoring live in the app, and what are its entry points?](09-app-placement-and-entry-points.md):
+
+- **History opens from the Library's detail pane.**
+- **The list already nests Forks under their visible parent**, so the lineage view needn't be the only place Forks are visible.
+- **After Save, the Library selection moves to the new Revision or Fork.**

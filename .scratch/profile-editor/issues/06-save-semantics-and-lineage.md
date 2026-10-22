@@ -40,6 +40,8 @@ From [What does the Bridge's profile write API accept…](01-bridge-profile-writ
 
 During the confirmation summary, an earlier suggestion of mine ("retry the hide on next load") was withdrawn. It would re-hide a Superseded Profile the operator had deliberately brought back.
 
+**2026-10-21 — refined by [Which fields does the editor expose, and what limits does the Skin enforce?](08-field-coverage-and-limits.md).** "Steps changed" below should be read as "anything the machine runs changed": the Steps, beverage type, tank preheat, stop at volume, or preinfusion boundary, which are every field the Bridge hashes into the id. "Title or notes" should be read as "title, author, or notes". A copy must change how the profile runs, not necessarily a Step.
+
 ## Answer
 
 **Save never overwrites a profile's Steps. It saves a new record and hides the old one, so the library shows one entry per profile while every earlier version stays in its Profile Lineage.** Everything below works on today's Bridge (Decaid v0.8.8) with no upstream change. The reason Save doesn't overwrite is recorded in [ADR 0003](../../../docs/adr/0003-save-makes-a-profile-revision.md).

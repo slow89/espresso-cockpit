@@ -26,3 +26,11 @@ From [How do existing DE1 profile editors lay out step editing?](03-editor-prior
 - **Step actions** act on the selection: add after, duplicate, move up or down, delete with confirm.
 - **Avoid horizontal Step strips.** They show only 3–4 Steps, and WebView scrollbars can't be dragged.
 - **Avoid** "tap to select, tap again to adjust", multi-exit tiles (a DE1 Step holds one exit), and text fields inside the Step panel.
+
+From [Which fields does the editor expose, and what limits does the Skin enforce?](08-field-coverage-and-limits.md):
+
+- **Every Step field is visible in de1app's four groups, with no advanced disclosure.** Fields that are turned off show **Off** instead of disappearing. Only the cap value, limiter range, and exit value appear when their switch is on. Sensor and transition are two-way toggles.
+- **The Step name is edited in a text sheet**, never inline. A blank name shows as "Step N".
+- **Profile-level fields**: the title goes in the header; notes, author, beverage type, tank preheat, and stop at volume go on one **Profile settings** surface; the preinfusion boundary is a **Preinfusion | Pour divider in the Step list** that the operator moves.
+- **Step actions have limits**: Add and Duplicate are disabled at 20 Steps, and Delete at one Step, each with the reason shown.
+- **Fields carry flags** in two tiers: blocking (a value that would wrap; Save and Use for next shot are disabled with the reason) and warning (outside the practical range, or an exit of 0). The field also shows what the machine would run.

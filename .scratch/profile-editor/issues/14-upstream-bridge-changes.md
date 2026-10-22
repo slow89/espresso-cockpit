@@ -44,3 +44,9 @@ From [How does editing relate to the Active Profile and the dial-in loop?](07-ac
 - **Nice-to-haves surfaced**:
   - a Bridge-side guard on profile writes during a shot, which would protect every client, not just Cockpit;
   - a source profile id on the Workflow, which could replace Cockpit's title matching for "which library profile is loaded".
+
+From [Which fields does the editor expose, and what limits does the Skin enforce?](08-field-coverage-and-limits.md):
+
+- **Designed around, not required upstream**: the Bridge validates no ranges and wraps out-of-range values. The Skin's ruler clamps to its own limits, and values that would wrap block Save and Use for next shot.
+- **Nice-to-have surfaced**: reject with a 400 any profile or Workflow write that has a value the encoder would wrap, or more than 20 Steps. Rejecting rather than clamping makes the bug visible in whichever client sent it, Cockpit's dashboard included. Practical ranges (12 bar, 105 °C) stay in the Skin.
+- **Not asked**: a default flow cap on uncapped pressure Steps for Bengle. Bengle is out of scope for this effort.

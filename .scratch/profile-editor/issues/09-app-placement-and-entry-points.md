@@ -42,3 +42,9 @@ From [How does editing relate to the Active Profile and the dial-in loop?](07-ac
 - **One profile, one draft.** Every way into the loaded profile (the Active row, the library list, a Brew shortcut) opens the same draft, seeded from the Workflow copy.
 - **Busy gate.** Every action that writes the Workflow, Choose Profile included, is disabled with the reason shown while the Bridge reports the machine running something. Editing stays available.
 - **Replace confirm.** Choose Profile, Save & use, and Use for next shot from another profile's draft ask "Discard and load / Cancel" when the loaded profile has unsaved changes.
+
+From [Which fields does the editor expose, and what limits does the Skin enforce?](08-field-coverage-and-limits.md):
+
+- **New** opens a one-Step draft ("New profile", 9 bar, 93 °C, 30 s). Nothing is written until Save.
+- **Save as new and Duplicate stay disabled until something the machine runs differs from the source**, not just a Step. The reason reads "A copy must change how the profile runs".
+- **Title, author, and notes** are the fields that update in place, and they're locked on Bundled Profiles until something that runs has changed.

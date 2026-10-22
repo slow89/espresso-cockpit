@@ -30,3 +30,15 @@ From [What does Save do to a profile and its lineage?](06-save-semantics-and-lin
   - title and notes edits, which are locked on Bundled Profiles until a Step changes.
 - **Library list**: one entry per visible record (the current Revision of each profile, every Fork, visible Bundled Profiles); Superseded Profiles appear only in the lineage. This ticket decides how Forks sit next to their parent.
 - **Collision prompts**: Save can end on "Identical to *X*", with an action to open, go back to, or restore *X*. The draft stays open.
+
+From [How does editing relate to the Active Profile and the dial-in loop?](07-active-profile-and-dial-in-loop.md):
+
+- **More actions to host**:
+  - **"Edit what's loaded"** on the Active Profile, offered even when it has no saved version;
+  - a **"Differs from saved"** badge on the Active Profile;
+  - **Use for next shot**, which loads the draft without saving;
+  - **Save & use** for profiles that aren't loaded;
+  - **Revert to saved** in the editor.
+- **One profile, one draft.** Every way into the loaded profile (the Active row, the library list, a Brew shortcut) opens the same draft, seeded from the Workflow copy.
+- **Busy gate.** Every action that writes the Workflow, Choose Profile included, is disabled with the reason shown while the Bridge reports the machine running something. Editing stays available.
+- **Replace confirm.** Choose Profile, Save & use, and Use for next shot from another profile's draft ask "Discard and load / Cancel" when the loaded profile has unsaved changes.

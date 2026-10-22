@@ -89,7 +89,7 @@ The parent and child chain of **Profiles** saved from one another in the **Profi
 _Avoid_: Profile version (ambiguous with the profile format version)
 
 **Profile Draft**:
-An unsaved, in-progress edit of a **Profile** held by the **Skin** until it is saved to the **Profile Library**.
+An unsaved, in-progress edit of a **Profile**, held by the **Skin** or loaded into the **Workflow**, until it is saved to the **Profile Library**.
 _Avoid_: Pending profile, temp profile
 
 **Profile Revision**:
@@ -142,6 +142,9 @@ _Avoid_: Copy, branch, duplicate (as a noun)
 - An **Active Profile** belongs to the visible **Profile** with the same title, if there is one, and may differ from it in content.
 - A **Profile Draft** of the **Profile** the **Active Profile** belongs to starts from the **Active Profile**, not the library copy.
 - Saving a **Profile Draft** of the **Profile** the **Active Profile** belongs to also updates the **Active Profile**; saving any other **Profile Draft** leaves the **Workflow** alone.
+- A **Profile Draft** can be loaded into the **Workflow** as the **Active Profile** without being saved; it stays there until it is saved, reverted, or replaced.
+- The **Active Profile** never changes while the machine is running a **Shot**, steam, hot water, a flush, or a cleaning or maintenance cycle.
+- Yield belongs to the **Workflow**, not the **Profile**: a **Profile**'s stored target weight never stops a **Shot**.
 - The **Profile Library** is owned by the **Bridge**; the **Skin** reads and writes it but keeps no library of its own.
 - A **Bundled Profile** can be duplicated, hidden, or restored, but its **Steps** cannot be edited in place.
 - A **Profile Draft** becomes a **Profile** only when it is saved to the **Profile Library**.

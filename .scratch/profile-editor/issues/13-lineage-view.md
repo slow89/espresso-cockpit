@@ -43,3 +43,8 @@ From [Where does profile authoring live in the app, and what are its entry point
 - **History opens from the Library's detail pane.**
 - **The list already nests Forks under their visible parent**, so the lineage view needn't be the only place Forks are visible.
 - **After Save, the Library selection moves to the new Revision or Fork.**
+
+From [What happens to a Profile Draft when the operator leaves the editor?](10-draft-lifecycle.md):
+
+- **There is one editor draft at a time.** A "go back" that opens a draft replaces it, so the replace confirm applies when the current draft has unsaved changes.
+- **A draft whose source was revised on another device** merges against the newest visible Revision in the lineage.

@@ -35,3 +35,9 @@ In the code:
 - **The top-bar profile button** is `DashboardRecipeButton` in `src/components/dashboard/dashboard-top-bar-cards.tsx`. It links to `/workflows`.
 - **The Post-Shot Summary** is `src/components/dashboard/dashboard-tablet-post-shot-summary.tsx`.
 - **Shot Analysis** is `src/components/dashboard/dashboard-post-shot-analysis.tsx`.
+
+From [What happens to a Profile Draft when the operator leaves the editor?](10-draft-lifecycle.md):
+
+- **One editor draft at a time, stored on the tablet.** A shortcut to the loaded profile resumes its waiting draft. If the waiting draft belongs to another profile and has unsaved changes, the replace confirm fires: "*Title* has unsaved changes. Opening *Other* discards them."
+- **The Bridge's wake reload lands on Brew**, so Brew is where the operator is most likely to be when a draft is waiting. Today, only the loaded-profile strip in the Profiles tab shows it, as "✎ *Title* · Resume". Whether Brew shows it too is this ticket's call.
+- **Brew temperature nudges merge into a waiting draft of the loaded profile**, unless the draft changed the same temperatures.

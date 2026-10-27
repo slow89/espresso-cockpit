@@ -148,6 +148,9 @@ _Avoid_: Copy, branch, duplicate (as a noun)
 - The **Profile Library** is owned by the **Bridge**; the **Skin** reads and writes it but keeps no library of its own.
 - A **Bundled Profile** can be duplicated, hidden, or restored, but its **Steps** cannot be edited in place.
 - A **Profile Draft** becomes a **Profile** only when it is saved to the **Profile Library**.
+- The **Skin** holds at most one **Profile Draft** of its own at a time, apart from one loaded into the **Workflow**. It is kept on the tablet, never on the **Bridge**, and survives reloads until it is saved, discarded, or replaced.
+- A **Profile Draft** has unsaved changes only while it differs from what it started from or last wrote.
+- Changes made elsewhere to a **Profile Draft**'s **Profile** merge into the draft; only changes that overlap the draft's own edits ask the operator.
 - Saving a **Profile Draft** that changes how the **Profile** runs (its **Steps** or profile-level settings) makes a **Profile Revision**; the **Profile** it came from becomes a **Superseded Profile**.
 - Changing only a **Profile**'s title, author, or notes updates it in place and makes no **Profile Revision**.
 - A **Profile Fork** never supersedes its parent; both stay in the **Profile Library**.

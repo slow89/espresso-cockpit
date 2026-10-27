@@ -56,3 +56,8 @@ From [What happens to a Profile Draft when the operator leaves the editor?](10-d
 - **The title can carry a Draft badge** while the draft has unsaved changes.
 - **Resume restores the selected Step**, which is stored with the draft.
 - **Each Step carries a stable key in the draft**, so Steps can be reordered without confusing the merge.
+
+From [How does the operator delete, hide, and restore profiles?](11-delete-hide-restore.md):
+
+- **A draft's profile can be removed from the Library** (Hide or Delete, with an Undo toast) while the draft waits. The draft keeps its edits, and Save makes a new profile. The strip below the header needs a line for it: "*House* was removed. Save makes a new profile."
+- **Restoring the profile reconnects the draft**, and the line goes away.

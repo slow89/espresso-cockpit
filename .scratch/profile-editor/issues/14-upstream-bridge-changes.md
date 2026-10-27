@@ -50,3 +50,12 @@ From [Which fields does the editor expose, and what limits does the Skin enforce
 - **Designed around, not required upstream**: the Bridge validates no ranges and wraps out-of-range values. The Skin's ruler clamps to its own limits, and values that would wrap block Save and Use for next shot.
 - **Nice-to-have surfaced**: reject with a 400 any profile or Workflow write that has a value the encoder would wrap, or more than 20 Steps. Rejecting rather than clamping makes the bug visible in whichever client sent it, Cockpit's dashboard included. Practical ranges (12 bar, 105 °C) stay in the Skin.
 - **Not asked**: a default flow cap on uncapped pressure Steps for Bengle. Bengle is out of scope for this effort.
+
+From [What happens to a Profile Draft when the operator leaves the editor?](10-draft-lifecycle.md):
+
+- **Designed around, not required upstream**:
+  - After 10 minutes paused, the Bridge blanks the WebView and reloads the Skin at `/` (`lib/src/skin_feature/skin_view.dart`), so drafts persist in localStorage.
+  - Without a push channel, staleness is checked on refetch.
+- **Nice-to-haves surfaced**:
+  - reloading the Skin at its last URL;
+  - a push event for Workflow and library changes.

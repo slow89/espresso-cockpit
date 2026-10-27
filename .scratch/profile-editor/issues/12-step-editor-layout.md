@@ -45,3 +45,14 @@ From [Where does profile authoring live in the app, and what are its entry point
   - disabled actions show their reason in a strip below.
   This ticket may restyle the header, but must keep those.
 - **The Library's detail pane already shows a read-only chart** using `workflow-frame-chart` in its tablet layout. The editor's live chart can share it.
+
+From [What happens to a Profile Draft when the operator leaves the editor?](10-draft-lifecycle.md):
+
+- **The header gains Discard changes**, shown only while the draft has unsaved changes. It still holds at most five actions, because Revert to saved (loaded profile only) and Save & use (other profiles only) never appear together.
+- **The editor needs a home for two messages**:
+  - a small note after a merge: "Updated with changes made outside the editor";
+  - a banner on overlap: "*Title* changed since you started editing", with **Start over from current** and **Keep my edits**.
+  The strip below the header that shows disabled reasons is one candidate.
+- **The title can carry a Draft badge** while the draft has unsaved changes.
+- **Resume restores the selected Step**, which is stored with the draft.
+- **Each Step carries a stable key in the draft**, so Steps can be reordered without confusing the merge.

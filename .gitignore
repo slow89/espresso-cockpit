@@ -6,3 +6,5 @@ artifacts
 .env
 output.playwright-mcp/
 .playwright-mcp/
+.claude/worktrees/
+output/

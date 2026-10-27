@@ -54,3 +54,7 @@ From [What happens to a Profile Draft when the operator leaves the editor?](10-d
 - **The Skin keeps one Profile Draft at a time**, stored on the tablet. Its profile shows a **Draft** badge in the list and detail pane while it has unsaved changes.
 - **Still open here**: what deleting or hiding that profile from the ⋯ does to its waiting draft. The options are to warn, discard it, or keep it as a would-be Fork.
 - **A source deleted or hidden elsewhere** (on another device): the draft currently keeps its edits, and Save acts as Save as new. This ticket can refine that.
+
+## Comments
+
+**2026-10-26 — claimed.** Grilling session in progress on branch `t3/wayfinder-11-delete-hide-restore`.

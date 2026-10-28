@@ -104,6 +104,14 @@ _Avoid_: Retired profile (the **Bridge** retires **Bundled Profiles**), old vers
 A **Profile** saved from another as a separate profile that sits beside it in the **Profile Library**.
 _Avoid_: Copy, branch, duplicate (as a noun)
 
+**Removed Profile**:
+A **Profile** the operator took out of the **Profile Library** list, by hiding a **Bundled Profile** or deleting any other **Profile**, and can restore.
+_Avoid_: Trash, archived profile, hidden profile (as the general term)
+
+**Retired Bundled Profile**:
+An older version of a **Bundled Profile** that the **Bridge** hid because a **Bridge** update changed or dropped it.
+_Avoid_: Removed profile, superseded profile, stale default
+
 ## Relationships
 
 - A **Skin** talks to exactly one **Bridge** origin at a time.
@@ -156,6 +164,11 @@ _Avoid_: Copy, branch, duplicate (as a noun)
 - A **Profile Fork** never supersedes its parent; both stay in the **Profile Library**.
 - A **Profile Lineage** links **Profile Revisions** and **Profile Forks** alike; only a **Profile Revision** supersedes its parent.
 - A **Superseded Profile** is not the same as a **Profile** the operator hid.
+- A **Bundled Profile** can be hidden but never deleted; any other **Profile** is deleted. Either way it becomes a **Removed Profile**.
+- A **Removed Profile** can always be restored; **Cockpit** never removes a **Profile** permanently.
+- Removing a **Profile** leaves its **Superseded Profiles** in its **Profile Lineage** and its **Profile Forks** in the **Profile Library**.
+- Removing a **Profile** does not change the **Active Profile**.
+- A **Retired Bundled Profile** is neither a **Removed Profile** nor a **Superseded Profile**, and it cannot be restored: the **Bridge** hides it again at every launch.
 
 ## Example dialogue
 
@@ -177,3 +190,4 @@ _Avoid_: Copy, branch, duplicate (as a noun)
 - Existing UI copy says "frames" (the frame-count button, the frame preview overlay); the canonical term is **Step**, and "frame" survives only as the machine's runtime index of the running **Step**.
 - The **Bridge** calls **Bundled Profiles** "default profiles" (`isDefault`); "default" is avoided in the **Skin** because it also reads as "the profile selected by default".
 - A **Profile**'s JSON `version` field is the profile format version, not a position in its **Profile Lineage**.
+- The **Bridge**'s `hidden` visibility covers three things: **Superseded Profiles**, **Bundled Profiles** the operator hid, and **Retired Bundled Profiles**. Its `deleted` covers the operator's own deleted profiles. Only operator-hidden and deleted records are **Removed Profiles**.

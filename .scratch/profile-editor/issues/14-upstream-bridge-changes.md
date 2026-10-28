@@ -59,3 +59,14 @@ From [What happens to a Profile Draft when the operator leaves the editor?](10-d
 - **Nice-to-haves surfaced**:
   - reloading the Skin at its last URL;
   - a push event for Workflow and library changes.
+
+From [How does the operator delete, hide, and restore profiles?](11-delete-hide-restore.md):
+
+- **Designed around, not required upstream**:
+  - purge breaking lineage: Cockpit never purges;
+  - not-found codes differing across endpoints: any of them, on `DELETE` or a visibility change, is read as "already removed elsewhere";
+  - `includeHidden=true` returning deleted records: the Skin classifies hidden and deleted records itself.
+- **New gaps**:
+  - **A hide or Revision of a Bundled Profile doesn't carry over a content update.** When a Bridge update changes a Bundled Profile's content, seeding stores the new version visible under a new id. `_retireStaleDefaults` only looks at visible records. So a Bundled Profile the operator hid comes back, and one they revised reappears next to their Revision under the same title. Decide whether to ask upstream to carry the hide over, or to design around it in the Skin, and say how without re-implementing Bridge policy.
+  - **Retired Bundled versions can't be kept.** Seeding re-hides any visible Bundled record that isn't the manifest's current version, so a restored retired version disappears again at the next launch.
+  - **Retired can only be told apart from hidden by inference.** Cockpit infers it from `metadata.filename` against `/defaults` and `createdAt`. Nice-to-have: mark retired records in `metadata`, or have `/defaults` return each entry's current id.

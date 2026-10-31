@@ -61,3 +61,7 @@ From [How does the operator delete, hide, and restore profiles?](11-delete-hide-
 
 - **A draft's profile can be removed from the Library** (Hide or Delete, with an Undo toast) while the draft waits. The draft keeps its edits, and Save makes a new profile. The strip below the header needs a line for it: "*House* was removed. Save makes a new profile."
 - **Restoring the profile reconnects the draft**, and the line goes away.
+
+## Comments
+
+**2026-10-31 — claimed.** Prototype session in progress on branch `t3/profile-editor-wayfinder`.

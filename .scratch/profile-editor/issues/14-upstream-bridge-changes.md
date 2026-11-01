@@ -70,3 +70,12 @@ From [How does the operator delete, hide, and restore profiles?](11-delete-hide-
   - **A hide or Revision of a Bundled Profile doesn't carry over a content update.** When a Bridge update changes a Bundled Profile's content, seeding stores the new version visible under a new id. `_retireStaleDefaults` only looks at visible records. So a Bundled Profile the operator hid comes back, and one they revised reappears next to their Revision under the same title. Decide whether to ask upstream to carry the hide over, or to design around it in the Skin, and say how without re-implementing Bridge policy.
   - **Retired Bundled versions can't be kept.** Seeding re-hides any visible Bundled record that isn't the manifest's current version, so a restored retired version disappears again at the next launch.
   - **Retired can only be told apart from hidden by inference.** Cockpit infers it from `metadata.filename` against `/defaults` and `createdAt`. Nice-to-have: mark retired records in `metadata`, or have `/defaults` return each entry's current id.
+
+From [How is Profile Lineage shown and navigated?](13-lineage-view.md):
+
+- **Designed around, not required upstream**:
+  - `GET …/{id}/lineage` leaves out siblings, returns 500 for an unknown id, and can hang on a self-parent cycle. Cockpit builds History from `GET /api/v1/profiles?includeHidden=true` instead, following `parentId` with its own cycle guard.
+  - Going back can't re-save old content, because `POST` dedups. Cockpit swaps visibility instead ([ADR 0004](../../../docs/adr/0004-going-back-swaps-visibility.md)).
+- **Nice-to-haves surfaced**:
+  - an atomic visibility swap. Going back is two requests today: un-hide, then hide;
+  - a `/lineage` that returns the whole tree, siblings included, with a cycle guard and 404 for an unknown id.

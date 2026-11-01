@@ -9,8 +9,8 @@ Map: [Profile authoring in Cockpit](../map.md)
 
 Cockpit keeps titles unique among visible profiles only at save time. Several things can still leave two visible profiles with the same title:
 
-- a Restore from the Removed list;
-- a **Superseded Profile** brought back from the lineage;
+- a Restore from the Removed list, or Restore this version from a removed profile's History;
+- going back to an earlier version that carries an older title, or to a Bundled original while the Bridge's newer version of it is visible;
 - a Bridge update that ships a new version of a **Bundled Profile** the operator revised or hid;
 - an import, as already on the tablet.
 
@@ -42,4 +42,12 @@ From [How does the operator delete, hide, and restore profiles?](11-delete-hide-
 - **Restore is never blocked by a title clash.** The toast says "Restored *House* · another profile has this title".
 - **A Bridge update that changes a Bundled Profile's content stores the new version visible.** If the operator had revised that profile, their Revision and the new Bundled version then share a title. If they had hidden it, it reappears. Whether that gets fixed upstream is *Which Bridge changes does the spec depend on, and how do we ask for them?*
 
-Blocked by *How is Profile Lineage shown and navigated?*, whose "go back" may itself bring back a Superseded Profile next to the current head, and by *Which Bridge changes does the spec depend on, and how do we ask for them?*, which decides whether the Bridge-update case is fixed upstream or designed around.
+Blocked by *Which Bridge changes does the spec depend on, and how do we ask for them?*, which decides whether the Bridge-update case is fixed upstream or designed around.
+
+From [How is Profile Lineage shown and navigated?](13-lineage-view.md):
+
+- **Going back swaps which version is visible.** It never leaves two versions of one profile visible.
+- **Going back can still cause a title clash.** Title edits update in place, so an older version can carry an older title. Going back brings the version back exactly as it was, title included, and Cockpit doesn't copy the current title onto it.
+- **Going back to a Bundled original** un-hides it with its own title. A clash follows if the Bridge has since shipped a newer version of it under the same title.
+- **Restore this version** from a removed profile's History can clash the same way Restore does.
+- **The loaded profile**: Go back & use loads the version gone back to, so the Active Profile follows its title.

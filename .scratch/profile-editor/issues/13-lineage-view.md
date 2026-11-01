@@ -60,3 +60,7 @@ From [How does the step editor lay out at 1024×600?](12-step-editor-layout.md):
 
 - **The editor has a new Step chart**: one equal-width column per Step, showing the target (jump or ramp), cap, temperature, and how each Step ends. It reads at about 108px tall, so a compare between two versions could stack two of them.
 - **The Library's detail pane keeps `workflow-frame-chart`** (ticket 09), so the two charts differ.
+
+## Comments
+
+**2026-11-01 — claimed.** Prototype session in progress on branch `t3/wayfinder-13-lineage-view`.

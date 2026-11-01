@@ -171,6 +171,8 @@ _Avoid_: Removed profile, superseded profile, stale default
 - Removing a **Profile** leaves its **Superseded Profiles** in its **Profile Lineage** and its **Profile Forks** in the **Profile Library**.
 - Removing a **Profile** does not change the **Active Profile**.
 - A **Retired Bundled Profile** is neither a **Removed Profile** nor a **Superseded Profile**, and it cannot be restored: the **Bridge** hides it again at every launch.
+- A **Bridge** update can bring back a **Bundled Profile** the operator hid or replaced with a **Profile Revision**. **Cockpit** doesn't hide it again on its own.
+- On a **Bridge** older than v0.8.0, **Cockpit** shows the **Profile Library** read-only: a **Profile** can be loaded, but not created, edited, removed, or restored.
 
 ## Example dialogue
 

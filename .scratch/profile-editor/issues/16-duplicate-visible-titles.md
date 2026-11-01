@@ -42,7 +42,13 @@ From [How does the operator delete, hide, and restore profiles?](11-delete-hide-
 - **Restore is never blocked by a title clash.** The toast says "Restored *House* · another profile has this title".
 - **A Bridge update that changes a Bundled Profile's content stores the new version visible.** If the operator had revised that profile, their Revision and the new Bundled version then share a title. If they had hidden it, it reappears. Whether that gets fixed upstream is *Which Bridge changes does the spec depend on, and how do we ask for them?*
 
-Blocked by *Which Bridge changes does the spec depend on, and how do we ask for them?*, which decides whether the Bridge-update case is fixed upstream or designed around.
+From [Which Bridge changes does the spec depend on, and how do we ask for them?](14-upstream-bridge-changes.md):
+
+- **The Bridge-update case is tolerated, and asked upstream** ([draft A](../upstream-asks/a-bundled-updates-keep-hide.md)). Cockpit writes nothing on its own: no automatic re-hide.
+- **Until the fix lands**, every Bridge update that changes a Bundled Profile the operator revised leaves the new Bundled version visible under the Revision's title. A Bundled Profile the operator hid comes back as an ordinary visible profile.
+- **Once it lands**, the new version arrives hidden and shows in the Removed list. Restoring it then clashes like any other Restore.
+- **After such an update, the Bundled original in the Revision's History counts as Retired**, so it can't be gone back to. Decent's newer version is a separate visible record.
+- **A source profile id on the Workflow** is asked upstream as a comment on #995 ([draft F](../upstream-asks/f-comment-995-profile-identity.md)). Until then, the Active Profile is matched by title.
 
 From [How is Profile Lineage shown and navigated?](13-lineage-view.md):
 

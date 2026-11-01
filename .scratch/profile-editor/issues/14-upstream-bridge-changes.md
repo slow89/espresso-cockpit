@@ -79,3 +79,7 @@ From [How is Profile Lineage shown and navigated?](13-lineage-view.md):
 - **Nice-to-haves surfaced**:
   - an atomic visibility swap. Going back is two requests today: un-hide, then hide;
   - a `/lineage` that returns the whole tree, siblings included, with a cycle guard and 404 for an unknown id.
+
+## Comments
+
+**2026-11-01 — claimed.** Grilling session in progress on branch `t3/profile-editor-wayfinding`.

@@ -1,0 +1,5 @@
+# Going Back to an Earlier Profile Version Swaps Visibility
+
+To go back to an earlier version of a Profile, Cockpit makes that version's record `visible` and the current version's record `hidden`. It writes no new record. The version gone back from stays in the Profile Lineage as a Superseded Profile, so the rule from ADR 0003 widens: a hidden record is Superseded when it carries the revision marker or one of its children does. Going forward again is the same swap in reverse.
+
+The obvious alternative is to re-save the old Steps as a new Revision, or to open them as a draft (streamline-js). Neither works on the Bridge. `POST` dedups on execution content, so the save returns the old record and writes nothing. The cost of swapping is that going back takes two requests and isn't atomic: Cockpit un-hides first, so a failure leaves both versions visible rather than neither. There's also a second way for a record to become Superseded, which other skins see only as a hidden record. Retired Bundled Profiles can't be gone back to, because the Bridge hides them again at every launch.

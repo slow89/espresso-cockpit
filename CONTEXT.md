@@ -97,7 +97,7 @@ A **Profile** saved from another to replace it in the **Profile Library**.
 _Avoid_: Profile version, edit, overwrite
 
 **Superseded Profile**:
-A **Profile** that a **Profile Revision** has replaced, kept only as part of its **Profile Lineage**.
+A **Profile** that a **Profile Revision** replaced, or that the operator went back from, kept only as part of its **Profile Lineage**.
 _Avoid_: Retired profile (the **Bridge** retires **Bundled Profiles**), old version, hidden profile
 
 **Profile Fork**:
@@ -162,6 +162,8 @@ _Avoid_: Removed profile, superseded profile, stale default
 - Saving a **Profile Draft** that changes how the **Profile** runs (its **Steps** or profile-level settings) makes a **Profile Revision**; the **Profile** it came from becomes a **Superseded Profile**.
 - Changing only a **Profile**'s title, author, or notes updates it in place and makes no **Profile Revision**.
 - A **Profile Fork** never supersedes its parent; both stay in the **Profile Library**.
+- Going back to an earlier version of a **Profile** makes that version visible again, and the version that was current becomes a **Superseded Profile**. Nothing new is saved, and the swap can be reversed.
+- A **Retired Bundled Profile** can't be gone back to.
 - A **Profile Lineage** links **Profile Revisions** and **Profile Forks** alike; only a **Profile Revision** supersedes its parent.
 - A **Superseded Profile** is not the same as a **Profile** the operator hid.
 - A **Bundled Profile** can be hidden but never deleted; any other **Profile** is deleted. Either way it becomes a **Removed Profile**.

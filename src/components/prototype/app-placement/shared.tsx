@@ -149,7 +149,7 @@ export function PrototypeSwitcher({
   if (isCollapsed) {
     return (
       <button
-        className="fixed bottom-[68px] right-2 z-[70] size-10 rounded-full border border-fuchsia-400/70 bg-fuchsia-950/90 font-mono text-[0.74rem] font-semibold text-fuchsia-100"
+        className="fixed left-1/2 top-1 z-[70] size-10 -translate-x-1/2 rounded-full border border-fuchsia-400/70 bg-fuchsia-950/90 font-mono text-[0.74rem] font-semibold text-fuchsia-100"
         onClick={() => setIsCollapsed(false)}
         type="button"
       >
@@ -159,14 +159,7 @@ export function PrototypeSwitcher({
   }
 
   return (
-    <div className="fixed bottom-[68px] right-2 z-[70] flex flex-col items-end gap-1">
-      <button
-        className="rounded-full bg-fuchsia-950/90 px-3 py-0.5 font-mono text-[0.66rem] text-fuchsia-200"
-        onClick={() => setIsCollapsed(true)}
-        type="button"
-      >
-        {readout} · tap to hide
-      </button>
+    <div className="fixed left-1/2 top-1 z-[70] flex -translate-x-1/2 flex-col items-center gap-1">
       <div
         className="flex items-center gap-1 rounded-full border border-fuchsia-400/70 bg-fuchsia-950/90 px-1.5 py-1 text-fuchsia-100 shadow-lg"
         onKeyDown={(event) => {
@@ -183,7 +176,7 @@ export function PrototypeSwitcher({
         >
           <ChevronLeft className="size-4" />
         </button>
-        <span className="min-w-[230px] text-center font-mono text-[0.74rem] font-semibold">
+        <span className="min-w-[200px] text-center font-mono text-[0.74rem] font-semibold">
           PROTOTYPE {variants[index].key} — {variants[index].name}
         </span>
         <button
@@ -195,6 +188,14 @@ export function PrototypeSwitcher({
           <ChevronRight className="size-4" />
         </button>
         <DevShotToggleButton />
+        <button
+          className="rounded-full px-2 font-mono text-[0.66rem] text-fuchsia-200"
+          onClick={() => setIsCollapsed(true)}
+          title={readout}
+          type="button"
+        >
+          hide
+        </button>
       </div>
     </div>
   );

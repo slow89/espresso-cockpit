@@ -11,6 +11,12 @@ import { WorkflowShotSetupPanel } from "@/components/workflows/workflow-shot-set
 import { buildFramePreviewData } from "@/lib/workflow-frame-preview";
 import { cn } from "@/lib/utils";
 
+import { useSearch } from "@tanstack/react-router";
+
+import { useLineageStore } from "../lineage/lineage-store";
+import { VariantAHistoryColumn, VariantAVersionDetail } from "../lineage/variant-a-list-column";
+import { VariantBCompare } from "../lineage/variant-b-compare";
+import { VariantCTimeline } from "../lineage/variant-c-timeline";
 import { EditorStub } from "./editor-stub";
 import {
   byTitle,
@@ -41,6 +47,9 @@ export function VariantBLibraryPage() {
   const [segment, setSegment] = useState<"library" | "setup">("library");
   const link = useActiveLink();
   const entry = useEditorEntry("Library");
+  // PROTOTYPE (ticket 13): which lineage variant History opens.
+  const { lineage = "A" } = useSearch({ from: "/workflows" });
+  const historyOpen = useLineageStore((state) => state.openId != null);
 
   return (
     <>
@@ -75,16 +84,26 @@ export function VariantBLibraryPage() {
           </div>
         </header>
         {segment === "library" ? (
-          <div className="grid min-h-0 flex-1 grid-cols-[340px_minmax(0,1fr)]">
-            <LibraryList />
-            <LibraryDetail />
-          </div>
+          historyOpen && lineage === "C" ? (
+            <VariantCTimeline />
+          ) : historyOpen && lineage === "A" ? (
+            <div className="grid min-h-0 flex-1 grid-cols-[340px_minmax(0,1fr)]">
+              <VariantAHistoryColumn />
+              <VariantAVersionDetail />
+            </div>
+          ) : (
+            <div className="grid min-h-0 flex-1 grid-cols-[340px_minmax(0,1fr)]">
+              <LibraryList />
+              <LibraryDetail />
+            </div>
+          )
         ) : (
           <div className="min-h-0 flex-1 overflow-hidden">
             <WorkflowShotSetupPanel />
           </div>
         )}
       </div>
+      {historyOpen && lineage === "B" ? <VariantBCompare /> : null}
       {editor ? <EditorStub layout="fullscreen" /> : null}
     </>
   );
@@ -249,7 +268,7 @@ function DetailBody({ record }: { record: ProtoRecord }) {
         <ProtoButton onClick={() => entry.duplicate(record)}>
           <Copy className="size-3.5" /> Duplicate
         </ProtoButton>
-        <ProtoButton onClick={() => toast("History: ticket 13 decides the lineage view")}>
+        <ProtoButton onClick={() => useLineageStore.getState().open(record)}>
           <History className="size-3.5" /> History
         </ProtoButton>
         <ProtoButton

@@ -14,6 +14,9 @@ import {
   VariantCWorkbench,
   variantCName,
 } from "@/components/prototype/app-placement/variant-c-workbench";
+import { variantAName as lineageAName } from "@/components/prototype/lineage/variant-a-list-column";
+import { variantBName as lineageBName } from "@/components/prototype/lineage/variant-b-compare";
+import { variantCName as lineageCName } from "@/components/prototype/lineage/variant-c-timeline";
 import { WorkflowProfileChooserPanel } from "@/components/workflows/workflow-profile-chooser-panel";
 import { WorkflowShotSetupPanel } from "@/components/workflows/workflow-shot-setup-panel";
 import { FramePreviewOverlay } from "@/components/workflows/frame-preview-overlay";
@@ -21,14 +24,17 @@ import { formatBrewRatio } from "@/lib/recipe-utils";
 import { getProfileTitle } from "@/lib/workflow-utils";
 import { useWorkflowQuery } from "@/rest/queries";
 
-const prototypeVariants = [
-  { key: "today", name: "Today's Profiles tab" },
-  { key: "A", name: variantAName },
-  { key: "B", name: variantBName },
-  { key: "C", name: variantCName },
+// PROTOTYPE (ticket 13): on this branch the Library is always ticket 09's Variant B, and the
+// switcher cycles the lineage-view variants that History opens.
+export const appPlacementVariants = [variantAName, variantBName, variantCName];
+const lineageVariants = [
+  { key: "A", name: lineageAName },
+  { key: "B", name: lineageBName },
+  { key: "C", name: lineageCName },
 ] as const;
 
-function AppPlacementPrototype({ variant }: { variant: "A" | "B" | "C" }) {
+// eslint-disable-next-line -- kept for the app-placement variants on this throwaway branch
+export function AppPlacementPrototype({ variant }: { variant: "A" | "B" | "C" }) {
   if (variant === "A") return <VariantAGrownChooser />;
   if (variant === "B") return <VariantBLibraryPage />;
   return <VariantCWorkbench />;
@@ -36,28 +42,28 @@ function AppPlacementPrototype({ variant }: { variant: "A" | "B" | "C" }) {
 
 export function WorkflowsPage() {
   const navigate = useNavigate();
-  const { variant } = useSearch({ from: "/workflows" });
+  const { lineage } = useSearch({ from: "/workflows" });
 
   return (
     <>
-      {variant ? <AppPlacementPrototype variant={variant} /> : <CurrentWorkflowsPage />}
+      <VariantBLibraryPage />
       <PrototypeSwitcher
-        current={variant ?? "today"}
+        current={lineage ?? "A"}
         onChange={(key) =>
           navigate({
             to: "/workflows",
-            search: { variant: key === "today" ? undefined : (key as "A" | "B" | "C") },
+            search: { lineage: key as "A" | "B" | "C" },
             replace: true,
           })
         }
-        variants={prototypeVariants}
+        variants={lineageVariants}
       />
       <ConfirmDialog />
     </>
   );
 }
 
-function CurrentWorkflowsPage() {
+export function CurrentWorkflowsPage() {
   return (
     <div>
       <div className="app-shell overflow-hidden border-b border-border/30 bg-shell md:flex md:flex-col">

@@ -54,7 +54,11 @@ const workflowsRoute = createRoute({
   path: "/workflows",
   loader: prefetchWorkflowQuery,
   // PROTOTYPE — throwaway: app-placement variants (ticket 09).
-  validateSearch: z.object({ variant: z.enum(["A", "B", "C"]).optional() }),
+  validateSearch: z.object({
+    // PROTOTYPE — throwaway: lineage-view variants (ticket 13).
+    lineage: z.enum(["A", "B", "C"]).optional(),
+    variant: z.enum(["A", "B", "C"]).optional(),
+  }),
   component: WorkflowsPage,
 });
 

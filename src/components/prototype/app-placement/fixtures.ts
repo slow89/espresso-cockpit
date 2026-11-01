@@ -12,33 +12,83 @@ export type ProtoRecord = {
   id: string;
   isDefault: boolean;
   marker?: "fork" | "revision";
+  // Prototype stand-ins for what the Skin infers (ticket 11): deleted visibility, Bridge-retired.
+  deleted?: boolean;
+  retired?: boolean;
   parentId?: string;
   profile: WorkflowProfile;
 };
 
-// Same shape as the fake gateway's Workflow "House", so the title links the Active Profile to it.
-function house(temperatureOffset: number, notes: string): WorkflowProfile {
+// PROTOTYPE (ticket 13) — lineage fixtures. Each House save below is a Profile Revision of the one
+// before it; the Londonium and Gentle chains start from Bundled Profiles.
+type Step = Record<string, unknown>;
+
+const fill = (temperature: number, flow = 4): Step => ({
+  exit: { condition: "over", type: "pressure", value: 3 },
+  flow,
+  name: "Fill",
+  pressure: 0,
+  pump: "flow",
+  seconds: 15,
+  sensor: "coffee",
+  temperature,
+  transition: "fast",
+});
+const soak = (temperature: number, seconds = 8): Step => ({
+  flow: 0,
+  name: "Soak",
+  pressure: 3,
+  pump: "pressure",
+  seconds,
+  sensor: "coffee",
+  temperature,
+  transition: "fast",
+});
+const pour = (temperature: number, pressure = 8.5): Step => ({
+  flow: 0,
+  limiter: { range: 0.6, value: 3.5 },
+  name: "Pour",
+  pressure,
+  pump: "pressure",
+  seconds: 25,
+  sensor: "coffee",
+  temperature,
+  transition: "smooth",
+});
+const decline = (temperature: number): Step => ({
+  flow: 0,
+  name: "Decline",
+  pressure: 6,
+  pump: "pressure",
+  seconds: 20,
+  sensor: "coffee",
+  temperature,
+  transition: "smooth",
+});
+
+function house(steps: Step[], notes = "Baseline house espresso."): WorkflowProfile {
   return {
     author: "Operator",
     beverage_type: "espresso",
     notes,
-    steps: [
-      { flow: 0, pressure: 0, seconds: 0, temperature: 92 + temperatureOffset },
-      { flow: 2.5, pressure: 3, seconds: 5, temperature: 93 + temperatureOffset },
-      { flow: 2.3, pressure: 8.5, seconds: 12, temperature: 93 + temperatureOffset },
-      { flow: 1.2, pressure: 5.5, seconds: 24, temperature: 92.5 + temperatureOffset },
-    ],
+    steps: steps as WorkflowProfile["steps"],
+    target_volume_count_start: 2,
     title: "House",
     version: "2",
-  };
+  } as WorkflowProfile;
 }
+
+const retiredGentleId = "bundled:Gentle_and_sweet1";
 
 const bundled = (bundledJson as Array<{ id: string; profile: WorkflowProfile }>).map(
   (entry): ProtoRecord => ({
     ...entry,
-    createdAt: "2026-10-15T09:00:00Z",
-    hidden: entry.id === "bundled:Gentle_and_sweet1",
+    createdAt: "2026-09-01T09:00:00Z",
+    // Londonium is superseded by the operator's Revision; Gentle & sweet's old version was retired
+    // by the Bridge update that shipped `bundled:Gentle_and_sweet2` below.
+    hidden: entry.id === retiredGentleId || entry.id === "bundled:Londonium",
     isDefault: true,
+    retired: entry.id === retiredGentleId,
   }),
 );
 
@@ -62,22 +112,24 @@ function nudgeSteps(profile: WorkflowProfile, temperatureDelta: number): Workflo
   };
 }
 
+const gentle = bundledProfile(retiredGentleId);
+
 const operator: ProtoRecord[] = [
   {
     createdAt: "2026-09-02T08:10:00Z",
     hidden: true,
     id: "op:house-v1",
     isDefault: false,
-    profile: house(0.5, "Baseline house espresso."),
+    profile: house([fill(92), soak(92), pour(92)]),
   },
   {
     createdAt: "2026-10-12T07:40:00Z",
+    hidden: true,
     id: "op:house-v2",
     isDefault: false,
     marker: "revision",
     parentId: "op:house-v1",
-    // One degree hotter than the Workflow copy: the Brew temperature control has drifted it.
-    profile: house(1, "Baseline house espresso."),
+    profile: house([fill(92), soak(92), pour(92, 9)]),
   },
   {
     createdAt: "2026-10-13T07:55:00Z",
@@ -85,15 +137,33 @@ const operator: ProtoRecord[] = [
     isDefault: false,
     marker: "fork",
     parentId: "op:house-v2",
-    profile: { ...house(2, "Decaf runs hotter."), title: "House decaf" },
+    profile: { ...house([fill(94), soak(94), pour(94, 9)], "Decaf runs hotter."), title: "House decaf" },
   },
   {
-    createdAt: "2026-10-16T08:20:00Z",
-    id: "op:gentle-rev",
+    createdAt: "2026-10-20T08:02:00Z",
+    hidden: true,
+    id: "op:house-v3",
     isDefault: false,
     marker: "revision",
-    parentId: "bundled:Gentle_and_sweet1",
-    profile: nudgeSteps(bundledProfile("bundled:Gentle_and_sweet1"), -1),
+    parentId: "op:house-v2",
+    profile: house([fill(93), soak(93), pour(93, 9)]),
+  },
+  {
+    createdAt: "2026-10-29T07:31:00Z",
+    hidden: true,
+    id: "op:house-v4",
+    isDefault: false,
+    marker: "revision",
+    parentId: "op:house-v3",
+    profile: house([fill(93), soak(93, 12), pour(93, 9), decline(92)]),
+  },
+  {
+    createdAt: "2026-10-31T08:12:00Z",
+    id: "op:house-v5",
+    isDefault: false,
+    marker: "revision",
+    parentId: "op:house-v4",
+    profile: house([fill(93, 3), soak(93, 12), pour(93, 9), decline(92)]),
   },
   {
     createdAt: "2026-10-18T08:05:00Z",
@@ -106,6 +176,38 @@ const operator: ProtoRecord[] = [
       author: "Operator",
       title: "Londonium slow ramp",
     },
+  },
+  {
+    createdAt: "2026-10-19T07:20:00Z",
+    hidden: true,
+    id: "op:londonium-r1",
+    isDefault: false,
+    marker: "revision",
+    parentId: "bundled:Londonium",
+    profile: nudgeSteps(bundledProfile("bundled:Londonium"), -1),
+  },
+  {
+    createdAt: "2026-10-25T07:48:00Z",
+    id: "op:londonium-r2",
+    isDefault: false,
+    marker: "revision",
+    parentId: "op:londonium-r1",
+    profile: nudgeSteps(bundledProfile("bundled:Londonium"), -1.5),
+  },
+  {
+    createdAt: "2026-10-16T08:20:00Z",
+    id: "op:gentle-rev",
+    isDefault: false,
+    marker: "revision",
+    parentId: retiredGentleId,
+    profile: nudgeSteps(gentle, -1),
+  },
+  {
+    // The Bridge update's new Bundled version: visible, new id, same title as the operator's Revision.
+    createdAt: "2026-10-28T06:00:00Z",
+    id: "bundled:Gentle_and_sweet2",
+    isDefault: true,
+    profile: nudgeSteps(gentle, 0.5),
   },
 ];
 
@@ -144,7 +246,7 @@ export function runsKey(profile: WorkflowProfile | undefined) {
 }
 
 export function visibleRecords(records: ProtoRecord[]) {
-  return records.filter((record) => !record.hidden);
+  return records.filter((record) => !record.hidden && !record.deleted);
 }
 
 export function byTitle(left: ProtoRecord, right: ProtoRecord) {

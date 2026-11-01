@@ -116,7 +116,7 @@ export const useProtoStore = create<ProtoState>((set, get) => ({
       },
     });
   },
-  selectedId: "op:house-v2",
+  selectedId: "op:house-v5",
   setFilter: (filter) => set({ filter }),
   setSelected: (selectedId) => set({ selectedId }),
   simulateEdit: () => {

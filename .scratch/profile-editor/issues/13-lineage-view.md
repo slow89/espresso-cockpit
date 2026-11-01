@@ -55,3 +55,8 @@ From [How does the operator delete, hide, and restore profiles?](11-delete-hide-
 - **Getting a Bundled original back after deleting the operator's Revision** takes Restore (from the Removed list), then History, then go back. Decide whether History is also reachable from the Removed list's detail pane, which today offers only Restore.
 - **The lineage response includes deleted records, Retired Bundled Profiles, and Superseded ones.** The view has to tell them apart. A Retired Bundled Profile can't be made visible for long: the Bridge re-hides it at every launch.
 - **Restore tolerates a title clash.** So may a go-back that brings back a Superseded Profile. How Cockpit handles two visible profiles with one title is [What happens when two visible profiles share a title?](16-duplicate-visible-titles.md), which waits on this ticket.
+
+From [How does the step editor lay out at 1024×600?](12-step-editor-layout.md):
+
+- **The editor has a new Step chart**: one equal-width column per Step, showing the target (jump or ramp), cap, temperature, and how each Step ends. It reads at about 108px tall, so a compare between two versions could stack two of them.
+- **The Library's detail pane keeps `workflow-frame-chart`** (ticket 09), so the two charts differ.

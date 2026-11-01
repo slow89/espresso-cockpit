@@ -41,3 +41,8 @@ From [What happens to a Profile Draft when the operator leaves the editor?](10-d
 - **One editor draft at a time, stored on the tablet.** A shortcut to the loaded profile resumes its waiting draft. If the waiting draft belongs to another profile and has unsaved changes, the replace confirm fires: "*Title* has unsaved changes. Opening *Other* discards them."
 - **The Bridge's wake reload lands on Brew**, so Brew is where the operator is most likely to be when a draft is waiting. Today, only the loaded-profile strip in the Profiles tab shows it, as "✎ *Title* · Resume". Whether Brew shows it too is this ticket's call.
 - **Brew temperature nudges merge into a waiting draft of the loaded profile**, unless the draft changed the same temperatures.
+
+From [How does the step editor lay out at 1024×600?](12-step-editor-layout.md):
+
+- **The selected Step shows in both the Step list and the Step chart**, and it's stored with the draft (ticket 10). A shortcut can open the editor with a particular Step already selected, such as the one a **Shot Analysis** recommendation names. It can also bind the ruler to a particular field.
+- **The editor's header and message strip are unchanged** from ticket 09. Advice carried in from Shot Analysis would need its own line there, or a place in the panel.

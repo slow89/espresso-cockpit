@@ -37,3 +37,26 @@ From [What does Save do to a profile and its lineage?](06-save-semantics-and-lin
 - **Going back can't re-save old content**, because `POST` dedups and returns the Superseded record. This ticket owns what "go back" does: un-hide the old record and hide the current head, or open a draft. Either way, keep the Superseded rule meaningful: a hidden record whose child carries the revision marker.
 - **A collision on Save offers "go back"**: a draft whose Steps match a Superseded Profile in its lineage offers to go back to that version. Same action, same semantics.
 - **No automatic repair on load.** A Superseded Profile the operator brought back stays visible.
+
+From [Where does profile authoring live in the app, and what are its entry points?](09-app-placement-and-entry-points.md):
+
+- **History opens from the Library's detail pane.**
+- **The list already nests Forks under their visible parent**, so the lineage view needn't be the only place Forks are visible.
+- **After Save, the Library selection moves to the new Revision or Fork.**
+
+From [What happens to a Profile Draft when the operator leaves the editor?](10-draft-lifecycle.md):
+
+- **There is one editor draft at a time.** A "go back" that opens a draft replaces it, so the replace confirm applies when the current draft has unsaved changes.
+- **A draft whose source was revised on another device** merges against the newest visible Revision in the lineage.
+
+From [How does the operator delete, hide, and restore profiles?](11-delete-hide-restore.md):
+
+- **Delete removes only the visible record.** Its Superseded ancestors stay hidden and keep counting as Superseded. A lineage can therefore end in a deleted head.
+- **Getting a Bundled original back after deleting the operator's Revision** takes Restore (from the Removed list), then History, then go back. Decide whether History is also reachable from the Removed list's detail pane, which today offers only Restore.
+- **The lineage response includes deleted records, Retired Bundled Profiles, and Superseded ones.** The view has to tell them apart. A Retired Bundled Profile can't be made visible for long: the Bridge re-hides it at every launch.
+- **Restore tolerates a title clash.** So may a go-back that brings back a Superseded Profile. How Cockpit handles two visible profiles with one title is [What happens when two visible profiles share a title?](16-duplicate-visible-titles.md), which waits on this ticket.
+
+From [How does the step editor lay out at 1024×600?](12-step-editor-layout.md):
+
+- **The editor has a new Step chart**: one equal-width column per Step, showing the target (jump or ramp), cap, temperature, and how each Step ends. It reads at about 108px tall, so a compare between two versions could stack two of them.
+- **The Library's detail pane keeps `workflow-frame-chart`** (ticket 09), so the two charts differ.

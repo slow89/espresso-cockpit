@@ -46,3 +46,7 @@ From [How does the step editor lay out at 1024×600?](12-step-editor-layout.md):
 
 - **The selected Step shows in both the Step list and the Step chart**, and it's stored with the draft (ticket 10). A shortcut can open the editor with a particular Step already selected, such as the one a **Shot Analysis** recommendation names. It can also bind the ruler to a particular field.
 - **The editor's header and message strip are unchanged** from ticket 09. Advice carried in from Shot Analysis would need its own line there, or a place in the panel.
+
+## Comments
+
+**2026-11-01 — claimed.** Grilling session in progress on branch `t3/wayfinder-15-brew-shortcut`.

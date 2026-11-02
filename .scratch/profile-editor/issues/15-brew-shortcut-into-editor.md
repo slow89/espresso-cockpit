@@ -1,7 +1,7 @@
 # Does Brew get a shortcut into the editor?
 
 Type: grilling
-Status: open
+Status: resolved
 Blocked by: —
 Map: [Profile authoring in Cockpit](../map.md)
 
@@ -46,3 +46,60 @@ From [How does the step editor lay out at 1024×600?](12-step-editor-layout.md):
 
 - **The selected Step shows in both the Step list and the Step chart**, and it's stored with the draft (ticket 10). A shortcut can open the editor with a particular Step already selected, such as the one a **Shot Analysis** recommendation names. It can also bind the ruler to a particular field.
 - **The editor's header and message strip are unchanged** from ticket 09. Advice carried in from Shot Analysis would need its own line there, or a place in the panel.
+
+## Comments
+
+**2026-11-01 — claimed.** Grilling session in progress on branch `t3/wayfinder-15-brew-shortcut`.
+
+**2026-11-01 — decided with the operator.** Three questions, one at a time, each with a recommendation. Smaller calls I settled myself, as the operator prefers, and they're marked *(best judgment)* in the Answer.
+
+1. Placement: **no shortcut on Brew**. The operator turned down the recommendation, an Edit profile button on the Post-Shot Summary. Also rejected: a ✎ split on the top-bar profile button, and both together.
+2. A waiting draft on Brew: **a cue in the top-bar button**, as recommended. Rejected: no cue on Brew.
+3. The Post-Shot Summary across a trip away from Brew: **the code is right**, as recommended. The summary survives the trip, and the Shot Analysis reading doesn't. Rejected: keeping the reading too, and ending the summary when the operator leaves Brew.
+
+Checked before asking:
+
+- **Shot Analysis can't name a Step.** Its system prompt allows only grind, dose, yield/ratio, or temperature (`src/lib/shot-analysis.ts:114`), and the prompt carries shot facts and telemetry but not the profile's Steps.
+- **`CONTEXT.md` contradicted the code.** It said the Post-Shot Summary ends when the operator navigates away. The summary sits in an in-memory store (`src/stores/dashboard-ui-store.ts`) that's cleared only when a Shot starts, on sleep, or on reset (`src/stores/machine-store.ts:109-112`, `:246`), and no route clears it. The Shot Analysis reading and Taste Compass taps are component state in `src/components/dashboard/dashboard-post-shot-analysis.tsx`, so they're lost when Brew unmounts.
+- **The top-bar profile button** (`DashboardRecipeButton`, `src/components/dashboard/dashboard-top-bar-cards.tsx`) shows the Active Profile's title and a "PROFILES" label, and links to `/workflows`.
+
+## Answer
+
+**Brew gets no shortcut into the editor.** The way in stays as [Where does profile authoring live in the app, and what are its entry points?](09-app-placement-and-entry-points.md) left it: the top-bar profile button opens the Profiles tab, and **Edit loaded** (or **Resume**) opens the editor. The only change to Brew is a cue on that button while a **Profile Draft** is waiting.
+
+**No shortcut**
+
+- **The top-bar profile button still opens the Profile Library.** Its title is still the **Active Profile**'s.
+- **The Post-Shot Summary keeps its Shots and Done buttons**, with no Edit.
+- **Shot Analysis carries nothing into the editor.** It never recommends a **Step** change, so there's no Step to pre-select or advice to show there.
+- **What a shortcut would open** no longer needs deciding. Every way into the editor starts from the Library or its loaded-profile strip.
+
+**The waiting-draft cue** (left to this ticket by [What happens to a Profile Draft when the operator leaves the editor?](10-draft-lifecycle.md))
+
+- **While a Profile Draft has unsaved changes, the button's "PROFILES" label reads "✎ DRAFT".** Same width, same tap target. It still opens the Library, where the strip's chip or **Resume** opens the draft.
+- **It covers the case where a draft is otherwise invisible.** The Bridge's wake reload always lands on Brew, and nothing navigates on its own.
+- *(best judgment)* **Any profile's draft triggers the cue**, not only one of the loaded profile. The button's title stays the Active Profile's.
+- *(best judgment)* **A clean draft shows no cue**, matching ticket 10, where nothing flags a clean draft as waiting.
+- *(best judgment)* **Brew shows no "Differs from saved" badge.** That stays in the Profiles tab.
+- **The cue is derived from the persisted draft store**, using ticket 10's comparison against the draft's base. It needs no effect or mirrored state.
+
+**The Post-Shot Summary across the dial-in trip**
+
+- **The summary lasts until Done, the next Shot, or sleep.** A trip to the editor and back through its **Brew** button lands on the same shot's summary. This is how the code already behaves.
+- **The Shot Analysis reading and Taste Compass taps are lost on leaving Brew.** Analyze has to be run again for another reading. No code change.
+- **`CONTEXT.md` now matches the code**, for both the Post-Shot Summary and Shot Analysis.
+
+**Rejected**
+
+- **An Edit profile button on the Post-Shot Summary.** It would sit beside Shots and Done, next to the frozen shot.
+- **A ✎ split on the top-bar profile button** (title opens the Library, ✎ opens the editor). It would take width from a top bar that's already full at 1024px.
+- **Both of these.**
+- **No cue on Brew.** A waiting draft would only show in the Profiles tab.
+- **Keeping the Shot Analysis reading across the trip**, by moving it into the dashboard store.
+- **Ending the summary when the operator leaves Brew**, which is what `CONTEXT.md` used to say.
+
+**Knock-ons for other tickets**
+
+- *What happens to a Profile Draft when the operator leaves the editor?*: its open question about Brew is settled by the cue above.
+- *What happens when two visible profiles share a title?*: nothing changes. The top-bar button shows the Active Profile's title, as it does today.
+- **Out of scope**: profile-aware Shot Analysis, meaning Step recommendations or a link into the editor. It belongs to Shot Analysis, not the editor, and Brew has no shortcut to carry it.

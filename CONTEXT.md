@@ -121,7 +121,7 @@ _Avoid_: Removed profile, superseded profile, stale default
 - A **Post-Shot Summary** presents exactly one just-finished **Shot** in the **Skin**.
 - A **Post-Shot Summary** appears immediately when a **Shot** finishes.
 - A **Post-Shot Summary** appears only for a **Meaningful Extraction**.
-- A **Post-Shot Summary** remains visible until the operator dismisses it, starts another **Shot**, or navigates away.
+- A **Post-Shot Summary** lasts until the operator dismisses it, starts another **Shot**, or the machine sleeps. Leaving Brew and coming back keeps it.
 - A v1 **Post-Shot Summary** shows only local shot facts: recipe/profile, duration, final yield, actual ratio, target dose/yield, and telemetry.
 - A v1 **Post-Shot Summary** is read-only and does not write annotations or derived analysis back to the **Bridge**.
 - A v1 **Post-Shot Summary** is a tablet Brew dashboard behavior.
@@ -140,7 +140,7 @@ _Avoid_: Removed profile, superseded profile, stale default
 - A **Shot Analysis** runs only when the operator asks for it, never automatically.
 - A **Shot Analysis** may include the **Taste Compass** when the operator has tapped any of its scales.
 - The **Taste Compass** is always optional; a **Shot Analysis** without taste input reads telemetry alone.
-- A v1 **Shot Analysis** and its **Taste Compass** input are ephemeral: they are discarded with the **Post-Shot Summary** and are not written to the **Bridge** or Visualizer.
+- A v1 **Shot Analysis** and its **Taste Compass** input are ephemeral: they are discarded when the operator leaves Brew or the **Post-Shot Summary** ends, and are not written to the **Bridge** or Visualizer.
 - A **Shot Analysis** recommends; the operator applies. It never changes machine, profile, or workflow state.
 - A **Shot Analysis** and its **Taste Compass** are presented in place inside the expanded **Post-Shot Summary**, never on a separate route or modal.
 - A **Shot Analysis** requires an operator-supplied API key kept in Skin-local settings; without one the Analyze affordance leads to setup, not an error.

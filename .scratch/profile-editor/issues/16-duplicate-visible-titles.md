@@ -57,3 +57,7 @@ From [How is Profile Lineage shown and navigated?](13-lineage-view.md):
 - **Going back to a Bundled original** un-hides it with its own title. A clash follows if the Bridge has since shipped a newer version of it under the same title.
 - **Restore this version** from a removed profile's History can clash the same way Restore does.
 - **The loaded profile**: Go back & use loads the version gone back to, so the Active Profile follows its title.
+
+## Comments
+
+**2026-11-01 — claimed.** Grilling session in progress on branch `t3/profile-editor-wayfinding-1`.

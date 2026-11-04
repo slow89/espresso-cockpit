@@ -52,6 +52,8 @@ From [What does Save do to a profile and its lineage?](06-save-semantics-and-lin
 
 At the confirmation summary the operator also agreed to two rules that follow from these but weren't asked directly: a title-only Save on the loaded profile updates the Workflow's title too, and the confirm from question 6 covers every action that loads a different profile.
 
+**2026-11-03 — refined by [What happens when two visible profiles share a title?](16-duplicate-visible-titles.md).** "There is at most one match" below no longer holds. When two visible profiles share the loaded title, **the Active Profile belongs to the one with the fewest changes from the Workflow copy**, counted as lines of History's change summary. A tie goes to Yours over Bundled, then to the most recently saved. Only that one is loaded; Edit on the other opens a draft of that record.
+
 ## Answer
 
 **The Workflow's copy is the working copy of the loaded profile. Editing starts from it, trials load into it, and Save writes the library and the Workflow together. Cockpit never changes it while the machine is busy, and never discards unsaved changes in it without asking.** Everything below works on today's Bridge (Decaid v0.8.8) with no upstream change.

@@ -1,5 +1,7 @@
 always use pnpm
 
+never commit directly to `main`, even when a skill or workflow says to commit to the current branch: if you are on `main`, create a feature branch first and land the work through a pull request
+
 Streamline Gateway source of truth: https://github.com/tadelv/reaprime
 when questions depend on gateway behavior, APIs, deployment details, or browser/runtime details, inspect that repo before answering
 for machine readiness and warmup, trust Streamline Bridge as the source of truth and do not re-implement readiness heuristics in the skin

@@ -101,6 +101,8 @@ Findings while building:
 
 Smaller calls I made while building are marked *(best judgment)* in the Answer.
 
+**2026-11-03 — refined by [What happens when two visible profiles share a title?](16-duplicate-visible-titles.md).** "Going back brings the version back exactly as it was, title included" below is replaced. **Going back changes only what the machine runs**: Cockpit copies the current title, author, and notes onto the version with a title-only `PUT` before swapping visibility. A Bundled original whose title another visible profile holds can't be gone back to. Restore this version carries the removed profile's title the same way, then renames on a clash like Restore.
+
 ## Answer
 
 **History swaps the Library's list column for the profile's versions, and the detail pane shows the selected version and what changed. Going back makes an older version current again by swapping which record is visible.** No record is written, every version stays in History, and going back can be undone. Everything below works on today's Bridge (Decaid v0.8.8) with no upstream change. The decision is Variant A on branch `prototype/lineage-view`, without its Open as draft button. Why going back swaps visibility is recorded in [ADR 0004](../../../docs/adr/0004-going-back-swaps-visibility.md).

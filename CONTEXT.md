@@ -147,7 +147,7 @@ _Avoid_: Removed profile, superseded profile, stale default
 - A **Profile** has one or more **Steps**.
 - A **Workflow** holds exactly one **Active Profile**.
 - An **Active Profile** is a copy, not a reference: changing a **Profile** in the **Profile Library** does not change the **Active Profile** by itself.
-- An **Active Profile** belongs to the visible **Profile** with the same title, if there is one, and may differ from it in content.
+- An **Active Profile** belongs to the visible **Profile** with the same title, if there is one, and may differ from it in content. If two visible **Profiles** share that title, it belongs to the one closer to it in content.
 - A **Profile Draft** of the **Profile** the **Active Profile** belongs to starts from the **Active Profile**, not the library copy.
 - Saving a **Profile Draft** of the **Profile** the **Active Profile** belongs to also updates the **Active Profile**; saving any other **Profile Draft** leaves the **Workflow** alone.
 - A **Profile Draft** can be loaded into the **Workflow** as the **Active Profile** without being saved; it stays there until it is saved, reverted, or replaced.
@@ -163,6 +163,8 @@ _Avoid_: Removed profile, superseded profile, stale default
 - Changing only a **Profile**'s title, author, or notes updates it in place and makes no **Profile Revision**.
 - A **Profile Fork** never supersedes its parent; both stay in the **Profile Library**.
 - Going back to an earlier version of a **Profile** makes that version visible again, and the version that was current becomes a **Superseded Profile**. Nothing new is saved, and the swap can be reversed.
+- Going back changes only what the machine runs; the **Profile** keeps its current title, author, and notes.
+- **Cockpit** never leaves two visible **Profiles** with the same title through its own actions. A clash caused elsewhere, such as by a **Bridge** update, is tolerated until the operator renames or hides one of them.
 - A **Retired Bundled Profile** can't be gone back to.
 - A **Profile Lineage** links **Profile Revisions** and **Profile Forks** alike; only a **Profile Revision** supersedes its parent.
 - A **Superseded Profile** is not the same as a **Profile** the operator hid.

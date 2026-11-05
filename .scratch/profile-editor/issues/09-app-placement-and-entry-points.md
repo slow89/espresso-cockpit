@@ -97,6 +97,8 @@ At the confirmation summary the operator also accepted four calls made without a
 - Visualizer import moves behind an Import button;
 - after Save, the Library selection follows the new record.
 
+**2026-11-03 — refined by [What happens when two visible profiles share a title?](16-duplicate-visible-titles.md).** Two visible profiles sharing a title both get a **"Same title"** badge. The detail pane notes the clash, links the other profile, and offers **Rename** (the operator's own) or **Hide** (a Bundled one). While the loaded title is shared, the loaded-profile strip also shows the linked profile's origin ("● Londonium · Bundled").
+
 ## Answer
 
 **The Profile Library takes over the Profiles tab as a master/detail page, and the editor is a full-screen surface on top of it.** Tapping a profile selects it; loading is an explicit **Use**. Every way into the editor starts from the Library or the loaded-profile strip, and the editor's header has a **Brew** button for the dial-in loop. Nothing navigates on its own. The decision is visible as Variant B, with A's full-screen editor, on branch `prototype/app-placement`.

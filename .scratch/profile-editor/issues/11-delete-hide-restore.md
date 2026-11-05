@@ -68,6 +68,8 @@ From [What happens to a Profile Draft when the operator leaves the editor?](10-d
 5. Lineage: Delete removes only the visible record (option a). Rejected: un-hiding the version it replaced; cascading to Superseded ancestors.
 6. The loaded profile: it can be removed, and the toast says it stays loaded (option a). Rejected: blocking it while loaded; a confirm just for it.
 
+**2026-11-03 — refined by [What happens when two visible profiles share a title?](16-duplicate-visible-titles.md).** "A Restore that duplicates a visible title is allowed" below is replaced. **A clashing Restore renames the profile** to "*House* (restored)" with a title-only `PUT`, and the toast reads "Restored as *House (restored)* · Undo". A Bundled Profile whose title is taken can't be restored until the other profile is renamed.
+
 ## Answer
 
 **Removing a profile in Cockpit is always soft and always reversible.** A Bundled Profile is hidden and any other profile is deleted, both through the Bridge's `DELETE`. It goes at once with an **Undo** toast, then waits in a **Removed** list until it's restored. Cockpit never purges. Removing a profile touches nothing else: not its lineage, its Forks, the Workflow, or a waiting draft. Everything below works on today's Bridge (Decaid v0.8.8) with no upstream change.

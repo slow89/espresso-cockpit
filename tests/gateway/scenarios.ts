@@ -1,5 +1,7 @@
+import { REVISION_MARKER_KEY } from "../../src/lib/profile-library";
 import {
   bridgeSettingsSchema,
+  bundledManifestSchema,
   deviceSummaryListSchema,
   displayStateSchema,
   machineCalibrationSchema,
@@ -13,6 +15,7 @@ import {
   visualizerPluginSettingsSchema,
   workflowRecordSchema,
   type BridgeSettings,
+  type BundledManifestEntry,
   type DeviceSummary,
   type DisplayState,
   type MachineSnapshot,
@@ -53,7 +56,9 @@ export interface GatewayScenarioStep {
 }
 
 export interface GatewayScenarioState {
+  bridgeInfo: { version: string };
   bridgeSettings: BridgeSettings;
+  bundledManifest: BundledManifestEntry[];
   devices: DeviceSummary[];
   displayState: DisplayState;
   machineCalibration: MachineCalibration;
@@ -183,12 +188,15 @@ function buildWorkflow(overrides: Partial<WorkflowRecord> = {}): WorkflowRecord 
 function buildProfiles(): ProfileRecord[] {
   return profileRecordListSchema.parse([
     {
+      createdAt: "2026-01-10T09:00:00.000Z",
       id: "profile:active",
       isDefault: true,
+      metadata: { filename: "house.json", source: "bundled" },
       profile: buildWorkflow().profile,
       visibility: "visible",
     },
     {
+      createdAt: "2026-02-10T09:00:00.000Z",
       id: "profile:turbo",
       isDefault: false,
       profile: {
@@ -206,6 +214,7 @@ function buildProfiles(): ProfileRecord[] {
       visibility: "visible",
     },
     {
+      createdAt: "2026-02-11T09:00:00.000Z",
       id: "profile:allongé",
       isDefault: false,
       profile: {
@@ -223,6 +232,157 @@ function buildProfiles(): ProfileRecord[] {
       visibility: "visible",
     },
   ]);
+}
+
+function buildLibraryProfile(
+  title: string,
+  overrides: Partial<ProfileRecord["profile"]> = {},
+): ProfileRecord["profile"] {
+  return {
+    author: "Decent",
+    beverage_type: "espresso",
+    notes: `Notes for ${title}.`,
+    steps: [
+      { flow: 0, pressure: 0, seconds: 0, temperature: 92 },
+      { flow: 2.5, pressure: 3, seconds: 5, temperature: 93 },
+      { flow: 2.2, pressure: 8.5, seconds: 20, temperature: 93 },
+    ],
+    title,
+    version: "2",
+    ...overrides,
+  };
+}
+
+function bundledRecord(
+  id: string,
+  filename: string,
+  profile: ProfileRecord["profile"],
+  overrides: Partial<ProfileRecord> = {},
+): ProfileRecord {
+  return {
+    createdAt: "2026-10-15T09:00:00.000Z",
+    id,
+    isDefault: true,
+    metadata: { filename, source: "bundled" },
+    profile,
+    visibility: "visible",
+    ...overrides,
+  };
+}
+
+function operatorRecord(
+  id: string,
+  profile: ProfileRecord["profile"],
+  overrides: Partial<ProfileRecord> = {},
+): ProfileRecord {
+  return {
+    createdAt: "2026-10-16T09:00:00.000Z",
+    id,
+    isDefault: false,
+    metadata: {},
+    profile,
+    visibility: "visible",
+    ...overrides,
+  };
+}
+
+/**
+ * One of each record the Library classifies, plus enough Bundled Profiles to make the list scroll:
+ * a Revision and a Fork of an operator profile, a Revision and a Fork of a Bundled Profile, two
+ * Retired Bundled versions, a Bundled Profile the operator hid, and a deleted profile with a Fork.
+ */
+function buildLibraryRecords(): ProfileRecord[] {
+  const workflowProfile: ProfileRecord["profile"] = { ...buildWorkflow().profile };
+
+  return profileRecordListSchema.parse([
+    operatorRecord(
+      "house-v1",
+      { ...workflowProfile, notes: "First pass." },
+      { createdAt: "2026-09-02T08:10:00.000Z", visibility: "hidden" },
+    ),
+    operatorRecord("house-v2", workflowProfile, {
+      createdAt: "2026-10-12T07:40:00.000Z",
+      metadata: { [REVISION_MARKER_KEY]: true },
+      parentId: "house-v1",
+    }),
+    operatorRecord("house-decaf", buildLibraryProfile("House decaf"), {
+      createdAt: "2026-10-13T07:55:00.000Z",
+      parentId: "house-v1",
+    }),
+    bundledRecord(
+      "bundled-blooming",
+      "blooming.json",
+      buildLibraryProfile("Blooming", { notes: "Decent's original." }),
+      { visibility: "hidden" },
+    ),
+    operatorRecord("blooming-revision", buildLibraryProfile("Blooming"), {
+      metadata: { [REVISION_MARKER_KEY]: true },
+      parentId: "bundled-blooming",
+    }),
+    bundledRecord("bundled-londonium", "londonium.json", buildLibraryProfile("Londonium")),
+    operatorRecord("londonium-slow", buildLibraryProfile("Londonium slow ramp"), {
+      parentId: "bundled-londonium",
+    }),
+    operatorRecord("old-experiment", buildLibraryProfile("Old experiment"), {
+      visibility: "deleted",
+    }),
+    operatorRecord("orphan-fork", buildLibraryProfile("Orphan fork"), {
+      parentId: "old-experiment",
+    }),
+    operatorRecord(
+      "long-title",
+      buildLibraryProfile("Long decline with a title much wider than the list column can show"),
+    ),
+    operatorRecord(
+      "manual-lever",
+      buildLibraryProfile("Manual lever", { beverage_type: "manual" }),
+    ),
+    bundledRecord("bundled-gentle-v1", "gentle.json", buildLibraryProfile("Gentle retired copy"), {
+      createdAt: "2026-05-01T09:00:00.000Z",
+      visibility: "hidden",
+    }),
+    bundledRecord("bundled-gentle-v2", "gentle.json", buildLibraryProfile("Gentle and sweet"), {
+      parentId: "bundled-gentle-v1",
+    }),
+    bundledRecord("bundled-rao", "rao.json", buildLibraryProfile("Rao left the manifest"), {
+      visibility: "hidden",
+    }),
+    bundledRecord("bundled-hid", "hid.json", buildLibraryProfile("Hid by the operator"), {
+      visibility: "hidden",
+    }),
+    bundledRecord(
+      "bundled-kalita",
+      "kalita.json",
+      buildLibraryProfile("Kalita", { beverage_type: "pourover" }),
+    ),
+    bundledRecord(
+      "bundled-descale",
+      "descale.json",
+      buildLibraryProfile("Descale flush", { beverage_type: "cleaning" }),
+    ),
+    bundledRecord("bundled-zeta", "zeta.json", buildLibraryProfile("Zeta")),
+    ...Array.from({ length: 24 }, (_, index) => {
+      const label = `${index + 1}`.padStart(2, "0");
+
+      return bundledRecord(
+        `bundled-flow-${label}`,
+        `flow-${label}.json`,
+        buildLibraryProfile(`Flow profile ${label}`),
+      );
+    }),
+  ]);
+}
+
+function buildManifest(records: ProfileRecord[], leftOut: string[] = []): BundledManifestEntry[] {
+  const filenames = records.flatMap((record) => {
+    const filename = record.metadata?.filename;
+
+    return record.isDefault && typeof filename === "string" && !leftOut.includes(filename)
+      ? [filename]
+      : [];
+  });
+
+  return bundledManifestSchema.parse([...new Set(filenames)].map((filename) => ({ filename })));
 }
 
 function buildDevices(overrides?: DeviceSummary[]): DeviceSummary[] {
@@ -428,7 +588,9 @@ function buildBaseState(overrides: Partial<GatewayScenarioState> = {}): GatewayS
   const { shotDetails, shots } = buildShots();
 
   return {
+    bridgeInfo: { version: "0.8.8+2900" },
     bridgeSettings: buildBridgeSettings(),
+    bundledManifest: buildManifest(buildProfiles()),
     devices: buildDevices(),
     displayState: buildDisplayState(),
     machineCalibration: buildMachineCalibration(),
@@ -451,6 +613,7 @@ function buildScenario(input: GatewayScenario): GatewayScenario {
     state: {
       ...input.state,
       bridgeSettings: buildBridgeSettings(input.state.bridgeSettings),
+      bundledManifest: bundledManifestSchema.parse(input.state.bundledManifest),
       devices: buildDevices(input.state.devices),
       displayState: buildDisplayState(input.state.displayState),
       machineCalibration: buildMachineCalibration(input.state.machineCalibration),
@@ -472,6 +635,13 @@ function buildScenario(input: GatewayScenario): GatewayScenario {
     },
   };
 }
+
+const machineStateFault: GatewayRouteFault = {
+  body: { error: "Machine state unavailable" },
+  method: "GET",
+  path: "/api/v1/machine/state",
+  status: 500,
+};
 
 export const gatewayScenarios = {
   "dashboard-active-shot": buildScenario({
@@ -765,11 +935,124 @@ export const gatewayScenarios = {
     state: buildBaseState(),
     steps: [],
   }),
+  "workflows-busy": buildScenario({
+    defaultRoute: "/workflows",
+    expectedCheckpoints: ["workflows-busy"],
+    faults: [],
+    scenarioId: "workflows-busy",
+    state: buildBaseState({
+      machineSnapshot: buildMachineSnapshot({
+        flow: 2.3,
+        pressure: 8.8,
+        profileFrame: 2,
+        state: {
+          state: "espresso",
+          substate: "pouring",
+        },
+      }),
+    }),
+    steps: [],
+  }),
   "workflows-default": buildScenario({
     defaultRoute: "/workflows",
     expectedCheckpoints: ["workflows-ready"],
     faults: [],
     scenarioId: "workflows-default",
+    state: buildBaseState(),
+    steps: [],
+  }),
+  "workflows-differs": buildScenario({
+    defaultRoute: "/workflows",
+    expectedCheckpoints: ["workflows-differs", "shot-started"],
+    faults: [],
+    scenarioId: "workflows-differs",
+    state: buildBaseState({
+      workflow: buildWorkflow({
+        // One degree hotter than the library copy, as the Brew temperature control leaves it.
+        profile: {
+          ...buildWorkflow().profile,
+          steps: buildWorkflow().profile?.steps?.map((step) => ({
+            ...step,
+            temperature: Number(step.temperature) + 1,
+          })),
+        },
+      }),
+    }),
+    steps: [
+      {
+        checkpoint: "shot-started",
+        label: "start-shot",
+        state: {
+          machineSnapshot: buildMachineSnapshot({
+            state: {
+              state: "espresso",
+              substate: "pouring",
+            },
+          }),
+        },
+      },
+    ],
+  }),
+  "workflows-library": buildScenario({
+    defaultRoute: "/workflows",
+    expectedCheckpoints: ["workflows-library"],
+    faults: [],
+    scenarioId: "workflows-library",
+    state: buildBaseState({
+      bundledManifest: buildManifest(buildLibraryRecords(), ["rao.json"]),
+      profiles: buildLibraryRecords(),
+    }),
+    steps: [],
+  }),
+  "workflows-machine-unreadable": buildScenario({
+    defaultRoute: "/workflows",
+    expectedCheckpoints: ["workflows-machine-unreadable"],
+    faults: [machineStateFault],
+    scenarioId: "workflows-machine-unreadable",
+    state: buildBaseState(),
+    steps: [],
+  }),
+  "workflows-no-machine": buildScenario({
+    defaultRoute: "/workflows",
+    expectedCheckpoints: ["workflows-no-machine"],
+    faults: [machineStateFault],
+    scenarioId: "workflows-no-machine",
+    state: buildBaseState({
+      devices: buildDevices([
+        {
+          id: "machine-1",
+          name: "DE1XL",
+          state: "disconnected",
+          type: "machine",
+        },
+      ]),
+    }),
+    steps: [],
+  }),
+  "workflows-not-saved": buildScenario({
+    defaultRoute: "/workflows",
+    expectedCheckpoints: ["workflows-not-saved"],
+    faults: [],
+    scenarioId: "workflows-not-saved",
+    state: buildBaseState({
+      workflow: buildWorkflow({
+        profile: { ...buildWorkflow().profile, title: "Scratch trial" },
+      }),
+    }),
+    steps: [],
+  }),
+  "workflows-unread": buildScenario({
+    defaultRoute: "/workflows",
+    expectedCheckpoints: ["workflows-unread"],
+    faults: [
+      {
+        body: { error: "Workflow unavailable" },
+        method: "GET",
+        path: "/api/v1/workflow",
+        status: 500,
+      },
+    ],
+    scenarioId: "workflows-unread",
     state: buildBaseState(),
     steps: [],
   }),

@@ -9,6 +9,7 @@ import {
   machineSnapshotSchema,
   machineStateChangeSchema,
   presenceSettingsSchema,
+  bundledManifestSchema,
   profileRecordListSchema,
   profileRecordSchema,
   shotDetailSchema,
@@ -184,7 +185,10 @@ export function createBridgeClient(baseUrl: string) {
       });
     },
     async listProfiles() {
-      return request("/api/v1/profiles", profileRecordListSchema);
+      return request("/api/v1/profiles?includeHidden=true", profileRecordListSchema);
+    },
+    async getBundledManifest() {
+      return request("/api/v1/profiles/defaults", bundledManifestSchema);
     },
     async getProfile(id: string) {
       return request(`/api/v1/profiles/${encodeURIComponent(id)}`, profileRecordSchema);

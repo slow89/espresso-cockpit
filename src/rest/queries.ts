@@ -29,6 +29,8 @@ export const bridgeQueryKeys = {
   profiles: (gatewayOrigin: string) => [...bridgeQueryKeys.all(gatewayOrigin), "profiles"] as const,
   profile: (gatewayOrigin: string, id: string) =>
     [...bridgeQueryKeys.all(gatewayOrigin), "profiles", id] as const,
+  bundledManifest: (gatewayOrigin: string) =>
+    [...bridgeQueryKeys.all(gatewayOrigin), "bundled-manifest"] as const,
   presenceSettings: (gatewayOrigin: string) =>
     [...bridgeQueryKeys.all(gatewayOrigin), "presence-settings"] as const,
   shots: (gatewayOrigin: string) => [...bridgeQueryKeys.all(gatewayOrigin), "shots"] as const,
@@ -68,6 +70,12 @@ export const profilesQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
   queryOptions({
     queryKey: bridgeQueryKeys.profiles(gatewayOrigin),
     queryFn: () => getClient(gatewayOrigin).listProfiles(),
+  });
+
+export const bundledManifestQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
+  queryOptions({
+    queryKey: bridgeQueryKeys.bundledManifest(gatewayOrigin),
+    queryFn: () => getClient(gatewayOrigin).getBundledManifest(),
   });
 
 export const presenceSettingsQueryOptions = (gatewayOrigin = getGatewayOrigin()) =>
@@ -128,6 +136,11 @@ export function useWorkflowQuery() {
 export function useProfilesQuery() {
   const gatewayOrigin = useGatewayOrigin();
   return useQuery(profilesQueryOptions(gatewayOrigin));
+}
+
+export function useBundledManifestQuery() {
+  const gatewayOrigin = useGatewayOrigin();
+  return useQuery(bundledManifestQueryOptions(gatewayOrigin));
 }
 
 export function usePresenceSettingsQuery() {
@@ -344,8 +357,10 @@ export async function prefetchWorkflowQuery() {
   const gatewayOrigin = getGatewayOrigin();
 
   await Promise.all([
+    queryClient.prefetchQuery(machineStateQueryOptions(gatewayOrigin)),
     queryClient.prefetchQuery(workflowQueryOptions(gatewayOrigin)),
     queryClient.prefetchQuery(profilesQueryOptions(gatewayOrigin)),
+    queryClient.prefetchQuery(bundledManifestQueryOptions(gatewayOrigin)),
   ]);
 }
 

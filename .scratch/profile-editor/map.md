@@ -2,6 +2,7 @@
 
 Label: wayfinder:map
 Tickets: [issues/](./issues/), one file per ticket. The frontier is every open, unblocked, unclaimed ticket; lowest number goes first.
+Spec: [spec.md](./spec.md) (`ready-for-agent`). The frontier is empty, so the map is done; implementation starts from the spec.
 
 ## Destination
 

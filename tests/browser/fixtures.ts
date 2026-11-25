@@ -1,7 +1,8 @@
 import fs from "node:fs/promises";
 
-import { expect, test as base, type Page } from "@playwright/test";
+import { expect, test as base, type Locator, type Page } from "@playwright/test";
 
+import type { WorkflowRecord } from "../../src/rest/types";
 import { defaultGatewayScenarioId, type GatewayScenarioId } from "../gateway/scenarios";
 
 const fakeGatewayOrigin = process.env.PLAYWRIGHT_REAL_GATEWAY_URL?.trim()
@@ -41,6 +42,7 @@ interface AppHarness {
   }) => Promise<void>;
   loadScenario: (scenarioId: GatewayScenarioId) => Promise<void>;
   markMetadata: (metadata: { route: string; scenarioId: GatewayScenarioId }) => void;
+  readWorkflow: () => Promise<WorkflowRecord>;
 }
 
 export const test = base.extend<{
@@ -81,6 +83,11 @@ export const test = base.extend<{
           description: scenarioId,
           type: "scenario",
         });
+      },
+      readWorkflow: async () => {
+        const response = await request.get(`${fakeGatewayOrigin}/api/v1/workflow`);
+
+        return (await response.json()) as WorkflowRecord;
       },
     };
 
@@ -206,6 +213,60 @@ export async function assertNoCriticalOverflow(page: Page) {
 
   expect(overflow.body).toBeLessThanOrEqual(2);
   expect(overflow.root).toBeLessThanOrEqual(2);
+}
+
+/** Checks the 7" tablet rules inside `root`: text at 0.66rem or more, tap targets at 36px or more. */
+export async function assertTabletSizing(root: Locator) {
+  const problems = await root.evaluate((rootElement) => {
+    const remPx = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const minFontPx = 0.66 * remPx;
+    const minTargetPx = 36;
+    const found: string[] = [];
+    const isShown = (element: Element) => {
+      const bounds = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+
+      return bounds.width > 1 && bounds.height > 1 && style.visibility !== "hidden";
+    };
+    const describe = (element: Element) =>
+      `<${element.tagName.toLowerCase()}> "${(element.textContent ?? "").trim().slice(0, 30)}"`;
+
+    for (const element of [rootElement, ...rootElement.querySelectorAll("*")]) {
+      const hasOwnText = [...element.childNodes].some(
+        (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim(),
+      );
+
+      if (!hasOwnText || !isShown(element)) {
+        continue;
+      }
+
+      // SVG text scales with its viewBox, so its rendered size can differ from `font-size`.
+      const svg = element.closest("svg");
+      const scale =
+        svg && svg.viewBox.baseVal.height > 0
+          ? svg.getBoundingClientRect().height / svg.viewBox.baseVal.height
+          : 1;
+      const fontPx = Number.parseFloat(getComputedStyle(element).fontSize) * scale;
+
+      if (fontPx < minFontPx - 0.01) {
+        found.push(`${describe(element)} text is ${fontPx.toFixed(2)}px, under ${minFontPx}px`);
+      }
+    }
+
+    for (const element of rootElement.querySelectorAll("button, a, input, select, textarea")) {
+      const bounds = element.getBoundingClientRect();
+
+      if (isShown(element) && (bounds.width < minTargetPx || bounds.height < minTargetPx)) {
+        found.push(
+          `${describe(element)} target is ${Math.round(bounds.width)}x${Math.round(bounds.height)}`,
+        );
+      }
+    }
+
+    return found;
+  });
+
+  expect(problems).toEqual([]);
 }
 
 export function assertNoAppErrors(

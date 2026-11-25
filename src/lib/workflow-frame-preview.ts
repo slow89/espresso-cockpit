@@ -163,27 +163,11 @@ export function getNumericValue(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-export function formatSeriesKey(value: string) {
+function formatSeriesKey(value: string) {
   return value
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
-export function formatFrameValue(value: unknown) {
-  if (value == null) {
-    return "-";
-  }
-
-  if (typeof value === "number" || typeof value === "boolean") {
-    return `${value}`;
-  }
-
-  if (typeof value === "string") {
-    return value;
-  }
-
-  return JSON.stringify(value);
 }
 
 export function formatWorkflowSeriesValue(

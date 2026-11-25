@@ -216,6 +216,10 @@ export const profileRecordSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).nullish(),
 });
 
+export const bundledManifestEntrySchema = z.looseObject({
+  filename: z.string(),
+});
+
 export const visualizerPluginSettingsSchema = z.looseObject({
   Username: optionalString,
   Password: optionalString,
@@ -310,6 +314,7 @@ export const machineStateChangeSchema = z.enum([
 
 export const deviceSummaryListSchema = z.array(deviceSummarySchema);
 export const profileRecordListSchema = z.array(profileRecordSchema);
+export const bundledManifestSchema = z.array(bundledManifestEntrySchema);
 
 export type MachineState = z.infer<typeof machineStateSchema>;
 export type MachinePhase = z.infer<typeof machinePhaseSchema>;
@@ -333,6 +338,7 @@ export type WorkflowContext = z.infer<typeof workflowContextSchema>;
 export type WorkflowSettings = z.infer<typeof workflowSettingsSchema>;
 export type WorkflowRecord = z.infer<typeof workflowRecordSchema>;
 export type ProfileRecord = z.infer<typeof profileRecordSchema>;
+export type BundledManifestEntry = z.infer<typeof bundledManifestEntrySchema>;
 export type VisualizerPluginSettings = z.infer<typeof visualizerPluginSettingsSchema>;
 export type VisualizerCredentialCheck = z.infer<typeof visualizerCredentialCheckSchema>;
 export type VisualizerImportResult = z.infer<typeof visualizerImportResultSchema>;

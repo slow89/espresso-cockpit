@@ -41,15 +41,8 @@ describe("WorkflowFrameChart", () => {
     });
   });
 
-  it("renders the compact tablet layout and opens the config overlay", () => {
-    render(
-      <WorkflowFrameChart
-        layout="tablet"
-        onSelectFrame={vi.fn()}
-        preview={preview}
-        selectedFrameIndex={0}
-      />,
-    );
+  it("renders the compact layout and opens the config overlay", () => {
+    render(<WorkflowFrameChart onSelectFrame={vi.fn()} preview={preview} selectedFrameIndex={0} />);
 
     expect(screen.getByText("Frame")).toBeInTheDocument();
     expect(screen.getByLabelText("Open chart controls")).toBeInTheDocument();
@@ -64,18 +57,11 @@ describe("WorkflowFrameChart", () => {
     expect(useWorkflowFrameChartStore.getState().activePreset).toBe("all-series");
   });
 
-  it("renders the desktop config panel and updates selection from pointer movement", () => {
+  it("updates selection from pointer movement", () => {
     const onSelectFrame = vi.fn();
     const { container } = render(
-      <WorkflowFrameChart
-        layout="desktop"
-        onSelectFrame={onSelectFrame}
-        preview={preview}
-        selectedFrameIndex={1}
-      />,
+      <WorkflowFrameChart onSelectFrame={onSelectFrame} preview={preview} selectedFrameIndex={1} />,
     );
-
-    expect(screen.getByText("Configuration")).toBeInTheDocument();
 
     const overlay = container.querySelector('rect[fill="transparent"]');
 

@@ -6,7 +6,11 @@ import { ModalDialog } from "@/components/ui/modal-dialog";
 import { isVisualizerEnabled } from "@/lib/visualizer";
 import { useImportVisualizerProfileMutation, useVisualizerSettingsQuery } from "@/rest/queries";
 
-export function ImportProfileDialog({ onClose }: { onClose: () => void }) {
+interface ImportProfileDialogProps {
+  onClose: () => void;
+}
+
+export function ImportProfileDialog({ onClose }: ImportProfileDialogProps) {
   // An editable draft, cleared once it has been imported.
   const [shareCode, setShareCode] = useState("");
   const { data: visualizerSettings } = useVisualizerSettingsQuery();

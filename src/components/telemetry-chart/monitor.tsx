@@ -43,17 +43,19 @@ import {
   useElementSize,
 } from "./shared";
 
+interface TabletTelemetryMonitorProps {
+  model: TelemetryChartDataModel;
+  onOpenConfig: () => void;
+  onPointerLeave: () => void;
+  onPointerMove: (index: number | null) => void;
+}
+
 export function TabletTelemetryMonitor({
   model,
   onOpenConfig,
   onPointerLeave,
   onPointerMove,
-}: {
-  model: TelemetryChartDataModel;
-  onOpenConfig: () => void;
-  onPointerLeave: () => void;
-  onPointerMove: (index: number | null) => void;
-}) {
+}: TabletTelemetryMonitorProps) {
   return (
     <>
       <CompactMonitorBar
@@ -77,6 +79,16 @@ export function TabletTelemetryMonitor({
   );
 }
 
+interface DesktopTelemetryMonitorProps {
+  model: TelemetryChartDataModel;
+  onPointerLeave: () => void;
+  onPointerMove: (index: number | null) => void;
+  onReset: () => void;
+  onSetPreset: (preset: SelectableTelemetryChartPreset) => void;
+  onToggleLane: (family: TelemetrySeriesFamily) => void;
+  onToggleSeries: (seriesId: TelemetrySeriesId) => void;
+}
+
 export function DesktopTelemetryMonitor({
   model,
   onPointerLeave,
@@ -85,15 +97,7 @@ export function DesktopTelemetryMonitor({
   onSetPreset,
   onToggleLane,
   onToggleSeries,
-}: {
-  model: TelemetryChartDataModel;
-  onPointerLeave: () => void;
-  onPointerMove: (index: number | null) => void;
-  onReset: () => void;
-  onSetPreset: (preset: SelectableTelemetryChartPreset) => void;
-  onToggleLane: (family: TelemetrySeriesFamily) => void;
-  onToggleSeries: (seriesId: TelemetrySeriesId) => void;
-}) {
+}: DesktopTelemetryMonitorProps) {
   return (
     <div className="grid h-full min-h-0 min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_290px]">
       <section className="flex min-h-0 min-w-0 flex-col">
@@ -133,12 +137,7 @@ export function DesktopTelemetryMonitor({
   );
 }
 
-function DesktopMonitorBar({
-  activePreset,
-  items,
-  onReset,
-  onSetPreset,
-}: {
+interface DesktopMonitorBarProps {
   activePreset: TelemetryChartPreset;
   items: Array<{
     detail: string;
@@ -147,7 +146,9 @@ function DesktopMonitorBar({
   }>;
   onReset: () => void;
   onSetPreset: (preset: SelectableTelemetryChartPreset) => void;
-}) {
+}
+
+function DesktopMonitorBar({ activePreset, items, onReset, onSetPreset }: DesktopMonitorBarProps) {
   return (
     <SharedDesktopMonitorBar
       activePreset={activePreset}
@@ -162,6 +163,18 @@ function DesktopMonitorBar({
   );
 }
 
+interface TelemetryMonitorCanvasProps {
+  density: ChartDensity;
+  hoveredSample: TelemetrySample | null;
+  isLive: boolean;
+  laneVisibility: Record<TelemetrySeriesFamily, boolean>;
+  onPointerLeave: () => void;
+  onPointerMove: (index: number | null) => void;
+  selectedSeries: TelemetrySeriesDefinition[];
+  timelineSamples: TelemetrySample[];
+  usesShotTimeline: boolean;
+}
+
 function TelemetryMonitorCanvas({
   density,
   hoveredSample,
@@ -172,17 +185,7 @@ function TelemetryMonitorCanvas({
   selectedSeries,
   timelineSamples,
   usesShotTimeline,
-}: {
-  density: ChartDensity;
-  hoveredSample: TelemetrySample | null;
-  isLive: boolean;
-  laneVisibility: Record<TelemetrySeriesFamily, boolean>;
-  onPointerLeave: () => void;
-  onPointerMove: (index: number | null) => void;
-  selectedSeries: TelemetrySeriesDefinition[];
-  timelineSamples: TelemetrySample[];
-  usesShotTimeline: boolean;
-}) {
+}: TelemetryMonitorCanvasProps) {
   const [containerRef, containerSize] = useElementSize<HTMLDivElement>();
   const chartMetrics = getUnifiedChartMetrics(density, containerSize);
 
@@ -648,6 +651,17 @@ function TelemetryMonitorCanvas({
   );
 }
 
+interface ChartYAxisProps {
+  density: ChartDensity;
+  domain: [number, number];
+  plotHeight: number;
+  scale: LinearScale;
+  series: TelemetrySeriesDefinition[];
+  side: ChartAxisSide;
+  tickCount: number;
+  x?: number;
+}
+
 function ChartYAxis({
   density,
   domain,
@@ -657,16 +671,7 @@ function ChartYAxis({
   side,
   tickCount,
   x = 0,
-}: {
-  density: ChartDensity;
-  domain: [number, number];
-  plotHeight: number;
-  scale: LinearScale;
-  series: TelemetrySeriesDefinition[];
-  side: ChartAxisSide;
-  tickCount: number;
-  x?: number;
-}) {
+}: ChartYAxisProps) {
   const ticks = getLaneTicks(domain, tickCount);
   const isLeft = side === "left";
   const fontSize = density === "compact" ? "8.5" : "10";
@@ -723,19 +728,15 @@ function ChartYAxis({
   );
 }
 
-function ChartXAxis({
-  density,
-  maxTimelineValue,
-  width,
-  xScale,
-  y,
-}: {
+interface ChartXAxisProps {
   density: ChartDensity;
   maxTimelineValue: number;
   width: number;
   xScale: LinearScale;
   y: number;
-}) {
+}
+
+function ChartXAxis({ density, maxTimelineValue, width, xScale, y }: ChartXAxisProps) {
   const ticks = getTimelineTicks(maxTimelineValue, density === "compact" ? 4 : 6);
   // Compact tick labels sit on their ticks; the "Time" caption moves into the
   // right margin so it never collides with the last tick, even on narrow charts.
@@ -781,15 +782,13 @@ function ChartXAxis({
   );
 }
 
-function ChartLegend({
-  density,
-  series,
-  width,
-}: {
+interface ChartLegendProps {
   density: ChartDensity;
   series: TelemetrySeriesDefinition[];
   width: number;
-}) {
+}
+
+function ChartLegend({ density, series, width }: ChartLegendProps) {
   const fontSize = density === "compact" ? "7.5" : "9";
   const lineW = density === "compact" ? 10 : 14;
   const lineH = density === "compact" ? 1.5 : 2;
@@ -840,17 +839,14 @@ function ChartLegend({
   );
 }
 
-function PhaseBands({
-  density,
-  plotHeight,
-  segments,
-  xScale,
-}: {
+interface PhaseBandsProps {
   density: ChartDensity;
   plotHeight: number;
   segments: Array<{ label: string; startX: number; endX: number }>;
   xScale: LinearScale;
-}) {
+}
+
+function PhaseBands({ density, plotHeight, segments, xScale }: PhaseBandsProps) {
   const fontSize = density === "compact" ? 8 : 9.5;
   const charW = fontSize * 0.6;
   const labelPad = density === "compact" ? 5 : 7;
@@ -900,6 +896,15 @@ function PhaseBands({
   );
 }
 
+interface CrosshairTooltipProps {
+  density: ChartDensity;
+  hoveredSample: TelemetrySample;
+  hoveredX: number;
+  plotWidth: number;
+  series: TelemetrySeriesDefinition[];
+  usesShotTimeline: boolean;
+}
+
 function CrosshairTooltip({
   density,
   hoveredSample,
@@ -907,14 +912,7 @@ function CrosshairTooltip({
   plotWidth,
   series,
   usesShotTimeline,
-}: {
-  density: ChartDensity;
-  hoveredSample: TelemetrySample;
-  hoveredX: number;
-  plotWidth: number;
-  series: TelemetrySeriesDefinition[];
-  usesShotTimeline: boolean;
-}) {
+}: CrosshairTooltipProps) {
   const rows = series
     .map((definition) => {
       const value = definition.accessor(hoveredSample);
@@ -1003,11 +1001,7 @@ function CrosshairTooltip({
   );
 }
 
-function CompactMonitorBar({
-  activePreset,
-  items,
-  onOpenConfig,
-}: {
+interface CompactMonitorBarProps {
   activePreset: TelemetryChartPreset;
   items: Array<{
     detail: string;
@@ -1015,7 +1009,9 @@ function CompactMonitorBar({
     value: string;
   }>;
   onOpenConfig: () => void;
-}) {
+}
+
+function CompactMonitorBar({ activePreset, items, onOpenConfig }: CompactMonitorBarProps) {
   return (
     <SharedCompactMonitorBar
       activePresetLabel={formatPresetLabel(activePreset)}

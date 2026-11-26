@@ -29,15 +29,17 @@ export type MonitorSeriesGroup<TSeriesId extends string = string> = {
   }>;
 };
 
+interface CompactMonitorBarProps {
+  activePresetLabel: string;
+  items: MonitorStatusItem[];
+  onOpenConfig: () => void;
+}
+
 export function CompactMonitorBar({
   activePresetLabel,
   items,
   onOpenConfig,
-}: {
-  activePresetLabel: string;
-  items: MonitorStatusItem[];
-  onOpenConfig: () => void;
-}) {
+}: CompactMonitorBarProps) {
   return (
     <div className="shrink-0 flex min-w-0 items-stretch gap-1">
       {items.map((item, index) => (
@@ -68,19 +70,21 @@ export function CompactMonitorBar({
   );
 }
 
+interface DesktopMonitorBarProps<TPreset extends string, TActivePreset extends string = TPreset> {
+  activePreset: TActivePreset;
+  items: MonitorStatusItem[];
+  onReset: () => void;
+  onSetPreset: (preset: TPreset) => void;
+  presetOptions: Array<MonitorPresetOption<TPreset>>;
+}
+
 export function DesktopMonitorBar<TPreset extends string, TActivePreset extends string = TPreset>({
   activePreset,
   items,
   onReset,
   onSetPreset,
   presetOptions,
-}: {
-  activePreset: TActivePreset;
-  items: MonitorStatusItem[];
-  onReset: () => void;
-  onSetPreset: (preset: TPreset) => void;
-  presetOptions: Array<MonitorPresetOption<TPreset>>;
-}) {
+}: DesktopMonitorBarProps<TPreset, TActivePreset>) {
   return (
     <div className="flex min-w-0 flex-wrap items-stretch gap-1">
       {items.map((item, index) => (
@@ -119,6 +123,26 @@ export function DesktopMonitorBar<TPreset extends string, TActivePreset extends 
   );
 }
 
+interface MonitorConfigOverlayProps<
+  TPreset extends string,
+  TFamily extends string,
+  TSeriesId extends string,
+  TActivePreset extends string = TPreset,
+> {
+  activePreset: TActivePreset;
+  className?: string;
+  dataTestId?: string;
+  laneOptions: Array<MonitorLaneOption<TFamily>>;
+  onClose: () => void;
+  onReset: () => void;
+  onSetPreset: (preset: TPreset) => void;
+  onToggleLane: (family: TFamily) => void;
+  onToggleSeries: (seriesId: TSeriesId) => void;
+  presetOptions: Array<MonitorPresetOption<TPreset>>;
+  seriesGroups: Array<MonitorSeriesGroup<TSeriesId>>;
+  title?: string;
+}
+
 export function MonitorConfigOverlay<
   TPreset extends string,
   TFamily extends string,
@@ -137,20 +161,7 @@ export function MonitorConfigOverlay<
   presetOptions,
   seriesGroups,
   title = "Chart controls",
-}: {
-  activePreset: TActivePreset;
-  className?: string;
-  dataTestId?: string;
-  laneOptions: Array<MonitorLaneOption<TFamily>>;
-  onClose: () => void;
-  onReset: () => void;
-  onSetPreset: (preset: TPreset) => void;
-  onToggleLane: (family: TFamily) => void;
-  onToggleSeries: (seriesId: TSeriesId) => void;
-  presetOptions: Array<MonitorPresetOption<TPreset>>;
-  seriesGroups: Array<MonitorSeriesGroup<TSeriesId>>;
-  title?: string;
-}) {
+}: MonitorConfigOverlayProps<TPreset, TFamily, TSeriesId, TActivePreset>) {
   return (
     <div
       aria-modal="true"
@@ -199,6 +210,22 @@ export function MonitorConfigOverlay<
   );
 }
 
+interface MonitorConfigPanelProps<
+  TPreset extends string,
+  TFamily extends string,
+  TSeriesId extends string,
+  TActivePreset extends string = TPreset,
+> {
+  activePreset: TActivePreset;
+  laneOptions: Array<MonitorLaneOption<TFamily>>;
+  onReset: () => void;
+  onSetPreset: (preset: TPreset) => void;
+  onToggleLane: (family: TFamily) => void;
+  onToggleSeries: (seriesId: TSeriesId) => void;
+  presetOptions: Array<MonitorPresetOption<TPreset>>;
+  seriesGroups: Array<MonitorSeriesGroup<TSeriesId>>;
+}
+
 export function MonitorConfigPanel<
   TPreset extends string,
   TFamily extends string,
@@ -213,16 +240,7 @@ export function MonitorConfigPanel<
   onToggleSeries,
   presetOptions,
   seriesGroups,
-}: {
-  activePreset: TActivePreset;
-  laneOptions: Array<MonitorLaneOption<TFamily>>;
-  onReset: () => void;
-  onSetPreset: (preset: TPreset) => void;
-  onToggleLane: (family: TFamily) => void;
-  onToggleSeries: (seriesId: TSeriesId) => void;
-  presetOptions: Array<MonitorPresetOption<TPreset>>;
-  seriesGroups: Array<MonitorSeriesGroup<TSeriesId>>;
-}) {
+}: MonitorConfigPanelProps<TPreset, TFamily, TSeriesId, TActivePreset>) {
   return (
     <div className="rounded-[3px] border border-border/50 bg-panel-strong/60 p-3">
       <div className="flex items-center justify-between gap-2">
@@ -315,15 +333,13 @@ export function MonitorConfigPanel<
   );
 }
 
-function PresetButton({
-  active,
-  label,
-  onClick,
-}: {
+interface PresetButtonProps {
   active: boolean;
   label: string;
   onClick: () => void;
-}) {
+}
+
+function PresetButton({ active, label, onClick }: PresetButtonProps) {
   return (
     <button
       className={cn(

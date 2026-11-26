@@ -25,6 +25,15 @@ const laneGap = 6;
 const minLaneHeight = 30;
 const tickLabelCapHeight = 9;
 
+interface WorkflowFrameCanvasProps {
+  activeSample: WorkflowFrameSample | null;
+  hasNumericSeries: boolean;
+  laneVisibility: Record<WorkflowFrameFamily, boolean>;
+  onSelectFrame: (index: number) => void;
+  samples: WorkflowFrameSample[];
+  selectedSeries: WorkflowFrameChartSeriesDefinition[];
+}
+
 export function WorkflowFrameCanvas({
   activeSample,
   hasNumericSeries,
@@ -32,14 +41,7 @@ export function WorkflowFrameCanvas({
   onSelectFrame,
   samples,
   selectedSeries,
-}: {
-  activeSample: WorkflowFrameSample | null;
-  hasNumericSeries: boolean;
-  laneVisibility: Record<WorkflowFrameFamily, boolean>;
-  onSelectFrame: (index: number) => void;
-  samples: WorkflowFrameSample[];
-  selectedSeries: WorkflowFrameChartSeriesDefinition[];
-}) {
+}: WorkflowFrameCanvasProps) {
   const [containerRef, containerSize] = useElementSize<HTMLDivElement>();
   const visibleLanes = buildVisibleLanes(selectedSeries, laneVisibility, containerSize.height);
   const chartMetrics = getChartMetrics("compact", visibleLanes, containerSize);
@@ -140,19 +142,15 @@ export function WorkflowFrameCanvas({
   );
 }
 
-function WorkflowFrameLane({
-  index,
-  lane,
-  samples,
-  width,
-  xScale,
-}: {
+interface WorkflowFrameLaneProps {
   index: number;
   lane: LaneConfig<WorkflowFrameChartSeriesDefinition, WorkflowFrameFamily>;
   samples: WorkflowFrameSample[];
   width: number;
   xScale: LinearScale;
-}) {
+}
+
+function WorkflowFrameLane({ index, lane, samples, width, xScale }: WorkflowFrameLaneProps) {
   const backgroundFill = index % 2 === 0 ? chartTheme.laneSurface : chartTheme.laneSurfaceAlt;
   const domain = getLaneDomain(lane.family, lane.series, samples);
   const laneScale: LinearScale = scaleLinear<number>({
@@ -224,17 +222,14 @@ function WorkflowFrameLane({
   );
 }
 
-function WorkflowFrameXAxis({
-  maxFrameValue,
-  width,
-  xScale,
-  y,
-}: {
+interface WorkflowFrameXAxisProps {
   maxFrameValue: number;
   width: number;
   xScale: LinearScale;
   y: number;
-}) {
+}
+
+function WorkflowFrameXAxis({ maxFrameValue, width, xScale, y }: WorkflowFrameXAxisProps) {
   const ticks = buildFrameTicks(maxFrameValue, 4);
   const tickLabelInset = 20;
 

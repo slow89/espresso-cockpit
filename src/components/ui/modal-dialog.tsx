@@ -7,19 +7,17 @@ function openAsModal(dialog: HTMLDialogElement | null) {
   }
 }
 
+interface ModalDialogProps {
+  children: ReactNode;
+  label: string;
+  onClose: () => void;
+}
+
 /**
  * A native modal dialog, which brings focus handling, inert content behind it, and the top layer.
  * It's anchored near the top of the screen so the tablet's soft keyboard can't cover it.
  */
-export function ModalDialog({
-  children,
-  label,
-  onClose,
-}: {
-  children: ReactNode;
-  label: string;
-  onClose: () => void;
-}) {
+export function ModalDialog({ children, label, onClose }: ModalDialogProps) {
   return (
     <dialog
       aria-label={label}

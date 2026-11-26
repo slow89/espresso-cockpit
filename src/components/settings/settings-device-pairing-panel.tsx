@@ -81,6 +81,20 @@ export function SettingsDevicePairingPanel() {
   );
 }
 
+interface DeviceSummaryPanelProps {
+  connectPendingDeviceId: string | null;
+  disconnectPendingDeviceId: string | null;
+  devices: DeviceSummary[];
+  errorMessage?: string;
+  isFetching: boolean;
+  isMutatingSettings: boolean;
+  onConnectDevice: (deviceId: string) => void;
+  onDisconnectDevice: (device: DeviceSummary) => void;
+  onForgetDevice: (device: DeviceSummary) => void;
+  preferredScaleId: string | null;
+  scanErrorMessage?: string;
+}
+
 function DeviceSummaryPanel({
   connectPendingDeviceId,
   disconnectPendingDeviceId,
@@ -93,19 +107,7 @@ function DeviceSummaryPanel({
   onForgetDevice,
   preferredScaleId,
   scanErrorMessage,
-}: {
-  connectPendingDeviceId: string | null;
-  disconnectPendingDeviceId: string | null;
-  devices: DeviceSummary[];
-  errorMessage?: string;
-  isFetching: boolean;
-  isMutatingSettings: boolean;
-  onConnectDevice: (deviceId: string) => void;
-  onDisconnectDevice: (device: DeviceSummary) => void;
-  onForgetDevice: (device: DeviceSummary) => void;
-  preferredScaleId: string | null;
-  scanErrorMessage?: string;
-}) {
+}: DeviceSummaryPanelProps) {
   const scaleDevices = devices.filter((device) => device.type === "scale");
   const otherDevices = devices.filter((device) => device.type !== "scale");
   const connectedScales = scaleDevices.filter((device) => device.state === "connected");
@@ -179,6 +181,20 @@ function DeviceSummaryPanel({
   );
 }
 
+interface DeviceGroupProps {
+  connectPendingDeviceId: string | null;
+  description: string;
+  devices: DeviceSummary[];
+  disconnectPendingDeviceId: string | null;
+  emptyMessage?: string;
+  isMutatingSettings: boolean;
+  onConnectDevice: (deviceId: string) => void;
+  onDisconnectDevice: (device: DeviceSummary) => void;
+  onForgetDevice: (device: DeviceSummary) => void;
+  preferredScaleId: string | null;
+  title: string;
+}
+
 function DeviceGroup({
   connectPendingDeviceId,
   description,
@@ -191,19 +207,7 @@ function DeviceGroup({
   onForgetDevice,
   preferredScaleId,
   title,
-}: {
-  connectPendingDeviceId: string | null;
-  description: string;
-  devices: DeviceSummary[];
-  disconnectPendingDeviceId: string | null;
-  emptyMessage?: string;
-  isMutatingSettings: boolean;
-  onConnectDevice: (deviceId: string) => void;
-  onDisconnectDevice: (device: DeviceSummary) => void;
-  onForgetDevice: (device: DeviceSummary) => void;
-  preferredScaleId: string | null;
-  title: string;
-}) {
+}: DeviceGroupProps) {
   const connectedDevices = devices.filter((device) => device.state === "connected");
   const disconnectedDevices = devices.filter((device) => device.state !== "connected");
 
@@ -266,6 +270,19 @@ function DeviceGroup({
   );
 }
 
+interface DeviceListProps {
+  actionVariant: "default" | "secondary";
+  connectPendingDeviceId: string | null;
+  devices: DeviceSummary[];
+  disconnectPendingDeviceId: string | null;
+  isMutatingSettings: boolean;
+  onConnectDevice: (deviceId: string) => void;
+  onDisconnectDevice: (device: DeviceSummary) => void;
+  onForgetDevice: (device: DeviceSummary) => void;
+  preferredScaleId: string | null;
+  title: string;
+}
+
 function DeviceList({
   actionVariant,
   connectPendingDeviceId,
@@ -277,18 +294,7 @@ function DeviceList({
   onForgetDevice,
   preferredScaleId,
   title,
-}: {
-  actionVariant: "default" | "secondary";
-  connectPendingDeviceId: string | null;
-  devices: DeviceSummary[];
-  disconnectPendingDeviceId: string | null;
-  isMutatingSettings: boolean;
-  onConnectDevice: (deviceId: string) => void;
-  onDisconnectDevice: (device: DeviceSummary) => void;
-  onForgetDevice: (device: DeviceSummary) => void;
-  preferredScaleId: string | null;
-  title: string;
-}) {
+}: DeviceListProps) {
   return (
     <div className="overflow-hidden rounded-[3px] border border-border/50 bg-panel-strong/60">
       <div className="flex items-center justify-between gap-2 border-b border-border/40 px-2.5 py-1">
@@ -331,6 +337,15 @@ function DeviceList({
   );
 }
 
+interface DeviceRowProps {
+  actionLabel: string;
+  actionVariant: "default" | "secondary";
+  device: DeviceSummary;
+  disabled: boolean;
+  onForget?: () => void;
+  onAction: () => void;
+}
+
 function DeviceRow({
   actionLabel,
   actionVariant,
@@ -338,14 +353,7 @@ function DeviceRow({
   disabled,
   onForget,
   onAction,
-}: {
-  actionLabel: string;
-  actionVariant: "default" | "secondary";
-  device: DeviceSummary;
-  disabled: boolean;
-  onForget?: () => void;
-  onAction: () => void;
-}) {
+}: DeviceRowProps) {
   return (
     <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
       <div className="min-w-0">

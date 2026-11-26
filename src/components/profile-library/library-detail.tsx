@@ -9,14 +9,11 @@ import { LibraryBadge } from "./library-badge";
 import { LibraryUseAction } from "./library-use-action";
 import type { ProfileLibraryView } from "./use-profile-library";
 
-export function LibraryDetail({
-  library,
-  link,
-  loaded,
-  record,
-}: Pick<ProfileLibraryView, "library" | "link" | "loaded"> & {
+interface LibraryDetailProps extends Pick<ProfileLibraryView, "library" | "link" | "loaded"> {
   record: ProfileRecord;
-}) {
+}
+
+export function LibraryDetail({ library, link, loaded, record }: LibraryDetailProps) {
   // Temporary interaction state: the Step the chart highlights. The parent keys this by record.
   const [selectedStepIndex, setSelectedStepIndex] = useState(0);
   const description = describeRecord(library, record);

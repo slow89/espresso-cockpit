@@ -2,13 +2,12 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-export function LibraryBadge({
-  children,
-  tone,
-}: {
+interface LibraryBadgeProps {
   children: ReactNode;
   tone: "muted" | "success" | "warning";
-}) {
+}
+
+export function LibraryBadge({ children, tone }: LibraryBadgeProps) {
   return (
     <span
       className={cn(

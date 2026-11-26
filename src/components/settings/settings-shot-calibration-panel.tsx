@@ -212,6 +212,24 @@ export function SettingsShotCalibrationPanel() {
   );
 }
 
+interface StopConditionRowProps {
+  ariaLabel: string;
+  badge: string;
+  description: string;
+  disabled: boolean;
+  label: string;
+  max: number;
+  maxLabel: string;
+  min: number;
+  minLabel: string;
+  onChange: (value: number) => void;
+  onCommit: () => void;
+  role: "primary" | "fallback";
+  step: number;
+  value: number;
+  valueLabel: string;
+}
+
 function StopConditionRow({
   ariaLabel,
   badge,
@@ -228,23 +246,7 @@ function StopConditionRow({
   step,
   value,
   valueLabel,
-}: {
-  ariaLabel: string;
-  badge: string;
-  description: string;
-  disabled: boolean;
-  label: string;
-  max: number;
-  maxLabel: string;
-  min: number;
-  minLabel: string;
-  onChange: (value: number) => void;
-  onCommit: () => void;
-  role: "primary" | "fallback";
-  step: number;
-  value: number;
-  valueLabel: string;
-}) {
+}: StopConditionRowProps) {
   return (
     <div className="px-2.5 py-2">
       <div className="flex items-center gap-2">
@@ -287,6 +289,19 @@ function StopConditionRow({
   );
 }
 
+interface FlowSliderProps {
+  ariaLabel: string;
+  disabled: boolean;
+  max: number;
+  maxLabel: string;
+  min: number;
+  minLabel: string;
+  onChange: (value: number) => void;
+  onCommit: () => void;
+  step: number;
+  value: number;
+}
+
 function FlowSlider({
   ariaLabel,
   disabled,
@@ -298,18 +313,7 @@ function FlowSlider({
   onCommit,
   step,
   value,
-}: {
-  ariaLabel: string;
-  disabled: boolean;
-  max: number;
-  maxLabel: string;
-  min: number;
-  minLabel: string;
-  onChange: (value: number) => void;
-  onCommit: () => void;
-  step: number;
-  value: number;
-}) {
+}: FlowSliderProps) {
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const nextValue = Number(event.target.value);
 

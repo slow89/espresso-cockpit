@@ -12,13 +12,11 @@ import type { ProfileLibraryView } from "./use-profile-library";
 const actionButtonClassName =
   "h-10 shrink-0 rounded-[3px] px-4 font-mono text-[0.74rem] uppercase tracking-[0.1em]";
 
-export function LibraryUseAction({
-  link,
-  loaded,
-  record,
-}: Pick<ProfileLibraryView, "link" | "loaded"> & {
+interface LibraryUseActionProps extends Pick<ProfileLibraryView, "link" | "loaded"> {
   record: ProfileRecord;
-}) {
+}
+
+export function LibraryUseAction({ link, loaded, record }: LibraryUseActionProps) {
   const { data: snapshot, isError: isMachineStateError } = useMachineStateQuery();
   const devices = useDevicesStore((state) => (state.connection === "live" ? state.devices : null));
   const updateWorkflowMutation = useUpdateWorkflowMutation();

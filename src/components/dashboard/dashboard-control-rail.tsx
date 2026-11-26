@@ -36,6 +36,10 @@ export function DashboardControlRail() {
   );
 }
 
+interface DoseDrinkControlRowProps extends DashboardRecipeControls {
+  disabled: boolean;
+}
+
 function DoseDrinkControlRow({
   disabled,
   doseActivePresetValue,
@@ -51,7 +55,7 @@ function DoseDrinkControlRow({
   onIncreaseDrink,
   onSelectDosePreset,
   onSelectDrinkPreset,
-}: DashboardRecipeControls & { disabled: boolean }) {
+}: DoseDrinkControlRowProps) {
   return (
     <div className="border-b border-border/70 px-3 py-2.5 md:max-xl:px-3 md:max-xl:py-2">
       <div className="flex items-center gap-2">
@@ -123,6 +127,10 @@ function DoseDrinkControlRow({
   );
 }
 
+interface ControlRailRowProps extends DashboardControlRow {
+  disabled: boolean;
+}
+
 function ControlRailRow({
   activePresetValue,
   detail,
@@ -134,7 +142,7 @@ function ControlRailRow({
   presets,
   tint,
   value,
-}: DashboardControlRow & { disabled: boolean }) {
+}: ControlRailRowProps) {
   return (
     <div className="border-b border-border/70 px-3 py-2.5 last:border-b-0 md:max-xl:px-3 md:max-xl:py-2">
       <div className="grid grid-cols-[48px_minmax(0,1fr)] items-start gap-2 md:max-xl:grid-cols-[56px_minmax(0,1fr)] md:max-xl:gap-2">
@@ -170,6 +178,15 @@ function ControlRailRow({
   );
 }
 
+interface RailValueControlProps {
+  detail?: string;
+  disabled: boolean;
+  label: string;
+  onDecrease: () => void;
+  onIncrease: () => void;
+  value: string;
+}
+
 function RailValueControl({
   detail,
   disabled,
@@ -177,14 +194,7 @@ function RailValueControl({
   onDecrease,
   onIncrease,
   value,
-}: {
-  detail?: string;
-  disabled: boolean;
-  label: string;
-  onDecrease: () => void;
-  onIncrease: () => void;
-  value: string;
-}) {
+}: RailValueControlProps) {
   return (
     <div className="grid grid-cols-[40px_minmax(0,1fr)_40px] items-center gap-1.5 md:max-xl:grid-cols-[44px_minmax(0,1fr)_44px] md:max-xl:gap-1.5">
       <RecipeControlButton

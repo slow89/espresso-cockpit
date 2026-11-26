@@ -199,6 +199,17 @@ export function WorkflowShotSetupPanel() {
   );
 }
 
+interface WorkflowAdjustSectionProps {
+  activePresetValue: number;
+  disabled: boolean;
+  label: string;
+  onDecrease: () => void;
+  onIncrease: () => void;
+  onPresetClick: (value: number) => void;
+  presets: ReadonlyArray<RecipePreset>;
+  value: string;
+}
+
 function WorkflowAdjustSection({
   activePresetValue,
   disabled,
@@ -208,16 +219,7 @@ function WorkflowAdjustSection({
   onPresetClick,
   presets,
   value,
-}: {
-  activePresetValue: number;
-  disabled: boolean;
-  label: string;
-  onDecrease: () => void;
-  onIncrease: () => void;
-  onPresetClick: (value: number) => void;
-  presets: ReadonlyArray<RecipePreset>;
-  value: string;
-}) {
+}: WorkflowAdjustSectionProps) {
   return (
     <div>
       <p className="font-mono text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground md:text-[0.74rem]">
@@ -248,7 +250,12 @@ function WorkflowAdjustSection({
   );
 }
 
-function Field({ children, label }: { children: ReactNode; label: string }) {
+interface FieldProps {
+  children: ReactNode;
+  label: string;
+}
+
+function Field({ children, label }: FieldProps) {
   return (
     <label className="grid gap-0.5">
       <span className="font-mono text-[0.69rem] font-medium uppercase tracking-[0.1em] text-muted-foreground/70">

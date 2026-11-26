@@ -45,7 +45,11 @@ export function DashboardTabletPostShotSummary() {
   );
 }
 
-function PostShotFacts({ model }: { model: PostShotSummaryModel }) {
+interface PostShotFactsProps {
+  model: PostShotSummaryModel;
+}
+
+function PostShotFacts({ model }: PostShotFactsProps) {
   return (
     <div className="border-b border-border/60 px-3 py-2.5 md:px-4">
       <p className="sr-only">Shot complete</p>
@@ -107,21 +111,16 @@ function PostShotFacts({ model }: { model: PostShotSummaryModel }) {
   );
 }
 
-function MetricBlock({
-  deltaLabel,
-  deltaTone,
-  detail,
-  label,
-  tone,
-  value,
-}: {
+interface MetricBlockProps {
   deltaLabel?: string;
   deltaTone?: "on-target" | "over" | "under";
   detail?: string | null;
   label: string;
   tone?: "hero";
   value: string;
-}) {
+}
+
+function MetricBlock({ deltaLabel, deltaTone, detail, label, tone, value }: MetricBlockProps) {
   return (
     <div className="flex min-w-0 flex-col font-mono">
       <div className="flex flex-wrap items-baseline gap-x-1.5">

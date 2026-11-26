@@ -23,17 +23,19 @@ import {
 } from "@/stores/workflow-frame-chart-store";
 import { WorkflowFrameCanvas } from "./workflow-frame-chart-canvas";
 
+interface WorkflowFrameChartProps {
+  className?: string;
+  onSelectFrame: (index: number) => void;
+  preview: FramePreviewData;
+  selectedFrameIndex: number;
+}
+
 export function WorkflowFrameChart({
   className,
   onSelectFrame,
   preview,
   selectedFrameIndex,
-}: {
-  className?: string;
-  onSelectFrame: (index: number) => void;
-  preview: FramePreviewData;
-  selectedFrameIndex: number;
-}) {
+}: WorkflowFrameChartProps) {
   const rawActivePreset = useWorkflowFrameChartStore((state) => state.activePreset);
   const laneVisibility = useWorkflowFrameChartStore((state) => state.laneVisibility);
   const rawSelectedSeriesIds = useWorkflowFrameChartStore((state) => state.selectedSeriesIds);

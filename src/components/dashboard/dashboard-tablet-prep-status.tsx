@@ -1,7 +1,11 @@
 import type { DashboardPrepStatus } from "@/lib/dashboard-utils";
 import { cn } from "@/lib/utils";
 
-export function DashboardTabletPrepStatus({ status }: { status: DashboardPrepStatus }) {
+interface DashboardTabletPrepStatusProps {
+  status: DashboardPrepStatus;
+}
+
+export function DashboardTabletPrepStatus({ status }: DashboardTabletPrepStatusProps) {
   const isWarming = status.tone === "warming";
 
   return (

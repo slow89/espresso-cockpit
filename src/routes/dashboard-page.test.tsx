@@ -43,16 +43,14 @@ const queryMocks = vi.hoisted(() => ({
   useWorkflowQuery: vi.fn(),
 }));
 
+interface MockLinkProps {
+  children: React.ReactNode;
+  search?: { shotId?: string };
+  to?: string;
+}
+
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({
-    children,
-    search,
-    to,
-  }: {
-    children: React.ReactNode;
-    search?: { shotId?: string };
-    to?: string;
-  }) => (
+  Link: ({ children, search, to }: MockLinkProps) => (
     <a href={`${to ?? "/workflows"}${search?.shotId ? `?shotId=${search.shotId}` : ""}`}>
       {children}
     </a>
@@ -74,8 +72,12 @@ vi.mock("@/rest/queries", async () => {
   };
 });
 
+interface MockTelemetryChartProps {
+  data: Array<unknown>;
+}
+
 vi.mock("@/components/telemetry-chart", () => ({
-  TelemetryChart: ({ data }: { data: Array<unknown> }) => (
+  TelemetryChart: ({ data }: MockTelemetryChartProps) => (
     <div data-testid="telemetry-chart">{`samples:${data.length}`}</div>
   ),
 }));

@@ -20,18 +20,20 @@ import type {
   TelemetryLayoutMode,
 } from "@/components/telemetry-chart/shared";
 
-export function TelemetryChart({
-  className,
-  data,
-  frozen = false,
-  layout = "auto",
-}: {
+interface TelemetryChartProps {
   className?: string;
   data: TelemetrySample[];
   /** The data is a finished recording, so skip the live-shot pulse and glow. */
   frozen?: boolean;
   layout?: TelemetryLayoutMode;
-}) {
+}
+
+export function TelemetryChart({
+  className,
+  data,
+  frozen = false,
+  layout = "auto",
+}: TelemetryChartProps) {
   const activePreset = useTelemetryChartStore((state) => state.activePreset);
   const laneVisibility = useTelemetryChartStore((state) => state.laneVisibility);
   const resetToDefaultPreset = useTelemetryChartStore((state) => state.resetToDefaultPreset);

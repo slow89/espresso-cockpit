@@ -31,7 +31,11 @@ export function WorkflowsPage() {
   );
 }
 
-function ProfileLibraryPanel({ view }: { view: ProfileLibraryView }) {
+interface ProfileLibraryPanelProps {
+  view: ProfileLibraryView;
+}
+
+function ProfileLibraryPanel({ view }: ProfileLibraryPanelProps) {
   const { library, link, loaded } = view;
   const selectedRecordId = useProfileLibraryUiStore((state) => state.selectedRecordId);
   const selected = resolveSelectedRecord(library, selectedRecordId, link);

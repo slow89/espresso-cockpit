@@ -24,15 +24,14 @@ function scrollRowIntoView(row: HTMLElement | null) {
   row?.scrollIntoView({ block: "nearest" });
 }
 
-export function LibraryList({
-  error,
-  isPending,
-  library,
-  link,
-  selectedId,
-}: Pick<ProfileLibraryView, "error" | "isPending" | "library" | "link"> & {
+interface LibraryListProps extends Pick<
+  ProfileLibraryView,
+  "error" | "isPending" | "library" | "link"
+> {
   selectedId: string | null;
-}) {
+}
+
+export function LibraryList({ error, isPending, library, link, selectedId }: LibraryListProps) {
   const chip = useProfileLibraryUiStore((state) => state.chip);
   const setChip = useProfileLibraryUiStore((state) => state.setChip);
   // Temporary interaction state: the dialog opens from here and doesn't outlive the tab.
@@ -105,15 +104,13 @@ function LibraryListEmpty({ error, isPending }: Pick<ProfileLibraryView, "error"
   return <WorkflowEmptyState body="Nothing matches this filter." title="No profiles" />;
 }
 
-function LibraryListRow({
-  isLoaded,
-  isSelected,
-  row: { depth, record },
-}: {
+interface LibraryListRowProps {
   isLoaded: boolean;
   isSelected: boolean;
   row: LibraryRow;
-}) {
+}
+
+function LibraryListRow({ isLoaded, isSelected, row: { depth, record } }: LibraryListRowProps) {
   const selectRecord = useProfileLibraryUiStore((state) => state.selectRecord);
 
   return (

@@ -4,19 +4,28 @@
   "labels": ["dependencies"],
   "schedule": ["before 6am on monday"],
   "minimumReleaseAge": "3 days",
-  "internalChecksFilter": "strict",
-  "rangeStrategy": "bump",
   "constraints": {
     "pnpm": "10"
   },
   "lockFileMaintenance": {
-    "enabled": true
+    "enabled": true,
+    "minimumReleaseAge": null
   },
-  "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
-      "description": "One weekly PR for minor and patch updates. 0.x packages stay separate because their minors can break.",
-      "matchUpdateTypes": ["minor", "patch"],
+      "description": "Bump package.json ranges like the manual updates did. Workflow versions keep their own style.",
+      "matchManagers": ["npm"],
+      "rangeStrategy": "bump"
+    },
+    {
+      "description": "One weekly PR for patch updates and non-0.x minor updates.",
+      "matchUpdateTypes": ["patch"],
+      "groupName": "non-major dependencies",
+      "groupSlug": "non-major"
+    },
+    {
+      "description": "0.x minors can break, so they get their own PRs.",
+      "matchUpdateTypes": ["minor"],
       "matchCurrentVersion": "!/^0/",
       "groupName": "non-major dependencies",
       "groupSlug": "non-major"
@@ -27,7 +36,7 @@
       "allowedVersions": "<4"
     },
     {
-      "description": "Keep Node types on the current major until CI moves past Node 22.",
+      "description": "Hold @types/node majors; bump them deliberately alongside a Node upgrade.",
       "matchPackageNames": ["@types/node"],
       "matchUpdateTypes": ["major"],
       "enabled": false

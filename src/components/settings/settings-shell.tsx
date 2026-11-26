@@ -3,17 +3,14 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function SettingsSection({
-  children,
-  className,
-  description,
-  title,
-}: {
+interface SettingsSectionProps {
   children: ReactNode;
   className?: string;
   description: string;
   title: string;
-}) {
+}
+
+export function SettingsSection({ children, className, description, title }: SettingsSectionProps) {
   return (
     <section className={cn("px-2.5 py-2.5 md:px-3 md:py-3", className)}>
       <div className="flex items-center justify-between gap-3">
@@ -29,17 +26,14 @@ export function SettingsSection({
   );
 }
 
-export function ControlBlock({
-  children,
-  description,
-  label,
-  value,
-}: {
+interface ControlBlockProps {
   children: ReactNode;
   description: string;
   label: string;
   value: string;
-}) {
+}
+
+export function ControlBlock({ children, description, label, value }: ControlBlockProps) {
   return (
     <section className="rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-2">
       <div className="flex items-center justify-between gap-2">
@@ -61,7 +55,12 @@ export function ControlBlock({
   );
 }
 
-export function MetricTile({ label, value }: { label: string; value: string }) {
+interface MetricTileProps {
+  label: string;
+  value: string;
+}
+
+export function MetricTile({ label, value }: MetricTileProps) {
   return (
     <div className="rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1.5">
       <div className="flex items-center justify-between gap-2">
@@ -76,7 +75,12 @@ export function MetricTile({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function EndpointRow({ label, value }: { label: string; value: string }) {
+interface EndpointRowProps {
+  label: string;
+  value: string;
+}
+
+export function EndpointRow({ label, value }: EndpointRowProps) {
   return (
     <div className="rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1.5">
       <p className="font-mono text-[0.66rem] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
@@ -89,13 +93,12 @@ export function EndpointRow({ label, value }: { label: string; value: string }) 
   );
 }
 
-export function StateCallout({
-  children,
-  tone,
-}: {
+interface StateCalloutProps {
   children: ReactNode;
   tone: "error" | "neutral";
-}) {
+}
+
+export function StateCallout({ children, tone }: StateCalloutProps) {
   return (
     <div
       className={cn(
@@ -110,15 +113,13 @@ export function StateCallout({
   );
 }
 
-export function ThemeOptionButton({
-  isActive,
-  label,
-  onClick,
-}: {
+interface ThemeOptionButtonProps {
   isActive: boolean;
   label: string;
   onClick: () => void;
-}) {
+}
+
+export function ThemeOptionButton({ isActive, label, onClick }: ThemeOptionButtonProps) {
   return (
     <Button
       aria-pressed={isActive}
@@ -132,17 +133,19 @@ export function ThemeOptionButton({
   );
 }
 
+interface SleepTimeoutOptionButtonProps {
+  disabled?: boolean;
+  isActive: boolean;
+  label: string;
+  onClick: () => void;
+}
+
 export function SleepTimeoutOptionButton({
   disabled,
   isActive,
   label,
   onClick,
-}: {
-  disabled?: boolean;
-  isActive: boolean;
-  label: string;
-  onClick: () => void;
-}) {
+}: SleepTimeoutOptionButtonProps) {
   return (
     <Button
       aria-pressed={isActive}

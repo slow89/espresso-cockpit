@@ -1,16 +1,18 @@
 import { cn } from "@/lib/utils";
 
+interface DashboardSleepScreenProps {
+  disabled: boolean;
+  hasError: boolean;
+  isPending: boolean;
+  onWake: () => void;
+}
+
 export function DashboardSleepScreen({
   disabled,
   hasError,
   isPending,
   onWake,
-}: {
-  disabled: boolean;
-  hasError: boolean;
-  isPending: boolean;
-  onWake: () => void;
-}) {
+}: DashboardSleepScreenProps) {
   return (
     <button
       aria-label={isPending ? "Turning on machine" : "Turn on machine"}

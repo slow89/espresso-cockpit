@@ -40,13 +40,12 @@ export function FramePreviewOverlay() {
   );
 }
 
-function FramePreviewOverlayDialog({
-  onClose,
-  profile,
-}: {
+interface FramePreviewOverlayDialogProps {
   onClose: () => void;
   profile: NonNullable<ReturnType<typeof useWorkflowPageStore.getState>["framePreviewProfile"]>;
-}) {
+}
+
+function FramePreviewOverlayDialog({ onClose, profile }: FramePreviewOverlayDialogProps) {
   const preview = buildFramePreviewData(profile);
   const [selectedFrameIndex, setSelectedFrameIndex] = useState(0);
   const rawActivePreset = useWorkflowFrameChartStore((state) => state.activePreset);
@@ -231,15 +230,13 @@ function FramePreviewOverlayDialog({
   );
 }
 
-function FrameNavigator({
-  frameCount,
-  onSelectFrame,
-  selectedFrameIndex,
-}: {
+interface FrameNavigatorProps {
   frameCount: number;
   onSelectFrame: (index: number) => void;
   selectedFrameIndex: number;
-}) {
+}
+
+function FrameNavigator({ frameCount, onSelectFrame, selectedFrameIndex }: FrameNavigatorProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

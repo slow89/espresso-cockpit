@@ -85,12 +85,16 @@ function useShotAnalysisRequest(summary: DashboardPostShotSummary) {
   return { analyze, reset, state };
 }
 
+interface DashboardPostShotAnalysisProps {
+  summary: DashboardPostShotSummary;
+}
+
 /**
  * Shot Analysis + Taste Compass console inside the expanded Post-Shot Summary.
  * Everything here is ephemeral — taste taps and the analysis are discarded
  * with the summary (the parent keys this component by the summary's localId).
  */
-export function DashboardPostShotAnalysis({ summary }: { summary: DashboardPostShotSummary }) {
+export function DashboardPostShotAnalysis({ summary }: DashboardPostShotAnalysisProps) {
   const [compass, setCompass] = useState<TasteCompassState>({});
   const { analyze, reset, state } = useShotAnalysisRequest(summary);
 
@@ -150,7 +154,12 @@ export function DashboardPostShotAnalysis({ summary }: { summary: DashboardPostS
   );
 }
 
-function AnalysisConsole({ onRetry, state }: { onRetry: () => void; state: AnalysisUiState }) {
+interface AnalysisConsoleProps {
+  onRetry: () => void;
+  state: AnalysisUiState;
+}
+
+function AnalysisConsole({ onRetry, state }: AnalysisConsoleProps) {
   if (state.phase === "setup") {
     return <SetupPanel />;
   }

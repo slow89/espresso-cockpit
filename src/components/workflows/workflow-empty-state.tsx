@@ -1,4 +1,9 @@
-export function WorkflowEmptyState({ body, title }: { body: string; title: string }) {
+interface WorkflowEmptyStateProps {
+  body: string;
+  title: string;
+}
+
+export function WorkflowEmptyState({ body, title }: WorkflowEmptyStateProps) {
   return (
     <div className="border border-dashed border-border/40 px-3 py-2.5">
       <p className="font-mono text-[0.74rem] uppercase tracking-[0.1em] text-highlight-muted">

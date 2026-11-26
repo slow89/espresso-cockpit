@@ -26,19 +26,21 @@ import {
 } from "@/stores/workflow-frame-chart-store";
 import { WorkflowFrameCanvas } from "./workflow-frame-chart-canvas";
 
+interface WorkflowFrameChartProps {
+  className?: string;
+  layout?: "auto" | "tablet" | "desktop";
+  onSelectFrame: (index: number) => void;
+  preview: FramePreviewData;
+  selectedFrameIndex: number;
+}
+
 export function WorkflowFrameChart({
   className,
   layout = "auto",
   onSelectFrame,
   preview,
   selectedFrameIndex,
-}: {
-  className?: string;
-  layout?: "auto" | "tablet" | "desktop";
-  onSelectFrame: (index: number) => void;
-  preview: FramePreviewData;
-  selectedFrameIndex: number;
-}) {
+}: WorkflowFrameChartProps) {
   const rawActivePreset = useWorkflowFrameChartStore((state) => state.activePreset);
   const laneVisibility = useWorkflowFrameChartStore((state) => state.laneVisibility);
   const rawSelectedSeriesIds = useWorkflowFrameChartStore((state) => state.selectedSeriesIds);
@@ -221,15 +223,17 @@ function formatWorkflowPresetLabel(preset: WorkflowFrameChartPreset) {
   return "Custom";
 }
 
+interface WorkflowFrameMetricGridProps {
+  preview: FramePreviewData;
+  selectedFrameIndex: number;
+  selectedSeriesIds: string[];
+}
+
 export function WorkflowFrameMetricGrid({
   preview,
   selectedFrameIndex,
   selectedSeriesIds,
-}: {
-  preview: FramePreviewData;
-  selectedFrameIndex: number;
-  selectedSeriesIds: string[];
-}) {
+}: WorkflowFrameMetricGridProps) {
   const selectedSample = preview.samples[selectedFrameIndex] ?? null;
   const series = selectedSeriesIds
     .map((seriesId) => preview.series.find((entry) => entry.id === seriesId))

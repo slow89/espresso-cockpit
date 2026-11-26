@@ -1,10 +1,12 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc"],
+  "jsPlugins": ["./lint/local-plugin.mjs"],
   "categories": {
     "correctness": "error"
   },
   "rules": {
+    "local/props-interface": "error",
     "unicorn/no-invalid-fetch-options": "off"
   },
   "ignorePatterns": [".claude/**", "dist/**", "node_modules/**", "output/**"],

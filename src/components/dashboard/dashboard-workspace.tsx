@@ -61,7 +61,11 @@ function DashboardTabletShotWorkspace() {
   );
 }
 
-function DashboardWorkspaceTelemetryChart({ layout }: { layout: "desktop" | "tablet" }) {
+interface DashboardWorkspaceTelemetryChartProps {
+  layout: "desktop" | "tablet";
+}
+
+function DashboardWorkspaceTelemetryChart({ layout }: DashboardWorkspaceTelemetryChartProps) {
   const telemetry = useMachineStore((state) => state.telemetry);
 
   return (

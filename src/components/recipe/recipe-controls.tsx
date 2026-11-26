@@ -5,19 +5,21 @@ import { Minus, Plus } from "lucide-react";
 import { isPresetActive, type RecipePreset } from "@/lib/recipe-utils";
 import { cn } from "@/lib/utils";
 
+interface RecipeControlButtonProps {
+  ariaLabel: string;
+  children: ReactNode;
+  className?: string;
+  disabled?: boolean;
+  onClick?: () => void;
+}
+
 export function RecipeControlButton({
   ariaLabel,
   children,
   className,
   disabled,
   onClick,
-}: {
-  ariaLabel: string;
-  children: ReactNode;
-  className?: string;
-  disabled?: boolean;
-  onClick?: () => void;
-}) {
+}: RecipeControlButtonProps) {
   return (
     <button
       aria-label={ariaLabel}
@@ -34,6 +36,18 @@ export function RecipeControlButton({
   );
 }
 
+interface RecipeValueControlProps {
+  className?: string;
+  disabled: boolean;
+  iconClassName?: string;
+  label: string;
+  onDecrease: () => void;
+  onIncrease: () => void;
+  value: string;
+  valueClassName?: string;
+  buttonClassName?: string;
+}
+
 export function RecipeValueControl({
   className,
   disabled,
@@ -44,17 +58,7 @@ export function RecipeValueControl({
   value,
   valueClassName,
   buttonClassName,
-}: {
-  className?: string;
-  disabled: boolean;
-  iconClassName?: string;
-  label: string;
-  onDecrease: () => void;
-  onIncrease: () => void;
-  value: string;
-  valueClassName?: string;
-  buttonClassName?: string;
-}) {
+}: RecipeValueControlProps) {
   return (
     <div
       className={cn(
@@ -94,6 +98,16 @@ export function RecipeValueControl({
   );
 }
 
+interface RecipePresetRowProps {
+  activePresetValue: number;
+  align?: "center" | "left";
+  className?: string;
+  disabled: boolean;
+  itemClassName?: string;
+  onPresetClick: (value: number) => void;
+  presets: ReadonlyArray<RecipePreset>;
+}
+
 export function RecipePresetRow({
   activePresetValue,
   align = "center",
@@ -102,15 +116,7 @@ export function RecipePresetRow({
   itemClassName,
   onPresetClick,
   presets,
-}: {
-  activePresetValue: number;
-  align?: "center" | "left";
-  className?: string;
-  disabled: boolean;
-  itemClassName?: string;
-  onPresetClick: (value: number) => void;
-  presets: ReadonlyArray<RecipePreset>;
-}) {
+}: RecipePresetRowProps) {
   return (
     <div
       className={cn(

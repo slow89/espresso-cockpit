@@ -2,19 +2,21 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
+interface WorkflowPanelProps {
+  children: ReactNode;
+  className?: string;
+  contentClassName?: string;
+  description?: string;
+  title: string;
+}
+
 export function WorkflowPanel({
   children,
   className,
   contentClassName,
   description,
   title,
-}: {
-  children: ReactNode;
-  className?: string;
-  contentClassName?: string;
-  description?: string;
-  title: string;
-}) {
+}: WorkflowPanelProps) {
   return (
     <section className={cn("border border-border/40 bg-panel/60", className)}>
       <div className="border-b border-border/30 px-3 py-1.5">

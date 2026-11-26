@@ -195,7 +195,12 @@ function CurrentProfileRow() {
   );
 }
 
-function ProfileCard({ isApplying, record }: { isApplying: boolean; record: ProfileRecord }) {
+interface ProfileCardProps {
+  isApplying: boolean;
+  record: ProfileRecord;
+}
+
+function ProfileCard({ isApplying, record }: ProfileCardProps) {
   const updateWorkflowMutation = useUpdateWorkflowMutation();
   const openFramePreview = useWorkflowPageStore((state) => state.openFramePreview);
   const profile = record.profile;
@@ -268,15 +273,13 @@ function ProfileCard({ isApplying, record }: { isApplying: boolean; record: Prof
   );
 }
 
-function FrameCountButton({
-  count,
-  disabled,
-  onClick,
-}: {
+interface FrameCountButtonProps {
   count: number;
   disabled?: boolean;
   onClick: () => void;
-}) {
+}
+
+function FrameCountButton({ count, disabled, onClick }: FrameCountButtonProps) {
   return (
     <button
       className={cn(

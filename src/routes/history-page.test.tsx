@@ -13,8 +13,12 @@ vi.mock("@/rest/queries", () => ({
   useShotsQuery: queryMocks.useShotsQuery,
 }));
 
+interface MockTelemetryChartProps {
+  data: Array<unknown>;
+}
+
 vi.mock("@/components/telemetry-chart", () => ({
-  TelemetryChart: ({ data }: { data: Array<unknown> }) => (
+  TelemetryChart: ({ data }: MockTelemetryChartProps) => (
     <div data-testid="telemetry-chart">{`samples:${data.length}`}</div>
   ),
 }));

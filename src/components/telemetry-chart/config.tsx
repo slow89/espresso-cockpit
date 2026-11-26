@@ -15,6 +15,17 @@ import {
 
 import type { SelectableTelemetryChartPreset, TelemetryChartPreset } from "./shared";
 
+interface TelemetryConfigOverlayProps {
+  activePreset: TelemetryChartPreset;
+  laneVisibility: Record<TelemetrySeriesFamily, boolean>;
+  onClose: () => void;
+  onReset: () => void;
+  onSetPreset: (preset: SelectableTelemetryChartPreset) => void;
+  onToggleLane: (family: TelemetrySeriesFamily) => void;
+  onToggleSeries: (seriesId: TelemetrySeriesId) => void;
+  selectedSeriesIds: TelemetrySeriesId[];
+}
+
 export function TelemetryConfigOverlay({
   activePreset,
   laneVisibility,
@@ -24,16 +35,7 @@ export function TelemetryConfigOverlay({
   onToggleLane,
   onToggleSeries,
   selectedSeriesIds,
-}: {
-  activePreset: TelemetryChartPreset;
-  laneVisibility: Record<TelemetrySeriesFamily, boolean>;
-  onClose: () => void;
-  onReset: () => void;
-  onSetPreset: (preset: SelectableTelemetryChartPreset) => void;
-  onToggleLane: (family: TelemetrySeriesFamily) => void;
-  onToggleSeries: (seriesId: TelemetrySeriesId) => void;
-  selectedSeriesIds: TelemetrySeriesId[];
-}) {
+}: TelemetryConfigOverlayProps) {
   const laneOptions: MonitorLaneOption<TelemetrySeriesFamily>[] = telemetryFamilyOrder.map(
     (family) => ({
       enabled: laneVisibility[family],
@@ -75,6 +77,16 @@ export function TelemetryConfigOverlay({
   );
 }
 
+interface TelemetryConfigPanelProps {
+  activePreset: TelemetryChartPreset;
+  laneVisibility: Record<TelemetrySeriesFamily, boolean>;
+  onReset: () => void;
+  onSetPreset: (preset: SelectableTelemetryChartPreset) => void;
+  onToggleLane: (family: TelemetrySeriesFamily) => void;
+  onToggleSeries: (seriesId: TelemetrySeriesId) => void;
+  selectedSeriesIds: TelemetrySeriesId[];
+}
+
 export function TelemetryConfigPanel({
   activePreset,
   laneVisibility,
@@ -83,15 +95,7 @@ export function TelemetryConfigPanel({
   onToggleLane,
   onToggleSeries,
   selectedSeriesIds,
-}: {
-  activePreset: TelemetryChartPreset;
-  laneVisibility: Record<TelemetrySeriesFamily, boolean>;
-  onReset: () => void;
-  onSetPreset: (preset: SelectableTelemetryChartPreset) => void;
-  onToggleLane: (family: TelemetrySeriesFamily) => void;
-  onToggleSeries: (seriesId: TelemetrySeriesId) => void;
-  selectedSeriesIds: TelemetrySeriesId[];
-}) {
+}: TelemetryConfigPanelProps) {
   const laneOptions: MonitorLaneOption<TelemetrySeriesFamily>[] = telemetryFamilyOrder.map(
     (family) => ({
       enabled: laneVisibility[family],

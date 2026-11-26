@@ -49,13 +49,12 @@ export function HistoryRoutePage() {
   );
 }
 
-export function HistoryPage({
-  onSelectShotId,
-  selectedShotId = null,
-}: {
+interface HistoryPageProps {
   onSelectShotId?: (shotId: string | null) => void;
   selectedShotId?: string | null;
-}) {
+}
+
+export function HistoryPage({ onSelectShotId, selectedShotId = null }: HistoryPageProps) {
   const shotsQuery = useShotsQuery();
   const shotList = shotsQuery.data ?? emptyShotList;
   const requestedSelectedShot =
@@ -200,19 +199,21 @@ export function HistoryPage({
 
 /* ─── Top bar ─── */
 
+interface HistoryTopBarProps {
+  isRefreshing: boolean;
+  onRefresh: () => void;
+  selectedShot: ShotDetailRecord | undefined;
+  summaryShot: ShotRecord | null;
+  total: number;
+}
+
 function HistoryTopBar({
   isRefreshing,
   onRefresh,
   selectedShot,
   summaryShot,
   total,
-}: {
-  isRefreshing: boolean;
-  onRefresh: () => void;
-  selectedShot: ShotDetailRecord | undefined;
-  summaryShot: ShotRecord | null;
-  total: number;
-}) {
+}: HistoryTopBarProps) {
   const finalWeight = selectedShot ? getShotFinalWeight(selectedShot.measurements) : null;
   const durationSeconds = selectedShot ? getShotDurationSeconds(selectedShot.measurements) : null;
   const actualRatio = selectedShot ? getShotActualRatio(selectedShot) : null;
@@ -278,7 +279,12 @@ function HistoryTopBar({
   );
 }
 
-function HistoryTopBarMetric({ label, value }: { label: string; value: string }) {
+interface HistoryTopBarMetricProps {
+  label: string;
+  value: string;
+}
+
+function HistoryTopBarMetric({ label, value }: HistoryTopBarMetricProps) {
   return (
     <div className="min-w-[72px] flex-1 rounded-[3px] border border-border/50 bg-panel-strong/60 px-2.5 py-1 md:flex-none md:min-w-[84px] md:max-xl:px-2.5 md:max-xl:py-1">
       <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] text-muted-foreground md:max-xl:text-[0.7rem]">
@@ -293,17 +299,14 @@ function HistoryTopBarMetric({ label, value }: { label: string; value: string })
 
 /* ─── Shot blotter row ─── */
 
-function HistoryShotRow({
-  index,
-  isSelected,
-  onSelect,
-  shot,
-}: {
+interface HistoryShotRowProps {
   index: number;
   isSelected: boolean;
   onSelect: () => void;
   shot: ShotRecord;
-}) {
+}
+
+function HistoryShotRow({ index, isSelected, onSelect, shot }: HistoryShotRowProps) {
   const dose = shot.workflow?.context?.targetDoseWeight;
   const yield_ = shot.workflow?.context?.targetYield;
 
@@ -348,13 +351,12 @@ function HistoryShotRow({
 
 /* ─── Detail content ─── */
 
-function HistoryDetailContent({
-  selectedShot,
-  selectedShotTelemetry,
-}: {
+interface HistoryDetailContentProps {
   selectedShot: ShotDetailRecord;
   selectedShotTelemetry: ReturnType<typeof adaptShotMeasurementsToTelemetry>;
-}) {
+}
+
+function HistoryDetailContent({ selectedShot, selectedShotTelemetry }: HistoryDetailContentProps) {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto">
       {/* Telemetry chart — takes full remaining height on tablet */}
@@ -438,15 +440,13 @@ function HistoryDetailContent({
 
 /* ─── Info cell — dashboard-style bordered section ─── */
 
-function HistoryInfoCell({
-  border,
-  children,
-  title,
-}: {
+interface HistoryInfoCellProps {
   border?: "left";
   children: React.ReactNode;
   title: string;
-}) {
+}
+
+function HistoryInfoCell({ border, children, title }: HistoryInfoCellProps) {
   return (
     <section
       className={cn(
@@ -464,7 +464,12 @@ function HistoryInfoCell({
 
 /* ─── Data row — compact key/value like dashboard ─── */
 
-function HistoryDataRow({ label, value }: { label: string; value: string }) {
+interface HistoryDataRowProps {
+  label: string;
+  value: string;
+}
+
+function HistoryDataRow({ label, value }: HistoryDataRowProps) {
   return (
     <div className="flex items-center justify-between gap-3">
       <p className="font-mono text-[0.7rem] uppercase tracking-[0.06em] text-muted-foreground md:text-[0.71rem]">
@@ -477,15 +482,13 @@ function HistoryDataRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function HistorySettingsRows({
-  hotWaterData,
-  rinseData,
-  steamSettings,
-}: {
+interface HistorySettingsRowsProps {
   hotWaterData: WorkflowSettings | undefined;
   rinseData: WorkflowSettings | undefined;
   steamSettings: WorkflowSettings | undefined;
-}) {
+}
+
+function HistorySettingsRows({ hotWaterData, rinseData, steamSettings }: HistorySettingsRowsProps) {
   return (
     <>
       <HistoryDataRow
@@ -517,15 +520,13 @@ function HistorySettingsRows({
   );
 }
 
-function HistoryStatePanel({
-  action,
-  body,
-  title,
-}: {
+interface HistoryStatePanelProps {
   action?: ReactNode;
   body: string;
   title: string;
-}) {
+}
+
+function HistoryStatePanel({ action, body, title }: HistoryStatePanelProps) {
   return (
     <div className="flex h-full items-center justify-center p-4">
       <section className="w-full max-w-[340px] rounded-[3px] border border-dashed border-border/50 bg-panel-strong/60 p-4 text-center">

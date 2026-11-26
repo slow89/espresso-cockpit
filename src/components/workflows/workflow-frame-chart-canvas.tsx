@@ -22,6 +22,16 @@ import {
   type WorkflowFrameSample,
 } from "@/lib/workflow-frame-preview";
 
+interface WorkflowFrameCanvasProps {
+  activeSample: WorkflowFrameSample | null;
+  density: ChartDensity;
+  hasNumericSeries: boolean;
+  laneVisibility: Record<WorkflowFrameFamily, boolean>;
+  onSelectFrame: (index: number) => void;
+  samples: WorkflowFrameSample[];
+  selectedSeries: WorkflowFrameChartSeriesDefinition[];
+}
+
 export function WorkflowFrameCanvas({
   activeSample,
   density,
@@ -30,15 +40,7 @@ export function WorkflowFrameCanvas({
   onSelectFrame,
   samples,
   selectedSeries,
-}: {
-  activeSample: WorkflowFrameSample | null;
-  density: ChartDensity;
-  hasNumericSeries: boolean;
-  laneVisibility: Record<WorkflowFrameFamily, boolean>;
-  onSelectFrame: (index: number) => void;
-  samples: WorkflowFrameSample[];
-  selectedSeries: WorkflowFrameChartSeriesDefinition[];
-}) {
+}: WorkflowFrameCanvasProps) {
   const [containerRef, containerSize] = useElementSize<HTMLDivElement>();
   const visibleLanes = buildVisibleLanes(selectedSeries, laneVisibility, density);
   const chartMetrics = getChartMetrics(density, visibleLanes, containerSize);
@@ -147,6 +149,15 @@ export function WorkflowFrameCanvas({
   );
 }
 
+interface WorkflowFrameLaneProps {
+  density: ChartDensity;
+  index: number;
+  lane: LaneConfig<WorkflowFrameChartSeriesDefinition, WorkflowFrameFamily>;
+  samples: WorkflowFrameSample[];
+  width: number;
+  xScale: LinearScale;
+}
+
 function WorkflowFrameLane({
   density,
   index,
@@ -154,14 +165,7 @@ function WorkflowFrameLane({
   samples,
   width,
   xScale,
-}: {
-  density: ChartDensity;
-  index: number;
-  lane: LaneConfig<WorkflowFrameChartSeriesDefinition, WorkflowFrameFamily>;
-  samples: WorkflowFrameSample[];
-  width: number;
-  xScale: LinearScale;
-}) {
+}: WorkflowFrameLaneProps) {
   const backgroundFill = index % 2 === 0 ? chartTheme.laneSurface : chartTheme.laneSurfaceAlt;
   const domain = getLaneDomain(lane.family, lane.series, samples);
   const laneScale: LinearScale = scaleLinear<number>({
@@ -242,19 +246,15 @@ function WorkflowFrameLane({
   );
 }
 
-function WorkflowFrameXAxis({
-  density,
-  maxFrameValue,
-  width,
-  xScale,
-  y,
-}: {
+interface WorkflowFrameXAxisProps {
   density: ChartDensity;
   maxFrameValue: number;
   width: number;
   xScale: LinearScale;
   y: number;
-}) {
+}
+
+function WorkflowFrameXAxis({ density, maxFrameValue, width, xScale, y }: WorkflowFrameXAxisProps) {
   const ticks = buildFrameTicks(maxFrameValue, density === "compact" ? 4 : 6);
   const tickLabelInset = density === "compact" ? 20 : 28;
   const axisLabelInset = density === "compact" ? 8 : 12;

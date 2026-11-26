@@ -50,6 +50,10 @@ export function DashboardTabletPrepBoard() {
   );
 }
 
+interface DashboardTabletRecipeCardProps extends DashboardRecipeControls {
+  disabled: boolean;
+}
+
 function DashboardTabletRecipeCard({
   disabled,
   doseActivePresetValue,
@@ -65,7 +69,7 @@ function DashboardTabletRecipeCard({
   onIncreaseDrink,
   onSelectDosePreset,
   onSelectDrinkPreset,
-}: DashboardRecipeControls & { disabled: boolean }) {
+}: DashboardTabletRecipeCardProps) {
   return (
     <section className="border-b border-border/70 px-3 py-2.5 md:col-span-2 md:px-5 md:py-2.5">
       <div className="flex items-center gap-2">
@@ -104,6 +108,11 @@ function DashboardTabletRecipeCard({
   );
 }
 
+interface DashboardTabletControlCardProps extends DashboardControlRow {
+  disabled: boolean;
+  index: number;
+}
+
 function DashboardTabletControlCard({
   activePresetValue,
   detail,
@@ -116,7 +125,7 @@ function DashboardTabletControlCard({
   presets,
   tint,
   value,
-}: DashboardControlRow & { disabled: boolean; index: number }) {
+}: DashboardTabletControlCardProps) {
   return (
     <section
       className={cn(
@@ -141,6 +150,19 @@ function DashboardTabletControlCard({
   );
 }
 
+interface DashboardTabletAdjustSectionProps {
+  activePresetValue: number;
+  detail?: string;
+  disabled: boolean;
+  label: string;
+  labelClassName?: string;
+  onDecrease: () => void;
+  onIncrease: () => void;
+  onPresetClick: (value: number) => void;
+  presets: DashboardControlRow["presets"];
+  value: string;
+}
+
 function DashboardTabletAdjustSection({
   activePresetValue,
   detail,
@@ -152,18 +174,7 @@ function DashboardTabletAdjustSection({
   onPresetClick,
   presets,
   value,
-}: {
-  activePresetValue: number;
-  detail?: string;
-  disabled: boolean;
-  label: string;
-  labelClassName?: string;
-  onDecrease: () => void;
-  onIncrease: () => void;
-  onPresetClick: (value: number) => void;
-  presets: DashboardControlRow["presets"];
-  value: string;
-}) {
+}: DashboardTabletAdjustSectionProps) {
   return (
     <div>
       <div className="flex items-center justify-between gap-2">

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "labels": ["dependencies"],
+  "schedule": ["before 6am on monday"],
+  "minimumReleaseAge": "3 days",
+  "constraints": {
+    "pnpm": "10"
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "minimumReleaseAge": null
+  },
+  "packageRules": [
+    {
+      "description": "Bump package.json ranges like the manual updates did. Workflow versions keep their own style.",
+      "matchManagers": ["npm"],
+      "rangeStrategy": "bump"
+    },
+    {
+      "description": "One weekly PR for patch updates and non-0.x minor updates.",
+      "matchUpdateTypes": ["patch"],
+      "groupName": "non-major dependencies",
+      "groupSlug": "non-major"
+    },
+    {
+      "description": "0.x minors can break, so they get their own PRs.",
+      "matchUpdateTypes": ["minor"],
+      "matchCurrentVersion": "!/^0/",
+      "groupName": "non-major dependencies",
+      "groupSlug": "non-major"
+    },
+    {
+      "description": "The tablet WebView is about Chrome 91. Tailwind 4 needs Chrome 111+, and was already reverted once (5577357).",
+      "matchPackageNames": ["tailwindcss"],
+      "allowedVersions": "<4"
+    },
+    {
+      "description": "Hold @types/node majors; bump them deliberately alongside a Node upgrade.",
+      "matchPackageNames": ["@types/node"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}

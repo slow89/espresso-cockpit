@@ -6,22 +6,34 @@
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The Profiles tab has a **Library | Shot setup** switch, with Library as the default. Shot setup holds today's setup controls, unchanged.
-- [ ] A loaded-profile strip sits above both segments, showing ● title with "Differs from saved", or "Not saved" when no visible profile has the title.
-- [ ] The library is read with hidden records included, and classified as visible, Superseded, Removed, or Retired, in the spec's order. Only visible records are listed.
-- [ ] The list shows the operator's profiles first, then **Bundled Profiles**, each alphabetical. The loaded profile has a green dot in its alphabetical place, and is selected and scrolled into view when the Library opens.
-- [ ] Filter chips (All, Yours, Espresso, Pour-over, Other) filter on the stored `beverage_type`. There is no search box.
-- [ ] A **Profile Fork** nests with ↳ under the visible version of the profile it was copied from, following Revision edges from its parent. It drops to the top level when that profile has no visible version or a chip hides the parent. A **Bundled** record with a `parentId` is not a Fork.
-- [ ] Tapping a row selects it without loading it. The detail pane shows the title, origin badge, Loaded and Differs from saved badges, the meta line, two lines of notes, and `workflow-frame-chart`. The other actions in its bar arrive with later tickets.
-- [ ] The selection, chip, and segment survive leaving the tab and coming back, held in a UI store rather than the URL.
-- [ ] The **Active Profile** links to the visible profile with the same title, compared trimmed and ignoring case. Ticket 15 adds the fewest-changes tiebreak; until then a second match resolves to Yours, then the latest `createdAt`. "Differs from saved" compares only what the machine runs.
-- [ ] **Use** sends only the complete `profile` to the **Workflow**, leaving dose, yield, and the rest of `context` alone. On the loaded profile it reads **Loaded** and is disabled.
-- [ ] **Use** is disabled with "Available when the shot ends" in every running or unknown machine state the spec lists.
-- [ ] If the loaded profile differs from its saved version or has none, loading a different record first asks "*Title* has unsaved changes. Loading another profile discards them." with **Discard and load** or **Cancel**. Cancel writes nothing. With nothing unsaved, it loads straight away.
-- [ ] **Import** moves into a dialog opened from the list header, with today's share-code behaviour.
-- [ ] The Choose Profile panel and the "4F" frame-preview overlay are gone, along with their component tests. The Profiles tab's browser spec and screenshots are rewritten.
-- [ ] Core tests cover classification, list rows, chips, nesting, the title link, and running states. The fake **Bridge** serves hidden and deleted records, the **Bundled** manifest, and a **Bridge** version, with new scenarios for Revisions and Forks, a **Retired Bundled** version, and a busy machine.
-- [ ] At 1024×600 there is no critical overflow, text is at least 0.66rem, and tap targets are at least 36px.
-- [ ] `pnpm check` passes.
+- [x] The Profiles tab has a **Library | Shot setup** switch, with Library as the default. Shot setup holds today's setup controls, unchanged.
+- [x] A loaded-profile strip sits above both segments, showing ● title with "Differs from saved", or "Not saved" when no visible profile has the title.
+- [x] The library is read with hidden records included, and classified as visible, Superseded, Removed, or Retired, in the spec's order. Only visible records are listed.
+- [x] The list shows the operator's profiles first, then **Bundled Profiles**, each alphabetical. The loaded profile has a green dot in its alphabetical place, and is selected and scrolled into view when the Library opens.
+- [x] Filter chips (All, Yours, Espresso, Pour-over, Other) filter on the stored `beverage_type`. There is no search box.
+- [x] A **Profile Fork** nests with ↳ under the visible version of the profile it was copied from, following Revision edges from its parent. It drops to the top level when that profile has no visible version or a chip hides the parent. A **Bundled** record with a `parentId` is not a Fork.
+- [x] Tapping a row selects it without loading it. The detail pane shows the title, origin badge, Loaded and Differs from saved badges, the meta line, two lines of notes, and `workflow-frame-chart`. The other actions in its bar arrive with later tickets.
+- [x] The selection, chip, and segment survive leaving the tab and coming back, held in a UI store rather than the URL.
+- [x] The **Active Profile** links to the visible profile with the same title, compared trimmed and ignoring case. Ticket 15 adds the fewest-changes tiebreak; until then a second match resolves to Yours, then the latest `createdAt`. "Differs from saved" compares only what the machine runs.
+- [x] **Use** sends only the complete `profile` to the **Workflow**, leaving dose, yield, and the rest of `context` alone. On the loaded profile it reads **Loaded** and is disabled.
+- [x] **Use** is disabled with "Available when the shot ends" in every running or unknown machine state the spec lists.
+- [x] If the loaded profile differs from its saved version or has none, loading a different record first asks "*Title* has unsaved changes. Loading another profile discards them." with **Discard and load** or **Cancel**. Cancel writes nothing. With nothing unsaved, it loads straight away.
+- [x] **Import** moves into a dialog opened from the list header, with today's share-code behaviour.
+- [x] The Choose Profile panel and the "4F" frame-preview overlay are gone, along with their component tests. The Profiles tab's browser spec and screenshots are rewritten.
+- [x] Core tests cover classification, list rows, chips, nesting, the title link, and running states. The fake **Bridge** serves hidden and deleted records, the **Bundled** manifest, and a **Bridge** version, with new scenarios for Revisions and Forks, a **Retired Bundled** version, and a busy machine.
+- [x] At 1024×600 there is no critical overflow, text is at least 0.66rem, and tap targets are at least 36px.
+- [x] `pnpm check` passes.
+
+## Calls made while building
+
+For later tickets, and worth a look where they go beyond the spec.
+
+- **The revision marker** is `metadata["cockpit.revision"] = true`, exported as `REVISION_MARKER_KEY` from `src/lib/profile-library.ts`. Ticket 04 writes it.
+- **A revised Fork stays a Fork.** The spec defines a Fork as having no marker, but a Revision of one still nests and reads "Copy of", read from the start of its lineage. Otherwise saving a Fork would pull it out from under its parent.
+- **"No machine connected" comes from the device list.** A failed state read alone can't mean it, because the Bridge answers the same way when a state won't parse. An unreadable state with a connected or unknown machine stays on the disabled side of the busy gate.
+- **Use waits when the Workflow can't be read**, with "Waiting for the Bridge to report what's loaded", so a trial can't be replaced without the confirm.
+- **`workflow-frame-chart` changed to meet the sizing rule.** Only its tablet layout had callers left, so the other layouts are gone. Its lanes now fit the pane so text renders at real size, and its controls open full screen.
+- **Shot setup's presets** gained `min-h-9` to reach 36px. Nothing else in that segment changed.
+- **Not changed:** the chart still says "Frame", which `CONTEXT.md` flags as non-canonical copy.

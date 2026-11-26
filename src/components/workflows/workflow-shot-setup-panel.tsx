@@ -242,7 +242,7 @@ function WorkflowAdjustSection({
         activePresetValue={activePresetValue}
         className="mt-1.5 gap-1 text-[0.78rem] md:text-[0.79rem]"
         disabled={disabled}
-        itemClassName="rounded-[3px] px-1.5 py-1"
+        itemClassName="min-h-9 rounded-[3px] px-1.5 py-1"
         onPresetClick={onPresetClick}
         presets={presets}
       />

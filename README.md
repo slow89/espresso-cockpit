@@ -31,7 +31,7 @@ For gateway runtime, API, deployment, and browser behavior, use [tadelv/reaprime
 - TanStack Router
 - TanStack Query
 - Zustand
-- `@visx/visx`
+- visx (`@visx/grid`, `@visx/group`, `@visx/scale`, `@visx/shape`)
 - Tailwind CSS
 
 ## Getting Started

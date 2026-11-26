@@ -212,8 +212,26 @@ async function handleRequest(request: http.IncomingMessage, response: http.Serve
     return;
   }
 
+  if (method === "GET" && path === "/api/v1/info") {
+    sendJson(response, 200, runtime.state.bridgeInfo);
+    return;
+  }
+
   if (method === "GET" && path === "/api/v1/profiles") {
-    sendJson(response, 200, runtime.state.profiles);
+    const includeHidden = url.searchParams.get("includeHidden") === "true";
+
+    sendJson(
+      response,
+      200,
+      includeHidden
+        ? runtime.state.profiles
+        : runtime.state.profiles.filter((entry) => entry.visibility === "visible"),
+    );
+    return;
+  }
+
+  if (method === "GET" && path === "/api/v1/profiles/defaults") {
+    sendJson(response, 200, runtime.state.bundledManifest);
     return;
   }
 
@@ -470,8 +488,10 @@ async function handleRequest(request: http.IncomingMessage, response: http.Serve
 
     runtime.state.profiles = [
       {
+        createdAt: new Date().toISOString(),
         id: profileId,
         isDefault: false,
+        metadata: { comment: `Imported from Visualizer share code ${shareCode || "AB12"}` },
         profile: {
           author: "Visualizer",
           beverage_type: "espresso",

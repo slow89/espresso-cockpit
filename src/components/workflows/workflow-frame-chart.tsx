@@ -2,16 +2,13 @@ import { useState } from "react";
 
 import {
   CompactMonitorBar,
-  DesktopMonitorBar,
   MonitorConfigOverlay,
-  MonitorConfigPanel,
   type MonitorLaneOption,
   type MonitorSeriesGroup,
 } from "@/components/chart-monitor/chrome";
 import { cn } from "@/lib/utils";
 import {
   buildWorkflowFrameStatusItems,
-  formatWorkflowSeriesValue,
   getWorkflowFrameFamilyLabel,
   getWorkflowFrameFamilyOrder,
   type FramePreviewData,
@@ -28,7 +25,6 @@ import { WorkflowFrameCanvas } from "./workflow-frame-chart-canvas";
 
 interface WorkflowFrameChartProps {
   className?: string;
-  layout?: "auto" | "tablet" | "desktop";
   onSelectFrame: (index: number) => void;
   preview: FramePreviewData;
   selectedFrameIndex: number;
@@ -36,7 +32,6 @@ interface WorkflowFrameChartProps {
 
 export function WorkflowFrameChart({
   className,
-  layout = "auto",
   onSelectFrame,
   preview,
   selectedFrameIndex,
@@ -104,20 +99,14 @@ export function WorkflowFrameChart({
   }
 
   return (
-    <div
-      className={cn(
-        "panel flex h-full min-h-0 flex-col rounded-[3px] border-chart-border bg-chart-surface p-2 md:p-3 xl:p-5",
-        className,
-      )}
-    >
-      {layout === "auto" || layout === "tablet" ? (
-        <div
-          className={cn(
-            layout === "auto"
-              ? "flex min-h-0 flex-1 flex-col space-y-3 xl:hidden"
-              : "flex min-h-0 flex-1 flex-col space-y-3",
-          )}
-        >
+    <>
+      <div
+        className={cn(
+          "panel flex h-full min-h-0 flex-col rounded-[3px] border-chart-border bg-chart-surface p-2 md:p-3 xl:p-5",
+          className,
+        )}
+      >
+        <div className="flex min-h-0 flex-1 flex-col space-y-3">
           <CompactMonitorBar
             activePresetLabel={formatWorkflowPresetLabel(activePreset)}
             items={statusItems}
@@ -125,7 +114,6 @@ export function WorkflowFrameChart({
           />
           <WorkflowFrameCanvas
             activeSample={activeSample}
-            density="compact"
             hasNumericSeries={preview.series.length > 0}
             laneVisibility={laneVisibility}
             onSelectFrame={onSelectFrame}
@@ -133,65 +121,13 @@ export function WorkflowFrameChart({
             samples={preview.samples}
           />
         </div>
-      ) : null}
+      </div>
 
-      {layout === "auto" || layout === "desktop" ? (
-        <div
-          className={cn(
-            layout === "auto" ? "hidden h-full min-h-0 flex-1 xl:block" : "h-full min-h-0 flex-1",
-          )}
-        >
-          <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[minmax(0,1fr)_290px]">
-            <section className="flex min-h-0 min-w-0 flex-col">
-              <DesktopMonitorBar
-                activePreset={activePreset}
-                items={statusItems}
-                onReset={handleReset}
-                onSetPreset={handleSetPreset}
-                presetOptions={[
-                  { id: "core-frames", label: "Core frames" },
-                  { id: "all-series", label: "All series" },
-                ]}
-              />
-              <div className="mt-3 min-h-0 flex-1">
-                <WorkflowFrameCanvas
-                  activeSample={activeSample}
-                  density="regular"
-                  hasNumericSeries={preview.series.length > 0}
-                  laneVisibility={laneVisibility}
-                  onSelectFrame={onSelectFrame}
-                  selectedSeries={selectedSeries}
-                  samples={preview.samples}
-                />
-              </div>
-            </section>
-
-            <aside
-              className={cn(
-                layout === "auto" ? "hidden h-full min-h-0 xl:block" : "h-full min-h-0",
-              )}
-            >
-              <MonitorConfigPanel
-                activePreset={activePreset}
-                laneOptions={laneOptions}
-                onReset={handleReset}
-                onSetPreset={handleSetPreset}
-                onToggleLane={toggleLane}
-                onToggleSeries={handleToggleSeries}
-                presetOptions={[
-                  { id: "core-frames", label: "Core frames" },
-                  { id: "all-series", label: "All series" },
-                ]}
-                seriesGroups={seriesGroups}
-              />
-            </aside>
-          </div>
-        </div>
-      ) : null}
-
-      {layout !== "desktop" && isConfigOpen ? (
+      {/* Outside the panel, whose backdrop-filter would trap this fixed overlay inside it. */}
+      {isConfigOpen ? (
         <MonitorConfigOverlay
           activePreset={activePreset}
+          className="xl:block"
           dataTestId="workflow-frame-config-overlay"
           laneOptions={laneOptions}
           onClose={() => setIsConfigOpen(false)}
@@ -207,7 +143,7 @@ export function WorkflowFrameChart({
           title="Frame chart controls"
         />
       ) : null}
-    </div>
+    </>
   );
 }
 
@@ -221,52 +157,4 @@ function formatWorkflowPresetLabel(preset: WorkflowFrameChartPreset) {
   }
 
   return "Custom";
-}
-
-interface WorkflowFrameMetricGridProps {
-  preview: FramePreviewData;
-  selectedFrameIndex: number;
-  selectedSeriesIds: string[];
-}
-
-export function WorkflowFrameMetricGrid({
-  preview,
-  selectedFrameIndex,
-  selectedSeriesIds,
-}: WorkflowFrameMetricGridProps) {
-  const selectedSample = preview.samples[selectedFrameIndex] ?? null;
-  const series = selectedSeriesIds
-    .map((seriesId) => preview.series.find((entry) => entry.id === seriesId))
-    .filter((entry): entry is WorkflowFrameChartSeriesDefinition => entry != null)
-    .slice(0, 4);
-
-  return (
-    <div className="grid gap-2 sm:grid-cols-2">
-      <div className="rounded-[3px] border border-chart-border bg-panel-muted px-3 py-2.5">
-        <p className="font-mono text-[0.73rem] uppercase tracking-[0.18em] text-muted-foreground">
-          Frame
-        </p>
-        <p className="mt-1 font-mono text-[0.9rem] text-foreground">
-          {selectedFrameIndex + 1} / {preview.frames.length}
-        </p>
-      </div>
-
-      {series.map((seriesDefinition) => (
-        <div
-          className="rounded-[10px] border border-chart-border bg-panel-muted px-3 py-2.5"
-          key={seriesDefinition.id}
-        >
-          <p className="font-mono text-[0.73rem] uppercase tracking-[0.18em] text-muted-foreground">
-            {seriesDefinition.shortLabel}
-          </p>
-          <p className="mt-1 font-mono text-[0.9rem] text-foreground">
-            {formatWorkflowSeriesValue(
-              seriesDefinition,
-              selectedSample ? seriesDefinition.accessor(selectedSample) : null,
-            )}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
 }

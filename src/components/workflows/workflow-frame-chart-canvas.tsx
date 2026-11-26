@@ -8,12 +8,10 @@ import { LinePath } from "@visx/shape";
 import {
   chartTheme,
   getChartMetrics,
-  type ChartDensity,
   type LaneConfig,
   type LinearScale,
   useElementSize,
 } from "@/components/telemetry-chart/shared";
-import { cn } from "@/lib/utils";
 import {
   getWorkflowFrameFamilyLabel,
   getWorkflowFrameFamilyOrder,
@@ -22,9 +20,13 @@ import {
   type WorkflowFrameSample,
 } from "@/lib/workflow-frame-preview";
 
+// Matches the compact lane gap in getChartMetrics, so the lanes end exactly on the x axis.
+const laneGap = 6;
+const minLaneHeight = 30;
+const tickLabelCapHeight = 9;
+
 interface WorkflowFrameCanvasProps {
   activeSample: WorkflowFrameSample | null;
-  density: ChartDensity;
   hasNumericSeries: boolean;
   laneVisibility: Record<WorkflowFrameFamily, boolean>;
   onSelectFrame: (index: number) => void;
@@ -34,7 +36,6 @@ interface WorkflowFrameCanvasProps {
 
 export function WorkflowFrameCanvas({
   activeSample,
-  density,
   hasNumericSeries,
   laneVisibility,
   onSelectFrame,
@@ -42,15 +43,14 @@ export function WorkflowFrameCanvas({
   selectedSeries,
 }: WorkflowFrameCanvasProps) {
   const [containerRef, containerSize] = useElementSize<HTMLDivElement>();
-  const visibleLanes = buildVisibleLanes(selectedSeries, laneVisibility, density);
-  const chartMetrics = getChartMetrics(density, visibleLanes, containerSize);
+  const visibleLanes = buildVisibleLanes(selectedSeries, laneVisibility, containerSize.height);
+  const chartMetrics = getChartMetrics("compact", visibleLanes, containerSize);
   const maxFrameValue = Math.max(samples.length, 1);
   const xScale: LinearScale = scaleLinear<number>({
     domain: [1, Math.max(maxFrameValue, 2)],
     range: [0, chartMetrics.innerWidth],
   });
   const selectedX = activeSample == null ? null : xScale(activeSample.frameIndex);
-  const chartHeight = Math.max(chartMetrics.height, density === "compact" ? 228 : 260);
 
   function handlePointerMove(event: PointerEvent<SVGRectElement>) {
     if (samples.length === 0) {
@@ -63,23 +63,33 @@ export function WorkflowFrameCanvas({
     onSelectFrame(findNearestFrameIndex(samples, relativeX, xScale));
   }
 
+  if (visibleLanes.length === 0) {
+    return (
+      <div
+        ref={containerRef}
+        className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[3px] border border-chart-border bg-chart-surface px-3 text-center font-mono text-[0.72rem] leading-4 text-muted-foreground"
+      >
+        {hasNumericSeries
+          ? "Enable at least one series to view frame telemetry."
+          : "No numeric frame fields were found in this profile."}
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
-      className={cn(
-        "min-h-0 overflow-hidden rounded-[3px] border border-chart-border bg-chart-surface",
-        density === "regular" ? "h-full flex-1" : "flex-1",
-      )}
+      className="min-h-0 flex-1 overflow-hidden rounded-[3px] border border-chart-border bg-chart-surface"
     >
       <svg
         aria-label="workflow frame monitor"
         className="h-full w-full"
         preserveAspectRatio="none"
-        viewBox={`0 0 ${chartMetrics.width} ${chartHeight}`}
+        viewBox={`0 0 ${chartMetrics.width} ${chartMetrics.height}`}
       >
         <rect
           fill={chartTheme.surface}
-          height={chartHeight}
+          height={chartMetrics.height}
           rx={3}
           stroke={chartTheme.border}
           width={chartMetrics.width}
@@ -88,32 +98,16 @@ export function WorkflowFrameCanvas({
         />
 
         <Group left={chartMetrics.margin.left} top={chartMetrics.margin.top}>
-          {visibleLanes.length > 0 ? (
-            visibleLanes.map((lane, laneIndex) => (
-              <WorkflowFrameLane
-                density={density}
-                index={laneIndex}
-                key={lane.family}
-                lane={lane}
-                samples={samples}
-                width={chartMetrics.innerWidth}
-                xScale={xScale}
-              />
-            ))
-          ) : (
-            <text
-              fill={chartTheme.muted}
-              fontFamily={chartTheme.sans}
-              fontSize={density === "compact" ? "12" : "14"}
-              textAnchor="middle"
-              x={chartMetrics.innerWidth / 2}
-              y={density === "compact" ? 96 : 120}
-            >
-              {hasNumericSeries
-                ? "Enable at least one series to view frame telemetry."
-                : "No numeric frame fields were found in this profile."}
-            </text>
-          )}
+          {visibleLanes.map((lane, laneIndex) => (
+            <WorkflowFrameLane
+              index={laneIndex}
+              key={lane.family}
+              lane={lane}
+              samples={samples}
+              width={chartMetrics.innerWidth}
+              xScale={xScale}
+            />
+          ))}
 
           {selectedX != null ? (
             <line
@@ -137,7 +131,6 @@ export function WorkflowFrameCanvas({
           />
 
           <WorkflowFrameXAxis
-            density={density}
             maxFrameValue={maxFrameValue}
             width={chartMetrics.innerWidth}
             xScale={xScale}
@@ -150,7 +143,6 @@ export function WorkflowFrameCanvas({
 }
 
 interface WorkflowFrameLaneProps {
-  density: ChartDensity;
   index: number;
   lane: LaneConfig<WorkflowFrameChartSeriesDefinition, WorkflowFrameFamily>;
   samples: WorkflowFrameSample[];
@@ -158,21 +150,15 @@ interface WorkflowFrameLaneProps {
   xScale: LinearScale;
 }
 
-function WorkflowFrameLane({
-  density,
-  index,
-  lane,
-  samples,
-  width,
-  xScale,
-}: WorkflowFrameLaneProps) {
+function WorkflowFrameLane({ index, lane, samples, width, xScale }: WorkflowFrameLaneProps) {
   const backgroundFill = index % 2 === 0 ? chartTheme.laneSurface : chartTheme.laneSurfaceAlt;
   const domain = getLaneDomain(lane.family, lane.series, samples);
   const laneScale: LinearScale = scaleLinear<number>({
     domain,
     range: [lane.height, 0],
   });
-  const laneTickCount = density === "compact" ? 3 : 4;
+  // A short lane shows only its ends, so tick labels never run into each other.
+  const laneTickCount = lane.height >= 60 ? 3 : 1;
 
   return (
     <Group top={lane.yOffset}>
@@ -188,11 +174,7 @@ function WorkflowFrameLane({
 
       <GridColumns
         height={lane.height}
-        numTicks={
-          density === "compact"
-            ? Math.min(Math.max(samples.length - 1, 1), 4)
-            : Math.min(Math.max(samples.length - 1, 1), 6)
-        }
+        numTicks={Math.min(Math.max(samples.length - 1, 1), 4)}
         scale={xScale}
         stroke={chartTheme.grid}
         width={width}
@@ -206,13 +188,7 @@ function WorkflowFrameLane({
         width={width}
       />
 
-      <text
-        fill={chartTheme.text}
-        fontFamily={chartTheme.mono}
-        fontSize={density === "compact" ? "10" : "11"}
-        x={density === "compact" ? 10 : 12}
-        y={density === "compact" ? 14 : 16}
-      >
+      <text fill={chartTheme.text} fontFamily={chartTheme.mono} fontSize="12" x={10} y={14}>
         {lane.label}
       </text>
 
@@ -221,10 +197,10 @@ function WorkflowFrameLane({
           key={`${lane.family}-${tick}`}
           fill={chartTheme.muted}
           fontFamily={chartTheme.mono}
-          fontSize={density === "compact" ? "9" : "10"}
+          fontSize="11.5"
           textAnchor="end"
-          x={density === "compact" ? -6 : -8}
-          y={laneScale(tick) + 4}
+          x={-6}
+          y={Math.min(Math.max(laneScale(tick) + 4, tickLabelCapHeight), lane.height - 1)}
         >
           {formatTick(tick)}
         </text>
@@ -237,7 +213,7 @@ function WorkflowFrameLane({
           stroke={series.color}
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={density === "compact" ? 2.5 : 3}
+          strokeWidth={2.5}
           x={(sample: WorkflowFrameSample) => xScale(sample.frameIndex)}
           y={(sample: WorkflowFrameSample) => laneScale(series.accessor(sample) ?? domain[0])}
         />
@@ -247,17 +223,15 @@ function WorkflowFrameLane({
 }
 
 interface WorkflowFrameXAxisProps {
-  density: ChartDensity;
   maxFrameValue: number;
   width: number;
   xScale: LinearScale;
   y: number;
 }
 
-function WorkflowFrameXAxis({ density, maxFrameValue, width, xScale, y }: WorkflowFrameXAxisProps) {
-  const ticks = buildFrameTicks(maxFrameValue, density === "compact" ? 4 : 6);
-  const tickLabelInset = density === "compact" ? 20 : 28;
-  const axisLabelInset = density === "compact" ? 8 : 12;
+function WorkflowFrameXAxis({ maxFrameValue, width, xScale, y }: WorkflowFrameXAxisProps) {
+  const ticks = buildFrameTicks(maxFrameValue, 4);
+  const tickLabelInset = 20;
 
   return (
     <Group top={y}>
@@ -265,36 +239,19 @@ function WorkflowFrameXAxis({ density, maxFrameValue, width, xScale, y }: Workfl
 
       {ticks.map((tick) => (
         <Group key={tick}>
-          <line
-            stroke={chartTheme.axis}
-            x1={xScale(tick)}
-            x2={xScale(tick)}
-            y1={0}
-            y2={density === "compact" ? 5 : 6}
-          />
+          <line stroke={chartTheme.axis} x1={xScale(tick)} x2={xScale(tick)} y1={0} y2={5} />
           <text
             fill={chartTheme.muted}
             fontFamily={chartTheme.mono}
-            fontSize={density === "compact" ? "8.5" : "10"}
+            fontSize="11.5"
             textAnchor="middle"
             x={Math.max(tickLabelInset, Math.min(width - tickLabelInset, xScale(tick)))}
-            y={density === "compact" ? 14 : 18}
+            y={14}
           >
             {tick}
           </text>
         </Group>
       ))}
-
-      <text
-        fill={chartTheme.muted}
-        fontFamily={chartTheme.mono}
-        fontSize={density === "compact" ? "8.5" : "10"}
-        textAnchor="end"
-        x={width - axisLabelInset}
-        y={density === "compact" ? 14 : 18}
-      >
-        Frame index
-      </text>
     </Group>
   );
 }
@@ -302,34 +259,31 @@ function WorkflowFrameXAxis({ density, maxFrameValue, width, xScale, y }: Workfl
 function buildVisibleLanes(
   selectedSeries: WorkflowFrameChartSeriesDefinition[],
   laneVisibility: Record<WorkflowFrameFamily, boolean>,
-  density: ChartDensity,
+  containerHeight: number,
 ) {
-  let yOffset = 0;
-  const laneGap = density === "compact" ? 8 : 12;
+  const families = getWorkflowFrameFamilyOrder().filter(
+    (family) => laneVisibility[family] && selectedSeries.some((series) => series.family === family),
+  );
+  const laneHeight = getFittedLaneHeight(containerHeight, families.length);
 
-  return getWorkflowFrameFamilyOrder().flatMap((family) => {
-    if (!laneVisibility[family]) {
-      return [];
-    }
+  return families.map(
+    (family, index) =>
+      ({
+        family,
+        height: laneHeight,
+        label: getWorkflowFrameFamilyLabel(family),
+        series: selectedSeries.filter((series) => series.family === family),
+        yOffset: index * (laneHeight + laneGap),
+      }) satisfies LaneConfig<WorkflowFrameChartSeriesDefinition, WorkflowFrameFamily>,
+  );
+}
 
-    const laneSeries = selectedSeries.filter((series) => series.family === family);
+/** Fits the lanes to the container, so the chart renders 1:1 and its text keeps its real size. */
+function getFittedLaneHeight(containerHeight: number, laneCount: number) {
+  const { margin } = getChartMetrics("compact", [], { height: 0, width: 0 });
+  const available = containerHeight - margin.top - margin.bottom - laneGap * (laneCount - 1);
 
-    if (laneSeries.length === 0) {
-      return [];
-    }
-
-    const lane = {
-      family,
-      height: density === "compact" ? 76 : 118,
-      label: getWorkflowFrameFamilyLabel(family),
-      series: laneSeries,
-      yOffset,
-    } satisfies LaneConfig<WorkflowFrameChartSeriesDefinition, WorkflowFrameFamily>;
-
-    yOffset += lane.height + laneGap;
-
-    return [lane];
-  });
+  return Math.max(minLaneHeight, available / laneCount);
 }
 
 function getLaneDomain(

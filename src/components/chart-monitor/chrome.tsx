@@ -130,6 +130,7 @@ interface MonitorConfigOverlayProps<
   TActivePreset extends string = TPreset,
 > {
   activePreset: TActivePreset;
+  className?: string;
   dataTestId?: string;
   laneOptions: Array<MonitorLaneOption<TFamily>>;
   onClose: () => void;
@@ -149,6 +150,7 @@ export function MonitorConfigOverlay<
   TActivePreset extends string = TPreset,
 >({
   activePreset,
+  className,
   dataTestId = "monitor-config-overlay",
   laneOptions,
   onClose,
@@ -163,7 +165,7 @@ export function MonitorConfigOverlay<
   return (
     <div
       aria-modal="true"
-      className="fixed inset-0 z-50 bg-overlay backdrop-blur-sm xl:hidden"
+      className={cn("fixed inset-0 z-50 bg-overlay backdrop-blur-sm xl:hidden", className)}
       onClick={onClose}
       role="dialog"
     >
@@ -183,7 +185,7 @@ export function MonitorConfigOverlay<
           </div>
           <button
             aria-label="Close chart controls"
-            className="inline-flex size-8 shrink-0 items-center justify-center rounded-[3px] border border-border/50 bg-panel-strong/60 text-muted-foreground transition hover:text-foreground"
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-[3px] border border-border/50 bg-panel-strong/60 text-muted-foreground transition hover:text-foreground"
             onClick={onClose}
             type="button"
           >

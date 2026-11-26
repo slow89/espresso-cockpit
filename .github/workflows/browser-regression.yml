@@ -13,7 +13,7 @@ on:
 
 jobs:
   full-browser-suite:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Playwright 1.58 cannot install Chromium on ubuntu-26.04 (ubuntu-latest)
     env:
       PLAYWRIGHT_REAL_GATEWAY_URL: ${{ secrets.REAL_GATEWAY_URL }}
 
